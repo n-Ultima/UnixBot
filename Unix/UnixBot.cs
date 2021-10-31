@@ -100,6 +100,14 @@ namespace Unix
                 return new LocalMessage()
                     .WithContent($"⚠ {commandFailedResult.Exception.Message}");
             }
+
+            if (result is ChecksFailedResult checksFailedResult)
+            {
+                var check = checksFailedResult.FailedChecks.ElementAt(0);
+                return new LocalMessage()
+                    .WithContent($"⚠ {check.Result.FailureReason}");
+
+            }
             if (result is CommandNotFoundResult commandNotFoundResult)
             {
                 return new LocalMessage()
