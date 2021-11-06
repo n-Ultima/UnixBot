@@ -108,7 +108,7 @@ namespace Unix.Modules
             [Description("The reason for deleting the infraction.")] [Remainder]
                 string reason)
         {
-            await _moderationService.RemoveInfractionAsync(infractionId, reason);
+            await _moderationService.RemoveInfractionAsync(infractionId, Context.GuildId, reason);
             return Success($"Successfully deleted infraction `{infractionId}`");
         }
 
@@ -120,7 +120,7 @@ namespace Unix.Modules
             [Description("The new reason to be applied to the infraction.")] [Remainder]
                 string newReason)
         {
-            await _moderationService.UpdateInfractionAsync(infractionId, newReason);
+            await _moderationService.UpdateInfractionAsync(infractionId, Context.GuildId, newReason);
             return Success($"Successfully updated infraction: {infractionId}");
         }
     }

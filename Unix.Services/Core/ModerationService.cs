@@ -191,13 +191,15 @@ namespace Unix.Services.Core
             }
         }
 
-        public async Task UpdateInfractionAsync(Guid infractionId, string newReason)
+        public async Task UpdateInfractionAsync(Guid infractionId, Snowflake guildId, string newReason)
         {
             using (var scope = ServiceProvider.CreateScope())
             {
                 var unixContext = scope.ServiceProvider.GetRequiredService<UnixContext>();
                 var infraction = await unixContext.Infractions
-                    .FindAsync(infractionId);
+                    .Where(x => x.GuildId == guildId)
+                    .Where(x => x.Id == infractionId)
+                    .SingleOrDefaultAsync();
                 if (infraction == null)
                 {
                     throw new Exception("The infraction ID provided is not valid.");
@@ -207,7 +209,7 @@ namespace Unix.Services.Core
                 await unixContext.SaveChangesAsync();
             }
         }
-        public async Task RemoveInfractionAsync(Guid infractionId, string removalMessage)
+        public async Task RemoveInfractionAsync(Guid infractionId, Snowflake guildId, string removalMessage)
         {
             using (var scope = ServiceProvider.CreateScope())
             {
@@ -217,7 +219,9 @@ namespace Unix.Services.Core
                 }
                 var unixContext = scope.ServiceProvider.GetRequiredService<UnixContext>();
                 var infraction = await unixContext.Infractions
-                    .FindAsync(infractionId);
+                    .Where(x => x.GuildId == guildId)
+                    .Where(x => x.Id == infractionId)
+                    .SingleOrDefaultAsync();
                 if (infraction == null)
                 {
                     throw new Exception("The infraction ID provided is not valid.");

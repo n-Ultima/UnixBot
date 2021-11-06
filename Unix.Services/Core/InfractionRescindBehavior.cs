@@ -23,37 +23,46 @@ namespace Unix.Services.Core
         protected override async Task ExecuteAsync(CancellationToken ct)
         {
             await Bot.WaitUntilReadyAsync(ct);
-            while (!ct.IsCancellationRequested)
+            whileLoop:
+            while (true)
             {
-                var timedInfractions = await _moderationService.FetchTimedInfractionsAsync();
-                if (!timedInfractions.Any())
+                try
                 {
+                    var timedInfractions = await _moderationService.FetchTimedInfractionsAsync();
+                    if (!timedInfractions.Any())
+                    {
+                        await Task.Delay(Interval);
+                        continue;
+                    }
+
+                    var expiringInfraction = timedInfractions
+                        .OrderBy(x => x.ExpiresAt)
+                        .FirstOrDefault();
+                    if (expiringInfraction.CreatedAt + expiringInfraction.Duration <= DateTimeOffset.UtcNow)
+                    {
+                        string reason = null;
+                        switch (expiringInfraction.Type)
+                        {
+                            case InfractionType.Ban:
+                                reason = "Temporary ban expired.";
+                                break;
+                            case InfractionType.Mute:
+                                reason = "Mute expired.";
+                                break;
+                        }
+                    
+                        await _moderationService.RemoveInfractionAsync(expiringInfraction.Id, expiringInfraction.GuildId, reason);
+                    }
+
                     await Task.Delay(Interval);
                     continue;
                 }
-
-                var expiringInfraction = timedInfractions
-                    .OrderBy(x => x.ExpiresAt)
-                    .FirstOrDefault();
-                if (expiringInfraction.CreatedAt + expiringInfraction.Duration <= DateTimeOffset.UtcNow)
+                catch
                 {
-                    string reason = null;
-                    switch (expiringInfraction.Type)
-                    {
-                        case InfractionType.Ban:
-                            reason = "Temporary ban expired.";
-                            break;
-                        case InfractionType.Mute:
-                            reason = "Mute expired.";
-                            break;
-                    }
-                    
-                    await _moderationService.RemoveInfractionAsync(expiringInfraction.Id, reason);
+                    goto whileLoop;
                 }
-
-                await Task.Delay(Interval);
-                continue;
             }
+            
         }
     }
 }
