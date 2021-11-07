@@ -24,7 +24,8 @@ namespace Unix.Data.Models.Core
         public List<string> BannedTerms { get; set; } = new();
 
         public List<ulong> WhitelistedInvites { get; set; } = new();
-        
+
+        public List<ulong> SelfAssignableRoles { get; set; } = new();
         public int AmountOfMessagesConsideredSpam { get; set; }
     }
 }

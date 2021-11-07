@@ -112,7 +112,7 @@ namespace Unix.Modules
             return Success($"Successfully deleted infraction `{infractionId}`");
         }
 
-        [Command("update")]
+        [Command("update", "reason")]
         [Description("Updates the reason for the provided infraction ID.")]
         public async Task<DiscordCommandResult> UpdateInfractionAsync(
             [Description("The ID of the infraction to update.")]

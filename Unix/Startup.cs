@@ -78,6 +78,13 @@ namespace Unix
                 .UseConsoleLifetime();
             using (var host = hostBuilder.Build())
             {
+                using (var services = host.Services.CreateScope())
+                {
+                    var db = services.ServiceProvider.GetRequiredService<UnixContext>();
+                    Log.Logger.Information("Applying migrations...");
+                    await db.Database.MigrateAsync();
+                    Log.Logger.Information("Migrations applied successfully!");
+                }
                 await host.RunAsync();
             }
         }

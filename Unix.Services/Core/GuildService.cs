@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Bot;
@@ -13,11 +14,6 @@ using Unix.Services.GatewayEventHandlers;
 
 namespace Unix.Services.Core
 {
-
-    public static class C
-    {
-        private static readonly IServiceProvider ServiceProvider;
-    }
     public class GuildService : UnixService
     {
         public GuildService(IServiceProvider serviceProvider)
@@ -182,6 +178,101 @@ namespace Unix.Services.Core
                 prefixes.Add(new StringPrefix(results));
                 prefixes.Add(new MentionPrefix(Bot.CurrentUser.Id));
                 return prefixes;
+            }
+        }
+
+        public async Task AddBannedTermAsync(Snowflake guildId, string bannedTerm)
+        {
+            using (var scope = ServiceProvider.CreateScope())
+            {
+                var unixContext = scope.ServiceProvider.GetRequiredService<UnixContext>();
+                var guildConfig = await unixContext.GuildConfigurations
+                    .FindAsync(guildId);
+                if (guildConfig == null)
+                {
+                    throw new Exception("Guild should be configured with configure-guild first.");
+                }
+                guildConfig.BannedTerms.Add(bannedTerm);
+                await unixContext.SaveChangesAsync();
+            }
+        }
+
+        public async Task RemoveBannedTermAsync(Snowflake guildId, string bannedTerm)
+        {
+            using (var scope = ServiceProvider.CreateScope())
+            {
+                var unixContext = scope.ServiceProvider.GetRequiredService<UnixContext>();
+                var guildConfig = await unixContext.GuildConfigurations
+                    .FindAsync(guildId);
+                if (guildConfig == null)
+                {
+                    throw new Exception("Guild should be configured with configure-guild first.");
+                }
+
+                guildConfig.BannedTerms.Remove(bannedTerm);
+                await unixContext.SaveChangesAsync();
+            }
+        }
+
+        public async Task AddWhitelistedInviteAsync(Snowflake guildId, Snowflake inviteGuildId)
+        {
+            using (var scope = ServiceProvider.CreateScope())
+            {
+                var unixContext = scope.ServiceProvider.GetRequiredService<UnixContext>();
+                var guildConfig = await unixContext.GuildConfigurations
+                    .FindAsync(guildId);
+                if (guildConfig == null)
+                {
+                    throw new Exception("Guild should be configured with configure-guild first.");
+                }
+                guildConfig.WhitelistedInvites.Add(inviteGuildId.RawValue);
+                await unixContext.SaveChangesAsync();
+            }
+        }
+        public async Task RemoveWhitelistedInviteAsync(Snowflake guildId, Snowflake inviteGuildId)
+        {
+            using (var scope = ServiceProvider.CreateScope())
+            {
+                var unixContext = scope.ServiceProvider.GetRequiredService<UnixContext>();
+                var guildConfig = await unixContext.GuildConfigurations
+                    .FindAsync(guildId);
+                if (guildConfig == null)
+                {
+                    throw new Exception("Guild should be configured with configure-guild first.");
+                }
+                guildConfig.WhitelistedInvites.Remove(inviteGuildId.RawValue);
+                await unixContext.SaveChangesAsync();
+            }
+        }
+
+        public async Task AddSelfAssignableRoleAsync(Snowflake guildId, Snowflake roleId)
+        {
+            using (var scope = ServiceProvider.CreateScope())
+            {
+                var unixContext = scope.ServiceProvider.GetRequiredService<UnixContext>();
+                var guildConfig = await unixContext.GuildConfigurations
+                    .FindAsync(guildId);
+                if (guildConfig == null)
+                {
+                    throw new Exception("Guild should be configured with configure-guild first.");
+                }
+                guildConfig.SelfAssignableRoles.Add(roleId.RawValue);
+                await unixContext.SaveChangesAsync();
+            }
+        }
+        public async Task RemoveSelfAssignableRoleAsync(Snowflake guildId, Snowflake roleId)
+        {
+            using (var scope = ServiceProvider.CreateScope())
+            {
+                var unixContext = scope.ServiceProvider.GetRequiredService<UnixContext>();
+                var guildConfig = await unixContext.GuildConfigurations
+                    .FindAsync(guildId);
+                if (guildConfig == null)
+                {
+                    throw new Exception("Guild should be configured with configure-guild first.");
+                }
+                guildConfig.SelfAssignableRoles.Remove(roleId.RawValue);
+                await unixContext.SaveChangesAsync();
             }
         }
     }
