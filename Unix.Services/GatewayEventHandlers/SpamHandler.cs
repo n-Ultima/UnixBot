@@ -79,7 +79,10 @@ namespace Unix.Services.GatewayEventHandlers
                 AmountOfMessages.TryAdd(eventArgs.GuildId.Value, guildConfigTemp.AmountOfMessagesConsideredSpam);
             }
             var guildConfig = await _guildService.FetchGuildConfigurationAsync(eventArgs.GuildId.Value);
-
+            if (guildConfig == null)
+            {
+                return;
+            }
             var guild = Bot.GetGuild(guildConfig.Id);
             if (eventArgs.Member.RoleIds.Contains(guildConfig.ModeratorRoleId) || eventArgs.Member.RoleIds.Contains(guildConfig.AdministratorRoleId))
             {

@@ -20,6 +20,7 @@ namespace Unix.Services.Core
             : base(serviceProvider)
         {
         }
+        
         public async Task<GuildConfiguration> FetchGuildConfigurationAsync(Snowflake guildId)
         {
             using (var scope = ServiceProvider.CreateScope())
@@ -260,6 +261,7 @@ namespace Unix.Services.Core
                 await unixContext.SaveChangesAsync();
             }
         }
+        
         public async Task RemoveSelfAssignableRoleAsync(Snowflake guildId, Snowflake roleId)
         {
             using (var scope = ServiceProvider.CreateScope())

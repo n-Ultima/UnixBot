@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Bot;
+using Disqord.Rest;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Serialization;
 using Qmmands;
@@ -97,6 +98,51 @@ namespace Unix.Modules
         {
             await _guildService.ModifyGuildSpamThresholdAsync(Context.GuildId, amount);
             return Success($"If a user sends more than `{amount}` messages in `3` seconds, they will be warned for spam.");
+        }
+
+        [Command("add-banned-term")]
+        [Description("Adds a banned term to the guilds banned term list.")]
+        [RequireGuildAdministrator]
+        public async Task<DiscordCommandResult> AddBannedTermAsync(string word)
+        {
+            await _guildService.AddBannedTermAsync(Context.GuildId, word);
+            return Success($"Users that do not have Moderator or Administrator permissions will now be warned for using the term `{word}`");
+        }
+
+        [Command("remove-banned-term")]
+        [Description("Removes a banned term from the guilds banned term list.")]
+        [RequireGuildAdministrator]
+        public async Task<DiscordCommandResult> RemoveBannedTermAsync(string word)
+        {
+            await _guildService.RemoveBannedTermAsync(Context.GuildId, word);
+            return Success($"Users will no longer be warned for using `{word}`");
+        }
+
+        [Command("add-whitelisted-guild")]
+        [Description("Adds a guild to the whitelist, allowing invites pointed towards said guild to pass through the automod.")]
+        [RequireGuildAdministrator]
+        public async Task<DiscordCommandResult> AddWhitelistedGuildAsync(Snowflake guildId)
+        {
+            var guild = await Bot.FetchGuildAsync(guildId);
+            if (guild == null)
+            {
+                return Failure("Invalid guild ID.");
+            }
+            await _guildService.AddWhitelistedInviteAsync(Context.GuildId, guildId);
+            return Success($"Invites pointing towards `{guild.Name}` will not be deleted.");
+        }
+        [Command("remove-whitelisted-guild")]
+        [Description("Adds a guild to the whitelist, allowing invites pointed towards said guild to pass through the automod.")]
+        [RequireGuildAdministrator]
+        public async Task<DiscordCommandResult> RemoveWhitelistedGuildAsync(Snowflake guildId)
+        {
+            var guild = await Bot.FetchGuildAsync(guildId);
+            if (guild == null)
+            {
+                return Failure("Invalid guild ID.");
+            }
+            await _guildService.RemoveWhitelistedInviteAsync(Context.GuildId, guildId);
+            return Success($"Invites pointing towards `{guild.Name}` will now be deleted.");
         }
     }
 }

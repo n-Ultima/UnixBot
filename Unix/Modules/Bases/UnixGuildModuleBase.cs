@@ -26,7 +26,8 @@ namespace Unix.Modules.Bases
         {
             var builder = new StringBuilder()
                 .Append($"<:unixok:884524202458222662> {content}");
-            return Response(builder.ToString());
+            return Response(new LocalMessage()
+                .WithContent(builder.ToString()));
         }
 
         /// <summary>
@@ -38,7 +39,8 @@ namespace Unix.Modules.Bases
         {
             var builder = new StringBuilder()
                 .Append($"⚠ {content}");
-            return Response(builder.ToString());
+            return Response(new LocalMessage()
+                .WithContent(builder.ToString()));
         }
 
         protected async ValueTask<bool> PromptAsync(LocalMessage message = null)
