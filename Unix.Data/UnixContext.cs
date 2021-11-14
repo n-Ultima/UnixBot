@@ -1,4 +1,5 @@
-﻿using Disqord;
+﻿using System.Collections.Generic;
+using Disqord;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Unix.Common;
@@ -17,6 +18,7 @@ namespace Unix.Data
                 static snowflake => snowflake,
                 static @ulong => new Snowflake(@ulong));
             modelBuilder.UseValueConverterForType<Snowflake>(snowflakeConverter);
+            modelBuilder.ConfigureUlongListConverters();
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
