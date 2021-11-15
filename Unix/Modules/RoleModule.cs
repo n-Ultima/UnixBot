@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -35,9 +36,29 @@ namespace Unix.Modules
             }
 
             await Context.Author.GrantRoleAsync(role.Id);
-            return Success($"{Context.Author.Mention} granted you {role.Name}");
+            return Success($"{Context.Author.Mention} granted you **{role.Name}**");
         }
 
+        [Command("", "add")]
+        [Description("Adds the provided role to the user.")]
+        public async Task<DiscordCommandResult> AddRoleAsync(
+            [Description("The role to add.")]
+                string roleName)
+        {
+            var guildConfig = await _guildService.FetchGuildConfigurationAsync(Context.GuildId);
+            var role = Context.Guild.Roles
+                .Where(x => x.Value.Name.Equals(roleName, StringComparison.OrdinalIgnoreCase))
+                .Select(x => x.Value)
+                .FirstOrDefault();
+            if (role == null || !guildConfig.SelfAssignableRoles.Contains(role.Id.RawValue))
+            {
+                return Failure("Unknown role.");
+            }
+
+            await Context.Author.GrantRoleAsync(role.Id);
+            return Success($"{Context.Author.Mention} granted you **{role.Name}**");
+        }
+        
         [Command("configure-add")]
         [Description("Adds the provided role to the guilds list of assignable roles.")]
         [RequireGuildAdministrator]
@@ -85,9 +106,28 @@ namespace Unix.Modules
             }
 
             await Context.Author.RevokeRoleAsync(role.Id);
-            return Success($"{Context.Author.Mention} removed the {role.Name} role.");
+            return Success($"{Context.Author.Mention} removed the **{role.Name}** role.");
         }
 
+        [Command("remove")]
+        [Description("Removes the role provided from you.")]
+        public async Task<DiscordCommandResult> RemoveRoleAsync(
+            [Description("The role to remove.")] string roleName)
+        {
+            var guildConfig = await _guildService.FetchGuildConfigurationAsync(Context.GuildId);
+            var role = Context.Guild.Roles
+                .Where(x => x.Value.Name.Equals(roleName, StringComparison.OrdinalIgnoreCase))
+                .Select(x => x.Value)
+                .FirstOrDefault();
+            if (role == null || !guildConfig.SelfAssignableRoles.Contains(role.Id.RawValue))
+            {
+                return Failure("Unknown role.");
+            }
+
+            await Context.Author.RevokeRoleAsync(role.Id);
+            return Success($"{Context.Author.Mention} removed the **{role.Name}** role.");
+        }
+        
         [Command("")]
         [Description("Shows a helpful embed.")]
         public async Task<DiscordCommandResult> DisplayRoleHelpAsync()
