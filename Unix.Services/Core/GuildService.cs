@@ -194,6 +194,7 @@ namespace Unix.Services.Core
                     throw new Exception("Guild should be configured with configure-guild first.");
                 }
                 guildConfig.BannedTerms.Add(bannedTerm);
+                unixContext.Update(guildConfig);
                 await unixContext.SaveChangesAsync();
             }
         }
@@ -211,6 +212,7 @@ namespace Unix.Services.Core
                 }
 
                 guildConfig.BannedTerms.Remove(bannedTerm);
+                unixContext.Update(guildConfig);
                 await unixContext.SaveChangesAsync();
             }
         }
@@ -227,6 +229,7 @@ namespace Unix.Services.Core
                     throw new Exception("Guild should be configured with configure-guild first.");
                 }
                 guildConfig.WhitelistedInvites.Add(inviteGuildId.RawValue);
+                unixContext.Update(guildConfig);
                 await unixContext.SaveChangesAsync();
             }
         }
@@ -242,6 +245,7 @@ namespace Unix.Services.Core
                     throw new Exception("Guild should be configured with configure-guild first.");
                 }
                 guildConfig.WhitelistedInvites.Remove(inviteGuildId.RawValue);
+                unixContext.Update(guildConfig);
                 await unixContext.SaveChangesAsync();
             }
         }
@@ -258,6 +262,7 @@ namespace Unix.Services.Core
                     throw new Exception("Guild should be configured with configure-guild first.");
                 }
                 guildConfig.SelfAssignableRoles.Add(roleId.RawValue);
+                unixContext.Update(guildConfig);
                 await unixContext.SaveChangesAsync();
             }
         }
@@ -274,6 +279,7 @@ namespace Unix.Services.Core
                     throw new Exception("Guild should be configured with configure-guild first.");
                 }
                 guildConfig.SelfAssignableRoles.Remove(roleId.RawValue);
+                unixContext.Update(guildConfig);
                 await unixContext.SaveChangesAsync();
             }
         }
