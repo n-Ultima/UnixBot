@@ -42,7 +42,7 @@ namespace Unix.Services.GatewayEventHandlers
                 var guildConfig = await _guildService.FetchGuildConfigurationAsync(guild.Id); // Get the guild config
                 var spamAmt = AmountOfMessages[guildConfig.Id];// The amount of messages considered spam. 
                 var warnUsers = SpamDictionary
-                    .Where(x => x.Value > spamAmt)
+                    .Where(x => x.Value >= spamAmt)
                     .Where(x => x.Key.GuildId == guildConfig.Id)
                     .ToList();
                 foreach (var user in warnUsers)
@@ -54,7 +54,19 @@ namespace Unix.Services.GatewayEventHandlers
                     await _moderationService.CreateInfractionAsync(user.Key.GuildId, Bot.CurrentUser.Id, user.Key.Id, InfractionType.Warn, "Spamming messages", null);
                     if(!SpamDictionary.TryRemove(user.Key, out _))
                     {
-                        Log.Logger.Information("Failed to remove {key} from the spam dictionary.", user.Key);
+                        Log.Logger.Error("Failed to remove {key} from the spam dictionary.", user.Key);
+                    }
+                }
+
+                var removeUsers = SpamDictionary
+                    .Where(x => x.Value < spamAmt)
+                    .Where(x => x.Key.GuildId == guildConfig.Id)
+                    .ToList();
+                foreach (var user in removeUsers)
+                {
+                    if (!SpamDictionary.TryRemove(user.Key, out _))
+                    {
+                        Log.Logger.Error("Failed to remove {key} from the spam dictionary.", user.Key);
                     }
                 }
             }
