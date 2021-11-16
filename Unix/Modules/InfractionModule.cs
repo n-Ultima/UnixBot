@@ -23,6 +23,7 @@ namespace Unix.Modules
             _moderationService = moderationService;
         }
         [Command("")]
+        [RequireGuildModerator]
         [Description("Fetches the infraction information for the GUID provided.")]
         public async Task<DiscordCommandResult> InfractionsAsync(
             [Description("The ID of the infraction.")]
@@ -45,6 +46,7 @@ namespace Unix.Modules
 
         [Command("")]
         [Description("Fetches the infraction(s) for the user provided.")]
+        [RequireGuildModerator]
         public async Task<DiscordCommandResult> InfractionsAsync(
             [Description("The member to search infractions for.")]
                 IMember member)
@@ -68,6 +70,7 @@ namespace Unix.Modules
         }
         [Command("")]
         [Description("Fetches the infraction(s) for the user ID provided.")]
+        [RequireGuildModerator]
         public async Task<DiscordCommandResult> InfractionsAsync(
             [Description("The userId to search infractions for.")]
                 Snowflake userId)
@@ -114,6 +117,7 @@ namespace Unix.Modules
 
         [Command("update", "reason")]
         [Description("Updates the reason for the provided infraction ID.")]
+        [RequireGuildModerator]
         public async Task<DiscordCommandResult> UpdateInfractionAsync(
             [Description("The ID of the infraction to update.")]
                 Guid infractionId,
