@@ -15,6 +15,7 @@ namespace Unix.Data.Models.Core
         
         public Snowflake AdministratorRoleId { get; set; }
         
+        public Snowflake RequiredRoleToUse { get; set; }
         public Snowflake MessageLogChannelId { get; set; }
         
         public Snowflake MuteRoleId { get; set; }

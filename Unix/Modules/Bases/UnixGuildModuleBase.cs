@@ -1,21 +1,28 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Bot;
 using Disqord.Extensions.Interactivity.Menus;
+using Disqord.Gateway;
 using Disqord.Rest;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json.Serialization;
 using Unix.Common;
 using Unix.Data;
+using Unix.Data.Models.Core;
 using Unix.Services;
+using Unix.Services.Core;
 
 namespace Unix.Modules.Bases
 {
     public class UnixGuildModuleBase : DiscordGuildModuleBase
     {
         private UnixConfiguration UnixConfig = new();
+        private Dictionary<CachedGuild, GuildConfiguration> GuildConfigurations = new();
+        public GuildConfiguration CurrentGuildConfiguration { get; set; }
 
         /// <summary>
         ///     Replies with a message that contains the <:unixok:884524202458222662> emoji along with the message provided.
@@ -89,18 +96,20 @@ namespace Unix.Modules.Bases
         }
         protected override async ValueTask BeforeExecutedAsync()
         {
-            if (UnixConfig.OwnerIds.Contains(Context.Author.Id))
+            using (var scope = Context.Bot.Services.CreateScope())
             {
-                return;
+                var guildService = scope.ServiceProvider.GetRequiredService<GuildService>();
+                if (!GuildConfigurations.ContainsKey(Context.Guild))
+                {
+                    var guildConfiguration = await guildService.FetchGuildConfigurationAsync(Context.GuildId);
+                    GuildConfigurations.Add(Context.Guild, guildConfiguration);
+                }
             }
+            var config = GuildConfigurations[Context.Guild];
 
-            if (!OwnerService.WhitelistedGuilds.Any())
+            if (UnixConfig.OwnerIds.Contains(Context.Author.Id) || OwnerService.WhitelistedGuilds.Contains(Context.GuildId) || Context.Author.RoleIds.Contains(config.RequiredRoleToUse))
             {
-                throw new Exception("Blaclisted.");
-            }
-            if (OwnerService.WhitelistedGuilds.Contains(Context.GuildId))
-            {
-                return;
+                CurrentGuildConfiguration = config;
             }
             throw new Exception("Blacklisted.");
         }

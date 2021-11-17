@@ -220,7 +220,7 @@ namespace Unix.Modules
             }
 
             await (Context.Channel as ITextChannel).DeleteMessagesAsync(messages);
-            return Success($"Purged **{count}** messages.**");
+            return Success($"Purged **{count}** messages.");
         }
         
         [Command("purge", "clear")]
@@ -240,7 +240,7 @@ namespace Unix.Modules
                 .Select(x => x.Id)
                 .Take(count);
             if (!await PromptAsync(new LocalMessage()
-                .WithContent($"You are attempting to purge {count} messages sent by **{member.Tag}**? in {Mention.Channel(channel)}?")))
+                .WithContent($"You are attempting to purge {count} messages sent by **{member.Tag}** in {Mention.Channel(channel)}?")))
             {
                 return null;
             }
