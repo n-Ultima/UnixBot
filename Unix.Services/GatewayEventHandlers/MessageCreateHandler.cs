@@ -29,62 +29,80 @@ namespace Unix.Services.GatewayEventHandlers
             _httpClient = httpClient;
         }
 
-        protected override async ValueTask OnMessageReceived(BotMessageReceivedEventArgs e)
+        protected override async ValueTask OnMessageReceived(BotMessageReceivedEventArgs eventArgs)
         {
-            if (e.Message is not IUserMessage)
+            if (eventArgs.Message is not IUserMessage)
             {
                 return;
             }
-            if (!e.GuildId.HasValue)
+            if (!eventArgs.GuildId.HasValue)
             {
                 return;
             }
 
-            if (!OwnerService.WhitelistedGuilds.Contains(e.GuildId.Value))
+            if (!OwnerService.WhitelistedGuilds.Contains(eventArgs.GuildId.Value))
             {
                 return;
             }
-            var guildConfig = await _guildService.FetchGuildConfigurationAsync(e.GuildId.Value);
-            if (!GuildProcessMessages.TryGetValue(e.GuildId.Value, out var value))
+            var guildConfig = await _guildService.FetchGuildConfigurationAsync(eventArgs.GuildId.Value);
+            if (!GuildProcessMessages.TryGetValue(eventArgs.GuildId.Value, out var value))
             {
                 if (!guildConfig.AutomodEnabled)
                 {
-                    GuildProcessMessages.Add(e.GuildId.Value, false);
+                    GuildProcessMessages.Add(eventArgs.GuildId.Value, false);
                 }
                 else
                 {
-                    GuildProcessMessages.Add(e.GuildId.Value, true);
+                    GuildProcessMessages.Add(eventArgs.GuildId.Value, true);
                 }
             }
 
-            if (!GuildProcessMessages[e.GuildId.Value])
+            if (!GuildProcessMessages[eventArgs.GuildId.Value])
             {
                 return;
             }
 
-            if (e.Member.RoleIds.Contains(guildConfig.AdministratorRoleId) || e.Member.RoleIds.Contains(guildConfig.ModeratorRoleId))
+            if (eventArgs.Member.RoleIds.Contains(guildConfig.AdministratorRoleId) || eventArgs.Member.RoleIds.Contains(guildConfig.ModeratorRoleId))
             {
                 return;
             }
-            if (e.Message.Content.ToLower().Split(" ").Intersect(guildConfig.BannedTerms).Any())
+            if (eventArgs.Message.Content.ToLower().Split(" ").Intersect(guildConfig.BannedTerms).Any())
             {
-                await e.Message.DeleteAsync();
-                await _moderationService.CreateInfractionAsync(e.GuildId.Value, Bot.CurrentUser.Id, e.Message.Author.Id, InfractionType.Warn, "Message sent contained banned terms.", null);
+                await eventArgs.Message.DeleteAsync();
+                await _moderationService.CreateInfractionAsync(eventArgs.GuildId.Value, Bot.CurrentUser.Id, eventArgs.Message.Author.Id, InfractionType.Warn, "Message sent contained banned terms.", null);
                 return;
             }
-            var match = Regex.Match(e.Message.Content, @"(https?://)?(www.)?(discord.(gg|com|io|me|li)|discordapp.com/invite)/([a-z]+)");
+            var match = Regex.Match(eventArgs.Message.Content, @"(https?://)?(www.)?(discord.(gg|com|io|me|li)|discordapp.com/invite)/([a-z]+)");
             if (match.Success)
             {
                 if (await IsGuildWhitelisted(guildConfig, match.Groups[5].ToString()))
                 {
                     return;
                 }
-                await e.Message.DeleteAsync();
-                await _moderationService.CreateInfractionAsync(e.GuildId.Value, Bot.CurrentUser.Id, e.Message.Author.Id, InfractionType.Warn, "Message contained invite link not present on whitelist.", null);
+                await eventArgs.Message.DeleteAsync();
+                await _moderationService.CreateInfractionAsync(eventArgs.GuildId.Value, Bot.CurrentUser.Id, eventArgs.Message.Author.Id, InfractionType.Warn, "Message contained invite link not present on whitelist.", null);
                 return;
             }
         }
 
+        public async Task AutoModerateAsync(IUserMessage message, GuildConfiguration guildConfig)
+        {
+            if (message.Content.ToLower().Split(" ").Intersect(guildConfig.BannedTerms).Any())
+            {
+                await message.DeleteAsync();
+                await _moderationService.CreateInfractionAsync(guildConfig.Id, Bot.CurrentUser.Id, message.Author.Id, InfractionType.Warn, "Message sent contained banned terms.", null);
+            }
+            var match = Regex.Match(message.Content, @"(https?://)?(www.)?(discord.(gg|com|io|me|li)|discordapp.com/invite)/([a-z]+)");
+            if (match.Success)
+            {
+                if (await IsGuildWhitelisted(guildConfig, match.Groups[5].ToString()))
+                {
+                    return;
+                }
+                await message.DeleteAsync();
+                await _moderationService.CreateInfractionAsync(guildConfig.Id, Bot.CurrentUser.Id, message.Author.Id, InfractionType.Warn, "Message contained invite link not present on whitelist.", null);
+            }
+        }
         private async Task<bool> IsGuildWhitelisted(GuildConfiguration guildConfiguration, string code)
         {
             var url = $"https://www.discord.com/api/invites/{code}";

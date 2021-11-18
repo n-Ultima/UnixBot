@@ -87,6 +87,11 @@ namespace Unix.Services.Core
                     throw new Exception($"Automod enabled is already {guild.AutomodEnabled}");
                 guild.AutomodEnabled = automodEnabled;
                 await unixContext.SaveChangesAsync();
+                var msgHandle = scope.ServiceProvider.GetRequiredService<MessageCreateHandler>();
+                if (msgHandle.GuildProcessMessages.TryGetValue(guildId, out _))
+                {
+                    msgHandle.GuildProcessMessages[guildId] = automodEnabled;
+                }
             }
         }
         
