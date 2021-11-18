@@ -110,6 +110,11 @@ namespace Unix.Services.GatewayEventHandlers
             {
                 return;
             }
+
+            if (guildConfig.AmountOfMessagesConsideredSpam == 0)
+            {
+                return;
+            }
             SpamDictionary.AddOrUpdate(eventArgs.Member, 1, (_, oldValue) => oldValue + 1);
         }
     }

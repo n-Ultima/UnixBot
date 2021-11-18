@@ -113,8 +113,7 @@ namespace Unix.Services.Core
                         {
                             
                         }
-
-                        break;
+                        goto Log;
                     case InfractionType.Note:
                         break;
                     case InfractionType.Ban:
@@ -129,7 +128,7 @@ namespace Unix.Services.Core
                         }
 
                         await guild.CreateBanAsync(subjectId, $"{moderator.Tag} - {reason}");
-                        break;
+                        goto Log;
                     case InfractionType.Kick:
                         try
                         {
@@ -145,7 +144,7 @@ namespace Unix.Services.Core
                         {
                             Reason = $"{moderator.Tag} - {reason}"
                         });
-                        break;
+                        goto Log;
                     case InfractionType.Mute:
                         try
                         {
@@ -168,8 +167,7 @@ namespace Unix.Services.Core
                         {
                             GuildMuteRoleIds.Add(guild.Id, muteRole.Id);
                         }
-                        
-                        break;
+                        goto Log;
                 }
                 Log:
                 await LogAsync(guild, member, moderator, type, duration.HasValue

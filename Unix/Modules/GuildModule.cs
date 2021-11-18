@@ -16,7 +16,6 @@ namespace Unix.Modules
 {
     [Name("GuildConfig")]
     [Description("Provides commands used for configuring a guild for Unix use.")]
-    [RequireGuildOwner]
     public class GuildModule : UnixGuildModuleBase
     {
         private readonly GuildService _guildService;
@@ -88,7 +87,7 @@ namespace Unix.Modules
         public async Task<DiscordCommandResult> ConfigureAdminRoleAsync(IRole adminRole)
         {
             await _guildService.ModifyGuildAdminRoleAsync(Context.GuildId, adminRole.Id);
-            return Success($"The moderator role is now set to **{adminRole.Name}**");
+            return Success($"The administrator role is now set to **{adminRole.Name}**");
         }
 
         [Command("configure-spam")]
