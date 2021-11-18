@@ -30,7 +30,7 @@ namespace Unix.Modules
                 IRole role)
         {
             var guildConfig = await _guildService.FetchGuildConfigurationAsync(Context.GuildId);
-            if (!guildConfig.SelfAssignableRoles.Contains(role.Id.RawValue))
+            if (!CurrentGuildConfiguration.SelfAssignableRoles.Contains(role.Id.RawValue))
             {
                 return Failure("Unknown role.");
             }
@@ -45,12 +45,11 @@ namespace Unix.Modules
             [Description("The role to add.")]
                 string roleName)
         {
-            var guildConfig = await _guildService.FetchGuildConfigurationAsync(Context.GuildId);
             var role = Context.Guild.Roles
                 .Where(x => x.Value.Name.Equals(roleName, StringComparison.OrdinalIgnoreCase))
                 .Select(x => x.Value)
                 .FirstOrDefault();
-            if (role == null || !guildConfig.SelfAssignableRoles.Contains(role.Id.RawValue))
+            if (role == null || !CurrentGuildConfiguration.SelfAssignableRoles.Contains(role.Id.RawValue))
             {
                 return Failure("Unknown role.");
             }
@@ -66,14 +65,13 @@ namespace Unix.Modules
             [Description("The role to add.")] 
                 IRole role)
         {
-            var guildConfig = await _guildService.FetchGuildConfigurationAsync(Context.GuildId);
-            if (guildConfig.SelfAssignableRoles.Contains(role.Id.RawValue))
+            if (CurrentGuildConfiguration.SelfAssignableRoles.Contains(role.Id.RawValue))
             {
                 return Failure("That role already exists in the database.");
             }
 
             await _guildService.AddSelfAssignableRoleAsync(Context.GuildId, role.Id);
-            return Success($"Users can now add this role with `{guildConfig.Prefix}role {role.Name}`");
+            return Success($"Users can now add this role with `{CurrentGuildConfiguration.Prefix}role {role.Name}`");
         }
 
         [Command("configure-remove")]
@@ -83,8 +81,7 @@ namespace Unix.Modules
             [Description("The role to remove.")] 
                 IRole role)
         {
-            var guildConfig = await _guildService.FetchGuildConfigurationAsync(Context.GuildId);
-            if (!guildConfig.SelfAssignableRoles.Contains(role.Id.RawValue))
+            if (!CurrentGuildConfiguration.SelfAssignableRoles.Contains(role.Id.RawValue))
             {
                 return Failure("That role does not exist in the database.");
             }
@@ -99,8 +96,7 @@ namespace Unix.Modules
         public async Task<DiscordCommandResult> RemoveRoleAsync(
             [Description("The role to remove.")] IRole role)
         {
-            var guildConfig = await _guildService.FetchGuildConfigurationAsync(Context.GuildId);
-            if (!guildConfig.SelfAssignableRoles.Contains(role.Id.RawValue))
+            if (!CurrentGuildConfiguration.SelfAssignableRoles.Contains(role.Id.RawValue))
             {
                 return Failure("Unknown role.");
             }
@@ -114,12 +110,11 @@ namespace Unix.Modules
         public async Task<DiscordCommandResult> RemoveRoleAsync(
             [Description("The role to remove.")] string roleName)
         {
-            var guildConfig = await _guildService.FetchGuildConfigurationAsync(Context.GuildId);
             var role = Context.Guild.Roles
                 .Where(x => x.Value.Name.Equals(roleName, StringComparison.OrdinalIgnoreCase))
                 .Select(x => x.Value)
                 .FirstOrDefault();
-            if (role == null || !guildConfig.SelfAssignableRoles.Contains(role.Id.RawValue))
+            if (role == null || !CurrentGuildConfiguration.SelfAssignableRoles.Contains(role.Id.RawValue))
             {
                 return Failure("Unknown role.");
             }
@@ -132,9 +127,8 @@ namespace Unix.Modules
         [Description("Shows a helpful embed.")]
         public async Task<DiscordCommandResult> DisplayRoleHelpAsync()
         {
-            var guildConfig = await _guildService.FetchGuildConfigurationAsync(Context.GuildId);
             List<string> roles = new();
-            foreach (var roleId in guildConfig.SelfAssignableRoles)
+            foreach (var roleId in CurrentGuildConfiguration.SelfAssignableRoles)
             {
                 roles.Add($"<@&{roleId}>");
             }
@@ -144,7 +138,7 @@ namespace Unix.Modules
                 .WithTitle("How do I get roles?")
                 .WithColor(Color.Aqua)
                 .WithDescription(
-                    $"To give yourself a role, use the `{guildConfig.Prefix}role <roleName>` where **roleName** is whatever role you want.\nTo remove a role, use the `{guildConfig.Prefix}role remove <roleName>` replacing **roleName** with the role you want to remove.\n")
+                    $"To give yourself a role, use the `{CurrentGuildConfiguration.Prefix}role <roleName>` where **roleName** is whatever role you want.\nTo remove a role, use the `{CurrentGuildConfiguration.Prefix}role remove <roleName>` replacing **roleName** with the role you want to remove.\n")
                 .AddField("Roles available to you:", !roles.Any()
                 ? "None"
                 : roles.Humanize());

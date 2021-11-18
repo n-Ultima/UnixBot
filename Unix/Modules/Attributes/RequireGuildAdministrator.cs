@@ -25,7 +25,7 @@ namespace Unix.Modules.Attributes
                     return Success();
                 }
 
-                return Failure("User lacks the required `Moderator` permission to use this command.");
+                throw new Exception("User lacks the required `Administrator` permission to use this command.");
             }
         }
     }

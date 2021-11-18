@@ -23,12 +23,15 @@ namespace Unix.Modules.Attributes
                     .Where(x => x.Id == context.GuildId)
                     .Select(x => x.ModeratorRoleId)
                     .SingleOrDefaultAsync();
-                if (roles.Contains(modRole) || context.Guild.OwnerId == context.Author.Id)
+                if (roles.Any())
                 {
-                    return Success();
+                    if (roles.Contains(modRole) || context.Guild.OwnerId == context.Author.Id)
+                    {
+                        return Success();
+                    }
                 }
-
-                return Failure("User lacks the required `Moderator` permission to use this command.");
+                //return Failure("User lacks the required `Moderator` permission to use this command.");
+                throw new Exception("User lacks the required `Moderator` permission to use this command.");
             }
         }
     }

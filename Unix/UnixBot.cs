@@ -30,8 +30,17 @@ namespace Unix
         protected override LocalMessage FormatFailureMessage(DiscordCommandContext context, FailedResult result)
         {
             var prefix = _guildService.FetchGuildPrefixAsync(context.GuildId.Value).GetAwaiter().GetResult();
+            if (result is ChecksFailedResult checksFailedResult)
+            {
+                var check = checksFailedResult.FailedChecks.ElementAt(0);
+                return new LocalMessage()
+                    .WithContent($"⚠ {check.Result.FailureReason}");
+
+            }
             if (result is OverloadsFailedResult overloadsFailedResult)
             {
+                string failureReason = this.FormatFailureReason(context, result);
+                Log.Logger.Error(failureReason);
                 static string FormatParameter(Parameter parameter)
                 {
                     string format;
@@ -59,6 +68,12 @@ namespace Unix
                     var overloadReason = base.FormatFailureReason(context, overloadResult);
                     if (overloadReason == null)
                         continue;
+                    //if (overloadResult is ChecksFailedResult cfr)
+                    //{
+                    //    builder.Append(overloadReason);
+                    //    return new LocalMessage()
+                    //        .WithContent(builder.ToString());
+                    //}
                     builder.AppendLine($"`{prefix}{overload.FullAliases[0]} {string.Join(' ', overload.Parameters.Select(FormatParameter))}`");
                 }
 
@@ -99,14 +114,6 @@ namespace Unix
                 if (commandFailedResult.Exception.Message == "Blacklisted.") return null;
                 return new LocalMessage()
                     .WithContent($"⚠ {commandFailedResult.Exception.Message}");
-            }
-
-            if (result is ChecksFailedResult checksFailedResult)
-            {
-                var check = checksFailedResult.FailedChecks.ElementAt(0);
-                return new LocalMessage()
-                    .WithContent($"⚠ {check.Result.FailureReason}");
-
             }
             if (result is CommandNotFoundResult commandNotFoundResult)
             {

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Disqord;
+using Disqord.Bot;
 using Disqord.Bot.Hosting;
 using Disqord.Gateway;
 using Serilog;
@@ -96,11 +97,15 @@ namespace Unix.Services.GatewayEventHandlers
                 return;
             }
             var guild = Bot.GetGuild(guildConfig.Id);
+            if (!eventArgs.Member.RoleIds.Any())
+            {
+                goto botCheck;
+            }
             if (eventArgs.Member.RoleIds.Contains(guildConfig.ModeratorRoleId) || eventArgs.Member.RoleIds.Contains(guildConfig.AdministratorRoleId))
             {
                 return;
             }
-
+            botCheck:
             if (message.Author.IsBot)
             {
                 return;

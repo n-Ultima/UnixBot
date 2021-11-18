@@ -22,7 +22,7 @@ namespace Unix.Modules.Bases
     {
         private UnixConfiguration UnixConfig = new();
         private Dictionary<CachedGuild, GuildConfiguration> GuildConfigurations = new();
-        public GuildConfiguration CurrentGuildConfiguration { get; set; }
+        public GuildConfiguration CurrentGuildConfiguration;
 
         /// <summary>
         ///     Replies with a message that contains the <:unixok:884524202458222662> emoji along with the message provided.
@@ -102,15 +102,38 @@ namespace Unix.Modules.Bases
                 if (!GuildConfigurations.ContainsKey(Context.Guild))
                 {
                     var guildConfiguration = await guildService.FetchGuildConfigurationAsync(Context.GuildId);
-                    GuildConfigurations.Add(Context.Guild, guildConfiguration);
+                    if (guildConfiguration != null)
+                    {
+                        GuildConfigurations.Add(Context.Guild, guildConfiguration);
+                    }
                 }
             }
-            var config = GuildConfigurations[Context.Guild];
 
-            if (UnixConfig.OwnerIds.Contains(Context.Author.Id) || OwnerService.WhitelistedGuilds.Contains(Context.GuildId) || Context.Author.RoleIds.Contains(config.RequiredRoleToUse))
+            var config = GuildConfigurations[Context.Guild];
+            if (config == null)
             {
-                CurrentGuildConfiguration = config;
+                goto ex;
             }
+            if (Context.GuildId == config.RequiredRoleToUse)
+            {
+                if (UnixConfig.OwnerIds.Contains(Context.Author.Id) || OwnerService.WhitelistedGuilds.Contains(Context.GuildId))
+                {
+                    CurrentGuildConfiguration = config;
+                    return;
+                }
+            }
+            else
+            {
+                if (Context.Author.RoleIds.Any())
+                {
+                    if (UnixConfig.OwnerIds.Contains(Context.Author.Id) || OwnerService.WhitelistedGuilds.Contains(Context.GuildId) || Context.Author.RoleIds.Contains(config.RequiredRoleToUse))
+                    {
+                        CurrentGuildConfiguration = config;
+                        return;
+                    }
+                }
+            }
+            ex:
             throw new Exception("Blacklisted.");
         }
     }

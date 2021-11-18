@@ -29,12 +29,11 @@ namespace Unix.Modules
                 string commandName)
         {
             var commandMatches = _commandService.FindCommands(commandName);
-            var guildConfig = await _guildService.FetchGuildConfigurationAsync(Context.GuildId);
             if (commandMatches.Count == 1)
             {
                 var command = commandMatches[0].Command;
                 var builder = new StringBuilder();
-                builder.AppendLine($"**{guildConfig.Prefix}{command.Name}**");
+                builder.AppendLine($"**{CurrentGuildConfiguration.Prefix}{command.Name}**");
                 builder.AppendLine(command.Description);
                 builder.AppendLine($"Parameters: `{string.Join(" ", command.Parameters)}`");
 
@@ -47,7 +46,7 @@ namespace Unix.Modules
                 foreach(var cmd in commandMatches)
                 {
                     var command = cmd.Command;
-                    builder.AppendLine($"**{guildConfig.Prefix}{command.Name}**");
+                    builder.AppendLine($"**{CurrentGuildConfiguration.Prefix}{command.Name}**");
                     builder.AppendLine(command.Description);
                     builder.AppendLine($"Parameters: `{string.Join(" ", command.Parameters)}`");
                     builder.AppendLine();
