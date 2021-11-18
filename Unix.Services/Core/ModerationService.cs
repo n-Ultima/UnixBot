@@ -254,6 +254,7 @@ namespace Unix.Services.Core
                     .ToListAsync();
             }
         }
+        #nullable  enable
         private async Task LogAsync(CachedGuild guild, CachedMember subject, CachedMember moderator, InfractionType type, string? humanizedDuration, string reason)
         {
             if (!GuildModLogIds.ContainsKey(guild.Id))
@@ -330,7 +331,8 @@ namespace Unix.Services.Core
             }
             
         }
-
+        
+        #nullable  disable
         private async Task LogInfractionDeletionAsync(Infraction infraction, IRestUser infractionRemover, IRestUser infractionSubject, string reason)
         {
             Snowflake modLog = default;

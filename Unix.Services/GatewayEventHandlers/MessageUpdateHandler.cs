@@ -36,6 +36,11 @@ namespace Unix.Services.GatewayEventHandlers
             {
                 return;
             }
+
+            if (guildConfig.MessageLogChannelId == default)
+            {
+                return;
+            }
             using (var scope = ServiceProvider.CreateScope())
             {
                 var msgHandler = scope.ServiceProvider.GetRequiredService<MessageCreateHandler>();

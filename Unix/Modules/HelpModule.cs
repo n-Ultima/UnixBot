@@ -24,7 +24,7 @@ namespace Unix.Modules
 
         [Command("")]
         [Description("Provides help for the command provided.")]
-        public async Task<DiscordCommandResult> HelpAsync(
+        public DiscordCommandResult Help(
             [Description("The command that help should be displayed for.")]
                 string commandName)
         {

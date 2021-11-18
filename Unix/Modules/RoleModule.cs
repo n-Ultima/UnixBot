@@ -125,7 +125,7 @@ namespace Unix.Modules
         
         [Command("")]
         [Description("Shows a helpful embed.")]
-        public async Task<DiscordCommandResult> DisplayRoleHelpAsync()
+        public DiscordCommandResult DisplayRoleHelp()
         {
             List<string> roles = new();
             foreach (var roleId in CurrentGuildConfiguration.SelfAssignableRoles)
