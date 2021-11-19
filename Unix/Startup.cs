@@ -53,7 +53,6 @@ namespace Unix
                 })
                 .ConfigureDiscordBotSharder<UnixBot>((_, bot) =>
                 {
-                    var ownerIds = ParseUlongArray(UnixConfig.OwnerIds);
                     bot.Intents = GatewayIntent.Bans |
                                   GatewayIntent.Guilds |
                                   GatewayIntent.Members |
@@ -63,7 +62,7 @@ namespace Unix
                                   GatewayIntent.GuildReactions |
                                   GatewayIntent.Webhooks |
                                   GatewayIntent.GuildMessages;
-                    bot.OwnerIds = ownerIds;
+                    bot.OwnerIds = UnixConfig.OwnerIds.ToSnowflakeArray();
                     bot.Token = UnixConfig.Token;
                     bot.ServiceAssemblies = new[]
                     {
@@ -87,20 +86,6 @@ namespace Unix
                 }
                 await host.RunAsync();
             }
-        }
-
-        static Snowflake[] ParseUlongArray(ulong[] ulongs)
-        {
-            List<Snowflake> Snowflakes = new();
-            foreach(var entry in ulongs)
-            {
-                if (Snowflake.TryParse(entry.ToString(), out Snowflake newFlake))
-                {
-                    Snowflakes.Add(newFlake);
-                }
-            }
-
-            return Snowflakes.ToArray();
         }
     }
 }

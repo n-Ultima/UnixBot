@@ -24,14 +24,18 @@ namespace Unix.Services.GatewayEventHandlers
                 var unixContext = scope.ServiceProvider.GetRequiredService<UnixContext>();
                 var allowedGuildIds = await unixContext.GuildConfigurations.Select(x => x.Id).ToListAsync();
                 var unauthorizedGuilds = e.GuildIds.Except(allowedGuildIds);
-                Log.Logger.Warning("Guilds were found that Unix isn't authorized to operate in. IDs: [{guildIds}]", unauthorizedGuilds.Humanize());
-                // Now, we leave each of the guilds that Unix shouldn't be in.
-                foreach (var guild in unauthorizedGuilds)
+                if(!unauthorizedGuilds.Any())
                 {
-                    await Bot.LeaveGuildAsync(guild, new DefaultRestRequestOptions
+                    Log.Logger.Warning("Guilds were found that Unix isn't authorized to operate in. IDs: [{guildIds}]", unauthorizedGuilds.Humanize());
+                    // Now, we leave each of the guilds that Unix shouldn't be in.
+                    foreach (var guild in unauthorizedGuilds)
                     {
-                        Reason = "Unauthorized. Join the Unix server to request access."
-                    });
+                        await Bot.LeaveGuildAsync(guild, new DefaultRestRequestOptions
+                        {
+                            Reason = "Unauthorized. Join the Unix server(discord.gg/6yMXWUWANW) to request access."
+                        });
+                        Log.Logger.Information("Left guild {guild} due to lack of authorizaiton.", guild);
+                    }
                 }
             }
         }
