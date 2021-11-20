@@ -22,6 +22,10 @@ namespace Unix.Modules.Bases
     {
         private UnixConfiguration UnixConfig = new();
         private Dictionary<CachedGuild, GuildConfiguration> GuildConfigurations = new();
+        
+        /// <summary>
+        ///     The <see cref="GuildConfiguration"/> of the guild that the command is being executed in.
+        /// </summary>
         public GuildConfiguration CurrentGuildConfiguration;
 
         /// <summary>
