@@ -207,7 +207,7 @@ namespace Unix.Services.Core
                 await unixContext.SaveChangesAsync();
             }
         }
-        public async Task RemoveInfractionAsync(Guid infractionId, Snowflake guildId, string removalMessage)
+        public async Task RemoveInfractionAsync(Guid infractionId, Snowflake guildId, Snowflake removerId, string removalMessage)
         {
             using (var scope = ServiceProvider.CreateScope())
             {
@@ -225,10 +225,27 @@ namespace Unix.Services.Core
                     throw new Exception("The infraction ID provided is not valid.");
                 }
 
-                var remover = await Bot.FetchUserAsync(infraction.ModeratorId);
+                var remover = await Bot.FetchUserAsync(removerId);
                 var subject = await Bot.FetchUserAsync(infraction.SubjectId);
+                var guildConfig = await unixContext.GuildConfigurations.FindAsync(guildId);
                 unixContext.Infractions.Remove(infraction);
                 await unixContext.SaveChangesAsync();
+                switch (infraction.Type)
+                {
+                    case InfractionType.Ban:
+                        await Bot.DeleteBanAsync(guildId, infraction.SubjectId, new DefaultRestRequestOptions
+                        {
+                            Reason = removalMessage
+                        });
+                        goto Log;
+                    case InfractionType.Mute:
+                        await Bot.RevokeRoleAsync(guildId, infraction.SubjectId, guildConfig.MuteRoleId, new DefaultRestRequestOptions
+                        {
+                            Reason = removalMessage
+                        });
+                        goto Log;
+                }
+                Log:
                 await LogInfractionDeletionAsync(infraction, remover, subject, removalMessage);
             }
         }
@@ -255,7 +272,7 @@ namespace Unix.Services.Core
             }
         }
         #nullable  enable
-        private async Task LogAsync(CachedGuild guild, CachedMember subject, CachedMember moderator, InfractionType type, string? humanizedDuration, string reason)
+        public async Task LogAsync(CachedGuild guild, CachedMember subject, CachedMember moderator, InfractionType type, string? humanizedDuration, string reason)
         {
             if (!GuildModLogIds.ContainsKey(guild.Id))
             {
@@ -333,7 +350,7 @@ namespace Unix.Services.Core
         }
         
         #nullable  disable
-        private async Task LogInfractionDeletionAsync(Infraction infraction, IRestUser infractionRemover, IRestUser infractionSubject, string reason)
+        public async Task LogInfractionDeletionAsync(Infraction infraction, IRestUser infractionRemover, IRestUser infractionSubject, string reason)
         {
             Snowflake modLog = default;
             Snowflake muteRole = default;

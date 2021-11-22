@@ -111,7 +111,7 @@ namespace Unix.Modules
             [Description("The reason for deleting the infraction.")] [Remainder]
                 string reason)
         {
-            await _moderationService.RemoveInfractionAsync(infractionId, Context.GuildId, reason);
+            await _moderationService.RemoveInfractionAsync(infractionId, Context.GuildId, Context.Author.Id, reason);
             return Success($"Successfully deleted infraction `{infractionId}`");
         }
 

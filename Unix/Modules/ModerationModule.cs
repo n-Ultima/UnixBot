@@ -178,6 +178,63 @@ namespace Unix.Modules
             return Success($"Muted **{member.Tag}** | `{reason}`");
         }
 
+        [Command("unmute")]
+        [RequireGuildModerator]
+        public async Task<DiscordCommandResult> UnmuteAsync(
+            [Description("The user to unmute")] 
+                IMember member,
+            [Description("The reason of the unmute")] [Remainder]
+                string reason)
+        {
+            RequireHigherRank(Context.Author, member);
+            var infractions = await _moderationService.FetchInfractionsAsync(member.Id);
+            var mute = infractions
+                .Where(x => x.Type == InfractionType.Mute)
+                .Where(x => x.GuildId == Context.GuildId)
+                .SingleOrDefault();
+            if (mute == null)
+            {
+                return Failure("The user is not currently muted.");
+            }
+
+            await _moderationService.RemoveInfractionAsync(mute.Id, Context.GuildId, Context.Author.Id, reason);
+            return Success($"Unmuted **{member.Tag}** | `{reason}`");
+        }
+
+        [Command("unban")]
+        [RequireGuildModerator]
+        [Description("Unbans a user.")]
+        public async Task<DiscordCommandResult> UnbanAsync(
+            [Description("The user to unban.")] 
+                Snowflake userId,
+            [Description("The reason for the unban.")] [Remainder]
+                string reason)
+        {
+            var infractions = await _moderationService.FetchInfractionsAsync(userId);
+            var ban = infractions
+                .Where(x => x.Type == InfractionType.Ban)
+                .Where(x => x.GuildId == Context.GuildId)
+                .SingleOrDefault();
+            var subject = await Bot.FetchUserAsync(userId);
+            if (ban == null)
+            {
+                if (Context.Guild.FetchBanAsync(userId).Result == null)
+                {
+                    return Failure("The user is not currently banned.");
+                }
+                else
+                {
+                    await Context.Guild.DeleteBanAsync(userId, new DefaultRestRequestOptions
+                    {
+                        Reason = reason
+                    });
+                    var moderator = await Bot.FetchUserAsync(Context.Author.Id);
+                    await _moderationService.LogInfractionDeletionAsync(ban, moderator, subject, reason);
+                }
+            }
+            await _moderationService.RemoveInfractionAsync(ban.Id, Context.GuildId, Context.Author.Id, reason);
+            return Success($"Unbanned **{subject.Tag}** | `{reason}`");
+        }
         [Command("purge", "clear")]
         [RequireGuildModerator]
         [Description("Purges the amount of messages that the user sent.")]

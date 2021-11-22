@@ -113,8 +113,8 @@ namespace Unix.Modules.Bases
                 }
             }
 
-            var config = GuildConfigurations[Context.Guild];
-            if (config == null)
+            var check = GuildConfigurations.TryGetValue(Context.Guild, out var config);
+            if (!check)
             {
                 goto ex;
             }
