@@ -29,6 +29,13 @@ public static class InteractionExtensions
                 .WithContent($"⚠️ User lacks the required `Moderator` permission to use this command."));
         }
     }
+    
+    public static async Task SendEphmeralErrorAsync(this InteractionReceivedEventArgs eventArgs, string errorMessage)
+    {
+        await eventArgs.Interaction.Response().SendMessageAsync(new LocalInteractionResponse()
+            .WithIsEphemeral()
+            .WithContent($"⚠ ️{errorMessage}"));
+    }
 
     public static async Task SendSuccessAsync(this InteractionReceivedEventArgs eventArgs, string message)
     {

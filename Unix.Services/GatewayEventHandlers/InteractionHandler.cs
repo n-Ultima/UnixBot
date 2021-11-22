@@ -42,6 +42,12 @@ public class InteractionHandler : UnixService
             return;
         }
 
+        var guildConfig = await _guildService.FetchGuildConfigurationAsync(eventArgs.GuildId.Value);
+        if (guildConfig == null)
+        {
+            await eventArgs.SendEphmeralErrorAsync($"You must request access with Unix before use. Please see http://www.ultima.one/unix");
+            return;
+        }
         switch (slashCommandInteraction.CommandName)
         {
             case "ping":
@@ -94,6 +100,187 @@ public class InteractionHandler : UnixService
                 await _guildService.ModifyGuildModRoleAsync(eventArgs.GuildId.Value, modRole.Id);
                 await eventArgs.SendSuccessAsync($"Moderator role set to **{modRole.Name}**");
                 break;
+            case "configure-adminrole":
+                if (!eventArgs.Member.IsAdmin())
+                {
+                    await eventArgs.SendEphmeralErrorAsync(PermissionLevel.Administrator);
+                    break;
+                }
+
+                var adminRole = slashCommandInteraction.Entities.Roles.First().Value;
+                await _guildService.ModifyGuildAdminRoleAsync(eventArgs.GuildId.Value, adminRole.Id);
+                await eventArgs.SendSuccessAsync($"Administrator role set to **{adminRole.Name}**");
+                break;
+            case "configure-modlog":
+                if (!eventArgs.Member.IsAdmin())
+                {
+                    await eventArgs.SendEphmeralErrorAsync(PermissionLevel.Administrator);
+                    break;
+                }
+
+                var modChannel = slashCommandInteraction.Entities.Channels.First().Value;
+                await _guildService.ModifyGuildModLogChannelIdAsync(eventArgs.GuildId.Value, modChannel.Id);
+                await eventArgs.SendSuccessAsync($"Moderation actions taken with Unix will now be logged to {Mention.Channel(modChannel.Id)}");
+                break;
+            case "configure-messagelog":
+                if (!eventArgs.Member.IsAdmin())
+                {
+                    await eventArgs.SendEphmeralErrorAsync(PermissionLevel.Administrator);
+                    break;
+                }
+
+                var messageChannel = slashCommandInteraction.Entities.Channels.First().Value;
+                await _guildService.ModifyGuildMessageLogChannelIdAsync(eventArgs.GuildId.Value, messageChannel.Id);
+                await eventArgs.SendSuccessAsync($"Message updates and deletions will now be logged to {Mention.Channel(messageChannel.Id)}");
+                break;
+            case "configure-automod":
+                if (!eventArgs.Member.IsAdmin())
+                {
+                    await eventArgs.SendEphmeralErrorAsync(PermissionLevel.Administrator);
+                    break;
+                }
+
+                var boolOption = slashCommandInteraction.Options.TryGetValue("enabled", out var enabled);
+                if (!boolOption)
+                {
+                    break;
+                }
+
+                var isEnabled = (bool) enabled.Value;
+                try
+                {
+                    await _guildService.ConfigureGuildAutomodAsync(eventArgs.GuildId.Value, isEnabled);
+                    await eventArgs.SendSuccessAsync($"Automod is enabled: **{isEnabled}**");
+                    break;
+                }
+                catch (Exception e)
+                {
+                    await eventArgs.SendEphmeralErrorAsync(e.Message);
+                }
+                break;
+            case "configure-spam":
+                if (!eventArgs.Member.IsAdmin())
+                {
+                    await eventArgs.SendEphmeralErrorAsync(PermissionLevel.Administrator);
+                    break;
+                }
+
+                var spamAmtOption = slashCommandInteraction.Options.TryGetValue("amount", out var amount);
+                if (!spamAmtOption)
+                {
+                    break;
+                }
+
+                var actualSpamAmount = (int) amount.Value;
+                await _guildService.ModifyGuildSpamThresholdAsync(eventArgs.GuildId.Value, actualSpamAmount);
+                await eventArgs.SendSuccessAsync($"If a user sends more than `{actualSpamAmount}` in `3` seconds, they will be warned.");
+                break;
+            case "add-banned-term":
+                if (!eventArgs.Member.IsAdmin())
+                {
+                    await eventArgs.SendEphmeralErrorAsync(PermissionLevel.Administrator);
+                    break;
+                }
+
+                var bannedTermOption = slashCommandInteraction.Options.GetValueOrDefault("amount")?.Value as string;
+                try
+                {
+                    await _guildService.AddBannedTermAsync(eventArgs.GuildId.Value, bannedTermOption);
+                    await eventArgs.SendSuccessAsync($"Users without the `Moderator` or `Administrator` permission will now be warned for using `{bannedTermOption}`");
+                    break;
+                }
+                catch (Exception e)
+                {
+                    await eventArgs.SendEphmeralErrorAsync(e.Message);
+                }
+                break;
+            case "remove-banned-term":
+                if (!eventArgs.Member.IsAdmin())
+                {
+                    await eventArgs.SendEphmeralErrorAsync(PermissionLevel.Administrator);
+                    break;
+                }
+
+                var removedBannedTermOption = slashCommandInteraction.Options.GetValueOrDefault("amount")?.Value as string;
+                try
+                {
+                    await _guildService.RemoveBannedTermAsync(eventArgs.GuildId.Value, removedBannedTermOption);
+                    await eventArgs.SendSuccessAsync($"Users without the `Moderator` or `Administrator` permission will no longer be warned for using `{removedBannedTermOption}`");
+                    break;
+                }
+                catch (Exception e)
+                {
+                    await eventArgs.SendEphmeralErrorAsync(e.Message);
+                }
+
+                break;
+            case "add-whitelisted-guild":
+                if (!eventArgs.Member.IsAdmin())
+                {
+                    await eventArgs.SendEphmeralErrorAsync(PermissionLevel.Administrator);
+                    break;
+                }
+
+                var whitelistSnowflake = slashCommandInteraction.Options.GetValueOrDefault("id")?.Value as string;
+                if (!Snowflake.TryParse(whitelistSnowflake, out var realWhitelistSnowflake))
+                {
+                    await eventArgs.SendEphmeralErrorAsync("Invalid snowflake provided.");
+                    break;
+                }
+
+                var whitelistGuild = await Bot.FetchGuildAsync(realWhitelistSnowflake);
+                if (whitelistGuild == null)
+                {
+                    await eventArgs.SendEphmeralErrorAsync("The ID provided is not valid.");
+                    break;
+                }
+
+                try
+                {
+                    await _guildService.AddWhitelistedInviteAsync(eventArgs.GuildId.Value, realWhitelistSnowflake);
+                    await eventArgs.SendSuccessAsync($"Invites pointing towards **{whitelistGuild.Name}** will no longer be deleted.");
+                    break;
+                }
+                catch(Exception e)
+                {
+                    await eventArgs.SendEphmeralErrorAsync(e.Message);
+                }
+
+                break;
+            case "remove-whitelisted-guild":
+                if (!eventArgs.Member.IsAdmin())
+                {
+                    await eventArgs.SendEphmeralErrorAsync(PermissionLevel.Administrator);
+                    break;
+                }
+
+                var blacklistSnowflake = slashCommandInteraction.Options.GetValueOrDefault("id")?.Value as string;
+                if (!Snowflake.TryParse(blacklistSnowflake, out var realBlacklistSnowflake))
+                {
+                    await eventArgs.SendEphmeralErrorAsync("Invalid snowflake provided.");
+                    break;
+                }
+
+                var guild = await Bot.FetchGuildAsync(realBlacklistSnowflake);
+                if (guild == null)
+                {
+                    await eventArgs.SendEphmeralErrorAsync("The ID provided is not valid.");
+                    break;
+                }
+
+                try
+                {
+                    await _guildService.AddWhitelistedInviteAsync(eventArgs.GuildId.Value, realBlacklistSnowflake);
+                    await eventArgs.SendSuccessAsync($"Invites pointing towards **{guild.Name}** will now be deleted.");
+                    break;
+                }
+                catch(Exception e)
+                {
+                    await eventArgs.SendEphmeralErrorAsync(e.Message);
+                }
+
+                break;
+                
         }
     }
 }
