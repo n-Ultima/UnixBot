@@ -27,17 +27,7 @@ namespace Unix.Modules
             _guildService = guildService;
             ServiceProvider = serviceProvider;
         }
-
-        [Command("configure-prefix")]
-        [RequireGuildAdministrator]
-        [Description("Changes your prefix.")]
-        public async Task<DiscordCommandResult> ConfigureGuildPrefixAsync([Remainder] string newPrefix)
-        {
-            var oldPrefix = await _guildService.FetchGuildPrefixAsync(Context.GuildId);
-            await _guildService.ModifyGuildPrefixAsync(Context.GuildId, newPrefix);
-            return Success($"Prefix modified from `{oldPrefix}` to `{newPrefix}`");
-        }
-
+        
         [Command("configure-muterole")]
         [RequireGuildAdministrator]
         [Description("Changes your guild's mute role.")]
