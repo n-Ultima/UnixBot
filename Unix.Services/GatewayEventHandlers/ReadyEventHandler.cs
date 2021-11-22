@@ -24,7 +24,7 @@ namespace Unix.Services.GatewayEventHandlers
                 var unixContext = scope.ServiceProvider.GetRequiredService<UnixContext>();
                 var allowedGuildIds = await unixContext.GuildConfigurations.Select(x => x.Id).ToListAsync();
                 var unauthorizedGuilds = e.GuildIds.Except(allowedGuildIds);
-                if(!unauthorizedGuilds.Any())
+                if(unauthorizedGuilds.Any())
                 {
                     Log.Logger.Warning("Guilds were found that Unix isn't authorized to operate in. IDs: [{guildIds}]", unauthorizedGuilds.Humanize());
                     // Now, we leave each of the guilds that Unix shouldn't be in.
