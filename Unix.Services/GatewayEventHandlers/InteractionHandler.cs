@@ -48,6 +48,8 @@ public class InteractionHandler : UnixService
             await eventArgs.SendEphmeralErrorAsync($"You must request access with Unix before use. Please see http://www.ultima.one/unix");
             return;
         }
+
+        var guild = Bot.GetGuild(eventArgs.GuildId.Value);
         switch (slashCommandInteraction.CommandName)
         {
             case "ping":
@@ -261,8 +263,8 @@ public class InteractionHandler : UnixService
                     break;
                 }
 
-                var guild = await Bot.FetchGuildAsync(realBlacklistSnowflake);
-                if (guild == null)
+                var blacklistGuild = await Bot.FetchGuildAsync(realBlacklistSnowflake);
+                if (blacklistGuild == null)
                 {
                     await eventArgs.SendEphmeralErrorAsync("The ID provided is not valid.");
                     break;
@@ -280,7 +282,194 @@ public class InteractionHandler : UnixService
                 }
 
                 break;
-                
+            // the big one
+            case "configure-guild":
+                if (!Bot.OwnerIds.Contains(eventArgs.Member.Id))
+                {
+                    await eventArgs.SendEphmeralErrorAsync("You must be a bot owner to use this command.");
+                    break;
+                }
+                // get the options.
+                var guildIdString = slashCommandInteraction.Options.GetValueOrDefault("id")?.Value as string;
+                var muteRoleString = slashCommandInteraction.Options.GetValueOrDefault("mute-role-id")?.Value as string;
+                var modLogString = slashCommandInteraction.Options.GetValueOrDefault("modlog-channel-id")?.Value as string;
+                var messageLogString = slashCommandInteraction.Options.GetValueOrDefault("messagelog-channel-id")?.Value as string;
+                var modRoleString = slashCommandInteraction.Options.GetValueOrDefault("moderator-role-id")?.Value as string;
+                var adminRoleString = slashCommandInteraction.Options.GetValueOrDefault("administrator-role-id")?.Value as string;
+                var isAutomodEnabled = slashCommandInteraction.Options.TryGetValue("automod-enabled", out var sCommandInteraction);
+                var autoModEnabled = (bool) sCommandInteraction.Value;
+                if (!Snowflake.TryParse(guildIdString, out var realGuildId))
+                {
+                    await eventArgs.SendEphmeralErrorAsync($"Invalid snowflake provided for guild ID.");
+                    break;
+                }
+                if (!Snowflake.TryParse(muteRoleString, out var realMuteRole))
+                {
+                    await eventArgs.SendEphmeralErrorAsync("Invalid snowflake provided for mute role ID.");
+                    break;
+                }
+                if (!Snowflake.TryParse(modLogString, out var realModLog))
+                {
+                    await eventArgs.SendEphmeralErrorAsync("Invalid snowflake provided for mod log ID.");
+                    break;
+                }
+                if (!Snowflake.TryParse(messageLogString, out var realMessageLog))
+                {
+                    await eventArgs.SendEphmeralErrorAsync("Invalid snowflake provided for message log ID.");
+                    break;
+                }
+                if (!Snowflake.TryParse(modRoleString, out var realModRole))
+                {
+                    await eventArgs.SendEphmeralErrorAsync("Invalid snowflake provided for moderator role ID.");
+                    break;
+                }
+                if (!Snowflake.TryParse(adminRoleString, out var realAdminRole))
+                {
+                    await eventArgs.SendEphmeralErrorAsync("Invalid snowflake provided for administrator role ID.");
+                    break;
+                }
+                // configure the guild
+                await eventArgs.SendSuccessAsync($"Successfully configured!");
+                break;
+            case "disallow-guild":
+                if (!Bot.OwnerIds.Contains(eventArgs.Member.Id))
+                {
+                    await eventArgs.SendEphmeralErrorAsync("You must be a bot owner to use this command.");
+                    break;
+                }
+
+                var id = slashCommandInteraction.Options.GetValueOrDefault("id")?.Value as string;
+                if (!Snowflake.TryParse(id, out var disallowId))
+                {
+                    await eventArgs.SendEphmeralErrorAsync($"Invalid snowflake provided.");
+                    break;
+                }
+
+                try
+                {
+                    await _ownerService.BlacklistGuildAsync(disallowId);
+                    await eventArgs.SendSuccessAsync("Guild blacklisted.");
+                    break;
+                }
+                catch (Exception e)
+                {
+                    await eventArgs.SendEphmeralErrorAsync(e.Message);
+                    break;
+                }
+
+                break;
+            case "infractions":
+                if (!eventArgs.Member.IsModerator())
+                {
+                    await eventArgs.SendEphmeralErrorAsync(PermissionLevel.Moderator);
+                    break;
+                }
+
+                var user = slashCommandInteraction.Entities.Users.Values.First();
+                var infractions = await _moderationService.FetchInfractionsAsync(user.Id);
+                if (!infractions.Any())
+                {
+                    await eventArgs.Interaction.Response().SendMessageAsync(new LocalInteractionResponse()
+                        .WithContent("That user does not have any infractions."));
+                    break;
+                }
+                var userInfractionsEmbed = new LocalEmbed()
+                    .WithColor(Color.Gold)
+                    .WithTitle($"Infractions for {user.Tag}");
+                foreach (var userInfraction in infractions)
+                {
+                    var moderator = Bot.GetGuild(userInfraction.GuildId).GetMember(userInfraction.ModeratorId);
+                    userInfractionsEmbed.AddField($"{userInfraction.Type.ToString().ToUpper()}({userInfraction.Id}) - Created On {userInfraction.CreatedAt.ToString("M")} by {moderator.Tag}", $"Reason: {userInfraction.Reason}");
+                }
+
+                await eventArgs.Interaction.Response().SendMessageAsync(new LocalInteractionResponse()
+                    .WithEmbeds(userInfractionsEmbed));
+                break;
+            case "infraction":
+                if (!eventArgs.Member.IsModerator())
+                {
+                    await eventArgs.SendEphmeralErrorAsync(PermissionLevel.Moderator);
+                    break;
+                }
+
+                var infractionLookupId = slashCommandInteraction.Options.GetValueOrDefault("id")?.Value as string;
+                if (!Guid.TryParse(infractionLookupId, out var guidInfractionLookupId))
+                {
+                    await eventArgs.SendEphmeralErrorAsync($"The ID provided is not a valid infration ID.");
+                    break;
+                }
+
+                var infraction = await _moderationService.FetchInfractionAsync(guidInfractionLookupId);
+                if (infraction == null)
+                {
+                    await eventArgs.SendEphmeralErrorAsync("That infraction ID does not exist.");
+                    break;
+                }
+
+                var subject = await Bot.FetchUserAsync(infraction.SubjectId);
+                var mod = guild.GetMember(infraction.ModeratorId);
+                var embed = new LocalEmbed()
+                    .AddField($"{infraction.Type.ToString().ToUpper()} - ({infraction.Id}) - Created On {infraction.CreatedAt.ToString("M")} by {mod.Tag}", $"Reason: {infraction.Reason}")
+                    .WithColor(Color.Gold)
+                    .WithTitle($"Infractions for {subject.Tag}");
+                await eventArgs.Interaction.Response().SendMessageAsync(new LocalInteractionResponse()
+                    .WithEmbeds(embed));
+                break;
+            case "infraction-update":
+                if (!eventArgs.Member.IsModerator())
+                {
+                    await eventArgs.SendEphmeralErrorAsync(PermissionLevel.Moderator);
+                    break;
+                }
+
+                var updateInfractionId = slashCommandInteraction.Options.GetValueOrDefault("id")?.Value as string;
+                if (!Guid.TryParse(updateInfractionId, out var guidInfractionUpdateId))
+                {
+                    await eventArgs.SendEphmeralErrorAsync($"The ID provided is not a valid infration ID.");
+                    break;
+                }
+
+                var updateInfractionReason = slashCommandInteraction.Options.GetValueOrDefault("reason")?.Value as string;
+                try
+                {
+                    await _moderationService.UpdateInfractionAsync(guidInfractionUpdateId, guild.Id, updateInfractionReason);
+                    await eventArgs.SendSuccessAsync("Reason updated.");
+                    break;
+                }
+                catch (Exception e)
+                {
+                    await eventArgs.SendEphmeralErrorAsync(e.Message);
+                    break;
+                }
+
+                break;
+            case "infraction-delete":
+                if (!eventArgs.Member.IsModerator())
+                {
+                    await eventArgs.SendEphmeralErrorAsync(PermissionLevel.Moderator);
+                    break;
+                }
+                var deleteInfractionId = slashCommandInteraction.Options.GetValueOrDefault("id")?.Value as string;
+                if (!Guid.TryParse(deleteInfractionId, out var guidDeleteInfractionId))
+                {
+                    await eventArgs.SendEphmeralErrorAsync($"The ID provided is not a valid infration ID.");
+                    break;
+                }
+
+                var deleteInfractionReason = slashCommandInteraction.Options.GetValueOrDefault("reason")?.Value as string;
+                try
+                {
+                    await _moderationService.RemoveInfractionAsync(guidDeleteInfractionId, guild.Id, deleteInfractionReason);
+                    await eventArgs.SendSuccessAsync("Infraction deleted.");
+                    break;
+                }
+                catch (Exception e)
+                {
+                    await eventArgs.SendEphmeralErrorAsync(e.Message);
+                    break;
+                }
+
+                break;
         }
     }
 }

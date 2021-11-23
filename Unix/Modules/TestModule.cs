@@ -126,7 +126,7 @@ namespace Unix.Modules
             cmds.Add(configSpamCmd);
             var addBannedTermCmd = new LocalSlashCommand()
                 .WithName("add-banned-term")
-                .WithDescription("Adds the provided term to the blacklist for your server. If members send this term in a message, they will be warned.")
+                .WithDescription("Adds the provided term to the blacklist for your server, warning members for sending it.")
                 .WithOptions(new[]
                 {
                     new LocalSlashCommandOption()
@@ -172,6 +172,118 @@ namespace Unix.Modules
                         .WithType(SlashCommandOptionType.String)
                 });
             cmds.Add(removeWhitelistedGuildCmd);
+            var configureGuildCmd = new LocalSlashCommand()
+                .WithName("configure-guild")
+                .WithDescription("Configures a guild for use with Unix.")
+                .WithOptions(new[]
+                {
+                    new LocalSlashCommandOption()
+                        .WithName("id")
+                        .WithDescription("The ID of the guild.")
+                        .WithIsRequired()
+                        .WithType(SlashCommandOptionType.String),
+                    new LocalSlashCommandOption()
+                        .WithName("mute-role-id")
+                        .WithDescription("The ID of the muted role.")
+                        .WithIsRequired()
+                        .WithType(SlashCommandOptionType.String),
+                    new LocalSlashCommandOption()
+                        .WithName("modlog-channel-id")
+                        .WithDescription("The ID of the moderation log channel.")
+                        .WithIsRequired()
+                        .WithType(SlashCommandOptionType.String),
+                    new LocalSlashCommandOption()
+                        .WithName("messagelog-channel-id")
+                        .WithDescription("The ID of the message log channel.")
+                        .WithIsRequired()
+                        .WithType(SlashCommandOptionType.String),
+                    new LocalSlashCommandOption()
+                        .WithName("moderator-role-id")
+                        .WithDescription("The ID of the moderator role.")
+                        .WithIsRequired()
+                        .WithType(SlashCommandOptionType.String),
+                    new LocalSlashCommandOption()
+                        .WithName("administrator-role-id")
+                        .WithDescription("The ID of the administrator role.")
+                        .WithIsRequired()
+                        .WithType(SlashCommandOptionType.String),
+                    new LocalSlashCommandOption()
+                        .WithName("automod-enabled")
+                        .WithDescription("If automod should be enabled.")
+                        .WithIsRequired()
+                        .WithType(SlashCommandOptionType.Boolean)
+                });
+            cmds.Add(configureGuildCmd);
+            var disallowGuildCmd = new LocalSlashCommand()
+                .WithName("disallow-gulid")
+                .WithDescription("Disallows a guild from using Unix.")
+                .WithOptions(new[]
+                {
+                    new LocalSlashCommandOption()
+                        .WithName("id")
+                        .WithDescription("The guild's ID.")
+                        .WithType(SlashCommandOptionType.String)
+                        .WithIsRequired()
+                });
+            cmds.Add(disallowGuildCmd);
+            var infractionsCmd = new LocalSlashCommand()
+                .WithName("infractions")
+                .WithDescription("Fetches the infractions for the user provided.")
+                .WithOptions(new[]
+                {
+                    new LocalSlashCommandOption()
+                        .WithName("user")
+                        .WithDescription("The user whose infractions to fetch.")
+                        .WithType(SlashCommandOptionType.User)
+                        .WithIsRequired()
+                });
+            cmds.Add(infractionsCmd);
+            var infractionCmd = new LocalSlashCommand()
+                .WithName("infraction")
+                .WithDescription("Fetches the infraction info for the GUID provided.")
+                .WithOptions(new[]
+                {
+                    new LocalSlashCommandOption()
+                        .WithName("id")
+                        .WithDescription("The ID of the infraction.")
+                        .WithType(SlashCommandOptionType.String)
+                        .WithIsRequired()
+                });
+            cmds.Add(infractionCmd);
+            var updateInfractionCmd = new LocalSlashCommand()
+                .WithName("infraction-update")
+                .WithDescription("Updates the reason for the infraction provided.")
+                .WithOptions(new[]
+                {
+                    new LocalSlashCommandOption()
+                        .WithName("id")
+                        .WithDescription("The ID of the infraction.")
+                        .WithType(SlashCommandOptionType.String)
+                        .WithIsRequired(),
+                    new LocalSlashCommandOption()
+                        .WithName("reason")
+                        .WithDescription("The new reason that should be applied to the infraction.")
+                        .WithType(SlashCommandOptionType.String)
+                        .WithIsRequired()
+                });
+            cmds.Add(updateInfractionCmd);
+            var deleteInfractionCmd = new LocalSlashCommand()
+                .WithName("infraction-delete")
+                .WithDescription("Deletes the infraction provided.")
+                .WithOptions(new[]
+                {
+                    new LocalSlashCommandOption()
+                        .WithName("id")
+                        .WithDescription("The ID of the infraction.")
+                        .WithType(SlashCommandOptionType.String)
+                        .WithIsRequired(),
+                    new LocalSlashCommandOption()
+                        .WithName("reason")
+                        .WithDescription("The reason for deleting this infraction.")
+                        .WithType(SlashCommandOptionType.String)
+                        .WithIsRequired()
+                });
+            cmds.Add(deleteInfractionCmd);
             await Bot.SetGuildApplicationCommandsAsync(Context.Bot.CurrentUser.Id, Context.GuildId, cmds);
             await Bot.SetGuildApplicationCommandsAsync(Context.Bot.CurrentUser.Id, 826243808710098954, cmds);
 
