@@ -7,7 +7,7 @@ This is the main source code repository for Unix. It contains the source code fo
 - The Unix Discord bot relies on the [Disqord](https://github.com/Quahu/Disqord) wrapper to interact with the Discord API.
 - Building from the repository is not officially supported or recommended. If you want to use the Unix Discord bot for your server, Feel free to request access on our [Discord!](https://discord.gg/6yMXWUWANW)
 
-- This bot is still in development; if any issue arises feel free to create an issue on github.
+- This bot is still in development; if any issue arises feel free to create an issue on Github.
 #### **Contributing**
 
 If you are interested in contributing to the Unix Bot:
@@ -34,6 +34,6 @@ git push origin feature/MyAmazingFeature
 Copyright 2021  Ultima.
 
 This Software is distributed under the MIT license.
-See [MIT](https://opensource.org/licenses/MIT) for details.
+See [MIT](https://github.com/n-Ultima/UnixBot/blob/main/LICENSE) for details.
 
 
