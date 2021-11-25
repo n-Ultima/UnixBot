@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -31,8 +29,9 @@ public class InteractionHandler : UnixService
         _moderationService = moderationService;
     }
 
-    protected async override ValueTask OnInteractionReceived(InteractionReceivedEventArgs eventArgs)
+    protected override async ValueTask OnInteractionReceived(InteractionReceivedEventArgs eventArgs)
     {
+        Log.Logger.Information("Test");
         if (eventArgs.Interaction.Type != InteractionType.ApplicationCommand)
         {
             Log.Logger.Information("Not an application command.");
