@@ -39,7 +39,7 @@ namespace Unix.Services.GatewayEventHandlers
         {
             var channel = await message.FetchChannelAsync();
             var builder = new StringBuilder()
-                .AppendLine($"**{message.Author.Tag}**(`{message.Author.Id}`) deleted their message in {Mention.Channel(channel.Id)}(#{channel.Name}, `{channel.Id}`)")
+                .AppendLine($"**{message.Author.Tag}**(`{message.Author.Id}`)'s  message was deleted in {Mention.Channel(channel.Id)}(#{channel.Name}, `{channel.Id}`)")
                 .AppendLine($"**Message Content:**```{message.Content}```")
                 .ToString();
             await Bot.SendMessageAsync(guildConfiguration.MessageLogChannelId, new LocalMessage()

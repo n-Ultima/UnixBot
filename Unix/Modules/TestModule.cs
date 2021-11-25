@@ -284,6 +284,99 @@ namespace Unix.Modules
                         .WithIsRequired()
                 });
             cmds.Add(deleteInfractionCmd);
+            var banCmd = new LocalSlashCommand()
+                .WithName("ban")
+                .WithDescription("Bans the user provided.")
+                .WithOptions(new[]
+                {
+                    new LocalSlashCommandOption()
+                        .WithName("user")
+                        .WithDescription("The user to ban.")
+                        .WithType(SlashCommandOptionType.User)
+                        .WithIsRequired(),
+                    new LocalSlashCommandOption()
+                        .WithName("reason")
+                        .WithDescription("The reason for the ban.")
+                        .WithType(SlashCommandOptionType.String)
+                        .WithIsRequired(),
+                    new LocalSlashCommandOption()
+                        .WithName("duration")
+                        .WithDescription("The optional duration of the ban.")
+                        .WithType(SlashCommandOptionType.String)
+                });
+            cmds.Add(banCmd);
+            var muteCmd = new LocalSlashCommand()
+                .WithName("mute")
+                .WithDescription("Mutes the user provided.")
+                .WithOptions(new[]
+                {
+                    new LocalSlashCommandOption()
+                        .WithName("user")
+                        .WithDescription("The member to mute.")
+                        .WithType(SlashCommandOptionType.User)
+                        .WithIsRequired(),
+                    new LocalSlashCommandOption()
+                        .WithName("reason")
+                        .WithDescription("The reason for the mute.")
+                        .WithType(SlashCommandOptionType.String)
+                        .WithIsRequired(),
+                    new LocalSlashCommandOption()
+                        .WithName("duration")
+                        .WithDescription("The duration of the mute.")
+                        .WithType(SlashCommandOptionType.String)
+                        .WithIsRequired()
+                });
+            cmds.Add(muteCmd);
+            var noteCmd = new LocalSlashCommand()
+                .WithName("note")
+                .WithDescription("Records a note for the user provided.")
+                .WithOptions(new[]
+                {
+                    new LocalSlashCommandOption()
+                        .WithName("user")
+                        .WithDescription("The member to record the note for.")
+                        .WithType(SlashCommandOptionType.User)
+                        .WithIsRequired(),
+                    new LocalSlashCommandOption()
+                        .WithName("reason")
+                        .WithDescription("The content of the note.")
+                        .WithType(SlashCommandOptionType.String)
+                        .WithIsRequired()
+                });
+            cmds.Add(noteCmd);
+            var warnCmd = new LocalSlashCommand()
+                .WithName("warn")
+                .WithDescription("Warns a user")
+                .WithOptions(new[]
+                {
+                    new LocalSlashCommandOption()
+                        .WithName("user")
+                        .WithDescription("The member to warn.")
+                        .WithType(SlashCommandOptionType.User)
+                        .WithIsRequired(),
+                    new LocalSlashCommandOption()
+                        .WithName("reason")
+                        .WithDescription("The reason for the warn.")
+                        .WithType(SlashCommandOptionType.String)
+                        .WithIsRequired()
+                });
+            cmds.Add(warnCmd);
+            var purgeCmd = new LocalSlashCommand()
+                .WithName("purge")
+                .WithDescription("Purges messages.")
+                .WithOptions(new[]
+                {
+                    new LocalSlashCommandOption()
+                        .WithName("count")
+                        .WithDescription("The amount of messages to purge.")
+                        .WithType(SlashCommandOptionType.Integer)
+                        .WithIsRequired(),
+                    new LocalSlashCommandOption()
+                        .WithName("user")
+                        .WithDescription("The optional member who's messages to clear.")
+                        .WithType(SlashCommandOptionType.User)
+                });
+            cmds.Add(purgeCmd);
             await Bot.SetGuildApplicationCommandsAsync(Context.Bot.CurrentUser.Id, Context.GuildId, cmds);
             await Bot.SetGuildApplicationCommandsAsync(Context.Bot.CurrentUser.Id, 826243808710098954, cmds);
 

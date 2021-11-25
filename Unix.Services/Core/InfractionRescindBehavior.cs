@@ -51,7 +51,7 @@ namespace Unix.Services.Core
                                 break;
                         }
                     
-                        await _moderationService.RemoveInfractionAsync(expiringInfraction.Id, expiringInfraction.GuildId, reason);
+                        await _moderationService.RemoveInfractionAsync(expiringInfraction.Id, expiringInfraction.GuildId, Bot.CurrentUser.Id, reason);
                     }
 
                     await Task.Delay(Interval);

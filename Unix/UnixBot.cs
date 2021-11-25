@@ -129,13 +129,5 @@ namespace Unix
         {
             await base.HandleFailedResultAsync(context, result);
         }
-
-        protected override async ValueTask AddTypeParsersAsync(CancellationToken cancellationToken = new CancellationToken())
-        {
-            Commands.AddTypeParser(new TimeSpanParser());
-            Commands.AddTypeParser(new PrefixTypeParser());
-            Commands.AddTypeParser(new GuidTypeParser());
-            await base.AddTypeParsersAsync(cancellationToken);
-        }
     }
 }

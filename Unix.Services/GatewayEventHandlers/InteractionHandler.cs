@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -7,8 +9,10 @@ using Disqord;
 using Disqord.Gateway;
 using Disqord.Rest;
 using Unix.Common;
+using Unix.Data.Models.Moderation;
 using Unix.Services.Core;
 using Unix.Services.Extensions;
+using Unix.Services.Parsers;
 
 namespace Unix.Services.GatewayEventHandlers;
 
@@ -159,6 +163,7 @@ public class InteractionHandler : UnixService
                 {
                     await eventArgs.SendEphmeralErrorAsync(e.Message);
                 }
+
                 break;
             case "configure-spam":
                 if (!eventArgs.Member.IsAdmin())
@@ -195,6 +200,7 @@ public class InteractionHandler : UnixService
                 {
                     await eventArgs.SendEphmeralErrorAsync(e.Message);
                 }
+
                 break;
             case "remove-banned-term":
                 if (!eventArgs.Member.IsAdmin())
@@ -243,7 +249,7 @@ public class InteractionHandler : UnixService
                     await eventArgs.SendSuccessAsync($"Invites pointing towards **{whitelistGuild.Name}** will no longer be deleted.");
                     break;
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     await eventArgs.SendEphmeralErrorAsync(e.Message);
                 }
@@ -276,7 +282,7 @@ public class InteractionHandler : UnixService
                     await eventArgs.SendSuccessAsync($"Invites pointing towards **{guild.Name}** will now be deleted.");
                     break;
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     await eventArgs.SendEphmeralErrorAsync(e.Message);
                 }
@@ -289,6 +295,7 @@ public class InteractionHandler : UnixService
                     await eventArgs.SendEphmeralErrorAsync("You must be a bot owner to use this command.");
                     break;
                 }
+
                 // get the options.
                 var guildIdString = slashCommandInteraction.Options.GetValueOrDefault("id")?.Value as string;
                 var muteRoleString = slashCommandInteraction.Options.GetValueOrDefault("mute-role-id")?.Value as string;
@@ -303,31 +310,37 @@ public class InteractionHandler : UnixService
                     await eventArgs.SendEphmeralErrorAsync($"Invalid snowflake provided for guild ID.");
                     break;
                 }
+
                 if (!Snowflake.TryParse(muteRoleString, out var realMuteRole))
                 {
                     await eventArgs.SendEphmeralErrorAsync("Invalid snowflake provided for mute role ID.");
                     break;
                 }
+
                 if (!Snowflake.TryParse(modLogString, out var realModLog))
                 {
                     await eventArgs.SendEphmeralErrorAsync("Invalid snowflake provided for mod log ID.");
                     break;
                 }
+
                 if (!Snowflake.TryParse(messageLogString, out var realMessageLog))
                 {
                     await eventArgs.SendEphmeralErrorAsync("Invalid snowflake provided for message log ID.");
                     break;
                 }
+
                 if (!Snowflake.TryParse(modRoleString, out var realModRole))
                 {
                     await eventArgs.SendEphmeralErrorAsync("Invalid snowflake provided for moderator role ID.");
                     break;
                 }
+
                 if (!Snowflake.TryParse(adminRoleString, out var realAdminRole))
                 {
                     await eventArgs.SendEphmeralErrorAsync("Invalid snowflake provided for administrator role ID.");
                     break;
                 }
+
                 // configure the guild
                 await eventArgs.SendSuccessAsync($"Successfully configured!");
                 break;
@@ -373,6 +386,7 @@ public class InteractionHandler : UnixService
                         .WithContent("That user does not have any infractions."));
                     break;
                 }
+
                 var userInfractionsEmbed = new LocalEmbed()
                     .WithColor(Color.Gold)
                     .WithTitle($"Infractions for {user.Tag}");
@@ -449,6 +463,7 @@ public class InteractionHandler : UnixService
                     await eventArgs.SendEphmeralErrorAsync(PermissionLevel.Moderator);
                     break;
                 }
+
                 var deleteInfractionId = slashCommandInteraction.Options.GetValueOrDefault("id")?.Value as string;
                 if (!Guid.TryParse(deleteInfractionId, out var guidDeleteInfractionId))
                 {
@@ -459,8 +474,309 @@ public class InteractionHandler : UnixService
                 var deleteInfractionReason = slashCommandInteraction.Options.GetValueOrDefault("reason")?.Value as string;
                 try
                 {
-                    await _moderationService.RemoveInfractionAsync(guidDeleteInfractionId, guild.Id, deleteInfractionReason);
+                    await _moderationService.RemoveInfractionAsync(guidDeleteInfractionId, guild.Id, eventArgs.Member.Id, deleteInfractionReason);
                     await eventArgs.SendSuccessAsync("Infraction deleted.");
+                    break;
+                }
+                catch (Exception e)
+                {
+                    await eventArgs.SendEphmeralErrorAsync(e.Message);
+                    break;
+                }
+
+                break;
+            case "ban":
+                if (!eventArgs.Member.IsModerator())
+                {
+                    await eventArgs.SendEphmeralErrorAsync(PermissionLevel.Moderator);
+                    break;
+                }
+
+                TimeSpan? btS = null;
+                var banUser = slashCommandInteraction.Entities.Users.Values.First();
+                var banReason = slashCommandInteraction.Options.GetValueOrDefault("reason")?.Value as string;
+                var duration = slashCommandInteraction.Options.GetValueOrDefault("duration")?.Value as string;
+                if (duration != null)
+                {
+                    if (!TimeSpanParser.TryParseTimeSpan(duration, out var banDuration))
+                    {
+                        await eventArgs.SendEphmeralErrorAsync("The duration provided is not valid.");
+                        break;
+                    }
+
+                    btS = banDuration;
+                }
+
+                try
+                {
+                    await _moderationService.CreateInfractionAsync(guild.Id, eventArgs.Member.Id, banUser.Id, InfractionType.Ban, banReason, btS);
+                    await eventArgs.SendSuccessAsync($"Banned **{banUser.Tag}** | `{banReason}`");
+                    break;
+                }
+                catch (Exception e)
+                {
+                    await eventArgs.SendEphmeralErrorAsync(e.Message);
+                    break;
+                }
+                break;
+            case "mute":
+                if (!eventArgs.Member.IsModerator())
+                {
+                    await eventArgs.SendEphmeralErrorAsync(PermissionLevel.Moderator);
+                    break;
+                }
+                
+                TimeSpan? mtS = null;
+                var muteUser = slashCommandInteraction.Entities.Users.Values.First();
+                var muteReason = slashCommandInteraction.Options.GetValueOrDefault("reason")?.Value as string;
+                var muteDuration = slashCommandInteraction.Options.GetValueOrDefault("duration")?.Value as string;
+                if (guild.GetMember(muteUser.Id) == null)
+                {
+                    await eventArgs.SendEphmeralErrorAsync("Member not found.");
+                    break;
+                }
+                if (!TimeSpanParser.TryParseTimeSpan(muteDuration, out var muteTimeSpanDuration))
+                {
+                    await eventArgs.SendEphmeralErrorAsync("The duration provided is not valid.");
+                    break;
+                }
+                
+                mtS = muteTimeSpanDuration;
+                try
+                {
+                    await _moderationService.CreateInfractionAsync(guild.Id, eventArgs.Member.Id, muteUser.Id, InfractionType.Mute, muteReason, mtS);
+                    await eventArgs.SendSuccessAsync($"Muted **{muteUser.Tag}** | `{muteReason}`");
+                    break;
+                }
+                catch (Exception e)
+                {
+                    await eventArgs.SendEphmeralErrorAsync(e.Message);
+                    break;
+                }
+
+                break;
+            case "note":
+                if (!eventArgs.Member.IsModerator())
+                {
+                    await eventArgs.SendEphmeralErrorAsync(PermissionLevel.Moderator);
+                    break;
+                }
+
+                var noteUser = slashCommandInteraction.Entities.Users.Values.First();
+                var noteReason = slashCommandInteraction.Options.GetValueOrDefault("reason")?.Value as string;
+                if (guild.GetMember(noteUser.Id) == null)
+                {
+                    await eventArgs.SendEphmeralErrorAsync("Member not found.");
+                    break;
+                }
+
+                try
+                {
+                    await _moderationService.CreateInfractionAsync(guild.Id, eventArgs.Member.Id, noteUser.Id, InfractionType.Note, noteReason, null);
+                    await eventArgs.SendSuccessAsync($"Note recorded for **{noteUser.Tag}** | `{noteReason}`");
+                    break;
+                }
+                catch (Exception e)
+                {
+                    await eventArgs.SendEphmeralErrorAsync(e.Message);
+                    break;
+                }
+            case "warn":
+                if (!eventArgs.Member.IsModerator())
+                {
+                    await eventArgs.SendEphmeralErrorAsync(PermissionLevel.Moderator);
+                    break;
+                }
+
+                var warnUser = slashCommandInteraction.Entities.Users.Values.First();
+                var warnReason = slashCommandInteraction.Options.GetValueOrDefault("reason")?.Value as string;
+                if (guild.GetMember(warnUser.Id) == null)
+                {
+                    await eventArgs.SendEphmeralErrorAsync("Member not found.");
+                    break;
+                }
+
+                try
+                {
+                    await _moderationService.CreateInfractionAsync(guild.Id, eventArgs.Member.Id, warnUser.Id, InfractionType.Warn, warnReason, null);
+                    await eventArgs.SendSuccessAsync($"Warned **{warnUser.Tag}** | `{warnReason}`");
+                    break;
+                }
+                catch (Exception e)
+                {
+                    await eventArgs.SendEphmeralErrorAsync(e.Message);
+                    break;
+                }
+                break;
+            case "purge":
+                if (!eventArgs.Member.IsModerator())
+                {
+                    await eventArgs.SendEphmeralErrorAsync(PermissionLevel.Moderator);
+                    break;
+                }
+
+                var purgeCount = Convert.ToInt32(slashCommandInteraction.Options.GetValueOrDefault("count")?.Value);
+                var purgeUser = slashCommandInteraction.Entities.Users.Values.FirstOrDefault();
+                if (purgeCount > 100)
+                {
+                    await eventArgs.SendEphmeralErrorAsync("You can't purge more than 100 messages at once.");
+                    break;
+                }
+
+                IEnumerable<Snowflake> delMessages = new List<Snowflake>();
+                if (purgeUser != null)
+                {
+                    delMessages = (await Bot.FetchMessagesAsync(eventArgs.ChannelId))
+                        .Where(x => x.Author.Id == purgeUser.Id)
+                        .Where(x => (DateTimeOffset.UtcNow - x.CreatedAt()).TotalDays <= 14)
+                        .Select(x => x.Id)
+                        .Take(purgeCount);
+                }
+                else
+                {
+                    delMessages = (await Bot.FetchMessagesAsync(eventArgs.ChannelId))
+                        .Where(x => (DateTimeOffset.UtcNow - x.CreatedAt()).TotalDays <= 14)
+                        .Select(x => x.Id)
+                        .Take(purgeCount);
+                }
+
+                await Bot.DeleteMessagesAsync(eventArgs.ChannelId, delMessages);
+                if (purgeUser != null)
+                {
+                    await eventArgs.SendSuccessAsync($"Purged **{delMessages.Count()}** sent by **{purgeUser.Tag}**");
+                    break;
+                }
+                await eventArgs.SendSuccessAsync($"Purged **{delMessages.Count()}**");
+                break;
+            case "unmute":
+                if (!eventArgs.Member.IsModerator())
+                {
+                    await eventArgs.SendEphmeralErrorAsync(PermissionLevel.Moderator);
+                    break;
+                }
+
+                var unmuteUser = slashCommandInteraction.Entities.Users.Values.First();
+                var unmuteReason = slashCommandInteraction.Options.GetValueOrDefault("reason")?.Value as string;
+
+                if (guild.GetMember(unmuteUser.Id) == null)
+                {
+                    await eventArgs.SendEphmeralErrorAsync("Member not found.");
+                    break;
+                }
+
+                var gUnmuteUser = guild.GetMember(unmuteUser.Id);
+                var unmuteUserInfractions = await _moderationService.FetchInfractionsAsync(unmuteUser.Id);
+                var mute = unmuteUserInfractions
+                    .Where(x => x.Type == InfractionType.Mute)
+                    .Where(x => x.GuildId == guild.Id)
+                    .SingleOrDefault();
+                IRestUser unmuteSubject = null;
+                IRestUser unmuteModerator = null;
+                if (mute == null)
+                {
+                    if (gUnmuteUser.RoleIds.Contains(guildConfig.MuteRoleId))
+                    {
+                        await gUnmuteUser.RevokeRoleAsync(guildConfig.MuteRoleId, new DefaultRestRequestOptions
+                        {
+                            Reason = $"{eventArgs.Member.Tag} - {unmuteReason}"
+                        });
+                        unmuteSubject = await Bot.FetchUserAsync(gUnmuteUser.Id);
+                        unmuteModerator = await Bot.FetchUserAsync(eventArgs.Member.Id);
+
+                        await _moderationService.LogInfractionDeletionAsync(new Infraction()
+                        {
+                            GuildId = guild.Id,
+                            Type = InfractionType.Mute
+                        }, unmuteModerator, unmuteSubject, unmuteReason);
+                        await eventArgs.SendSuccessAsync($"Unmuted **{unmuteSubject.Tag}** | `{unmuteReason}`");
+                        break;
+                    }
+
+                    await eventArgs.SendEphmeralErrorAsync("The user provided is not currently muted.");
+                    break;
+                }
+
+                try
+                {
+                    await _moderationService.RemoveInfractionAsync(mute.Id, guild.Id, eventArgs.Member.Id, unmuteReason);
+                    await eventArgs.SendSuccessAsync($"Unmuted **{unmuteUser.Tag}** | `{unmuteReason}`");
+                    break;
+                }
+                catch (Exception e)
+                {
+                    await eventArgs.SendEphmeralErrorAsync(e.Message);
+                    break;
+                }
+                break;
+            case "unban":
+                if (!eventArgs.Member.IsModerator())
+                {
+                    await eventArgs.SendEphmeralErrorAsync(PermissionLevel.Moderator);
+                    break;
+                }
+
+                var unbanUser = slashCommandInteraction.Entities.Users.Values.First();
+                var unbanReason = slashCommandInteraction.Options.GetValueOrDefault("reason")?.Value as string;
+                var unbanUserInfractions = await _moderationService.FetchInfractionsAsync(unbanUser.Id);
+                var banInfraction = unbanUserInfractions
+                    .Where(x => x.Type == InfractionType.Ban)
+                    .Where(x => x.GuildId == guild.Id)
+                    .SingleOrDefault();
+                IRestUser unbanSubject = null;
+                IRestUser unbanModerator = null;
+                if (banInfraction == null)
+                {
+                    var banNoInf = await guild.FetchBanAsync(unbanUser.Id);
+                    if (banNoInf != null)
+                    {
+                        await guild.DeleteBanAsync(unbanUser.Id, new DefaultRestRequestOptions
+                        {
+                            Reason = $"{eventArgs.Member.Tag} - {unbanReason}"
+                        });
+                        unbanSubject = await Bot.FetchUserAsync(unbanUser.Id);
+                        unbanModerator = await Bot.FetchUserAsync(unbanModerator.Id);
+                        await _moderationService.LogInfractionDeletionAsync(new Infraction
+                        {
+                            GuildId = guild.Id,
+                            Type = InfractionType.Ban
+                        }, unbanModerator, unbanSubject, unbanReason);
+                        await eventArgs.SendSuccessAsync($"Unbanned **{unbanSubject.Tag}** | `{unbanReason}`");
+                        break;
+                    }
+                }
+
+                try
+                {
+                    await _moderationService.RemoveInfractionAsync(banInfraction.Id, guild.Id, eventArgs.Member.Id, unbanReason);
+                    await eventArgs.SendSuccessAsync($"Unbanned **{unbanUser.Tag}** | `{unbanReason}`");
+                    break;
+                }
+                catch (Exception e)
+                {
+                    await eventArgs.SendEphmeralErrorAsync(e.Message);
+                    break;
+                }
+
+                break;
+            case "kick":
+                if (!eventArgs.Member.IsModerator())
+                {
+                    await eventArgs.SendEphmeralErrorAsync(PermissionLevel.Moderator);
+                    break;
+                }
+
+                var kickUser = slashCommandInteraction.Entities.Users.Values.First();
+                var kickReason = slashCommandInteraction.Options.GetValueOrDefault("reason")?.Value as string;
+                if (guild.GetMember(kickUser.Id) == null)
+                {
+                    await eventArgs.SendEphmeralErrorAsync("Member not found.");
+                    break;
+                }
+
+                try
+                {
+                    await _moderationService.CreateInfractionAsync(guild.Id, eventArgs.Member.Id, kickUser.Id, InfractionType.Kick, kickReason, null);
+                    await eventArgs.SendSuccessAsync($"Kicked **{kickUser.Tag}** | `{kickReason}`");
                     break;
                 }
                 catch (Exception e)
