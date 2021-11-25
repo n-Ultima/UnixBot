@@ -35,22 +35,26 @@ public class InteractionHandler : UnixService
     {
         if (eventArgs.Interaction.Type != InteractionType.ApplicationCommand)
         {
+            Log.Logger.Information("Not an application command.");
             return;
         }
 
         if (eventArgs.Interaction is not ISlashCommandInteraction slashCommandInteraction)
         {
+            Log.Logger.Information("Not a slash command.");
             return;
         }
 
         if (!eventArgs.GuildId.HasValue)
         {
+            Log.Logger.Information("Guild is null.");
             return;
         }
 
         var guildConfig = await _guildService.FetchGuildConfigurationAsync(eventArgs.GuildId.Value);
         if (guildConfig == null)
         {
+            Log.Logger.Information("Guild config is null.");
             await eventArgs.SendEphmeralErrorAsync($"You must request access with Unix before use. Please see http://www.ultima.one/unix");
             return;
         }
@@ -70,7 +74,6 @@ public class InteractionHandler : UnixService
                 {
                     builder.Append($"🏓 Pong!\nDirect API Latency: {heartbeatLatency.Value.Milliseconds} ms\nShard Latency: {Bot.GetShard(eventArgs.GuildId.Value).Heartbeater.Latency.Value.Milliseconds} ms\nMessage Latency: {dateTime.Milliseconds} ms");
                 }
-
                 await eventArgs.Interaction.Response().SendMessageAsync(new LocalInteractionResponse()
                     .WithContent(builder.ToString()));
                 break;
