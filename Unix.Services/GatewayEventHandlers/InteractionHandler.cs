@@ -894,6 +894,7 @@ public class InteractionHandler : UnixService
             default:
                 Log.Logger.Error("Didn't work");
                 Log.Logger.Error(slashCommandInteraction.CommandName);
+                break;
         }
     }
 }
