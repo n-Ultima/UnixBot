@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using Disqord;
 using Disqord.Gateway;
 using Disqord.Rest;
+using Humanizer;
+using Serilog;
 using Unix.Common;
 using Unix.Data.Models.Moderation;
 using Unix.Services.Core;
@@ -785,6 +787,119 @@ public class InteractionHandler : UnixService
                     break;
                 }
 
+                break;
+            case "role-add":
+                var roleToAdd = slashCommandInteraction.Entities.Roles.Values.First();
+                if (!guildConfig.SelfAssignableRoles.Contains(roleToAdd.Id.RawValue))
+                {
+                    await eventArgs.SendEphmeralErrorAsync("Unknown role.");
+                    break;
+                }
+
+                if (eventArgs.Member.RoleIds.Contains(roleToAdd.Id))
+                {
+                    await eventArgs.SendEphmeralErrorAsync("You already have that role, so I can't give it to you.");
+                    break;
+                }
+                await Bot.GrantRoleAsync(guild.Id, eventArgs.Member.Id, roleToAdd.Id);
+                await eventArgs.SendSuccessAsync($"Granted you the **{roleToAdd.Name}** role.");
+                break;
+            case "role-remove":
+                var roleToRemove = slashCommandInteraction.Entities.Roles.Values.First();
+                if (!guildConfig.SelfAssignableRoles.Contains(roleToRemove.Id.RawValue))
+                {
+                    await eventArgs.SendEphmeralErrorAsync("Unknown role.");
+                    break;
+                }
+                if (!eventArgs.Member.RoleIds.Contains(roleToRemove.Id))
+                {
+                    await eventArgs.SendEphmeralErrorAsync("You don't have that role, so I can't remove it.");
+                    break;
+                }
+                await Bot.RevokeRoleAsync(guild.Id, eventArgs.Member.Id, roleToRemove.Id);
+                await eventArgs.SendSuccessAsync($"Removed the **{roleToRemove.Name}** role from you.");
+                break;
+            case "configure-role-add":
+                if (!eventArgs.Member.IsAdmin())
+                {
+                    await eventArgs.SendEphmeralErrorAsync(PermissionLevel.Administrator);
+                    break;
+                }
+
+                var configRoleToAdd = slashCommandInteraction.Entities.Roles.Values.First();
+                var botUser = guild.GetMember(Bot.CurrentUser.Id);
+                if (configRoleToAdd.Position > botUser.GetHierarchy())
+                {
+                    await eventArgs.SendEphmeralErrorAsync("The bot must have a higher role position than the role provided.");
+                    break;
+                }
+
+                try
+                {
+                    await _guildService.AddSelfAssignableRoleAsync(guild.Id, configRoleToAdd.Id);
+                    await eventArgs.SendSuccessAsync($"Users can now add this role to themselves with the /role-add command.");
+                    break;
+                }
+                catch (Exception e)
+                {
+                    await eventArgs.SendEphmeralErrorAsync(e.Message);
+                    break;
+                }
+
+                break;
+            case "configure-role-remove":
+                if (!eventArgs.Member.IsAdmin())
+                {
+                    await eventArgs.SendEphmeralErrorAsync(PermissionLevel.Administrator);
+                    break;
+                }
+                
+                var configRoleToRemove = slashCommandInteraction.Entities.Roles.Values.First();
+                var bUser = guild.GetMember(Bot.CurrentUser.Id);
+                if (configRoleToRemove.Position > bUser.GetHierarchy())
+                {
+                    await eventArgs.SendEphmeralErrorAsync("The bot must have a higher role position than the role provided.");
+                    break;
+                }
+
+                try
+                {
+                    await _guildService.RemoveSelfAssignableRoleAsync(guild.Id, configRoleToRemove.Id);
+                    await eventArgs.SendSuccessAsync("Users can no longer add this role to themselves.");
+                    break;
+                }
+                catch (Exception e)
+                {
+                    await eventArgs.SendEphmeralErrorAsync(e.Message);
+                    break;
+                }
+                break;
+            case "role":
+                List<string> roles = new();
+                foreach (var roleId in guildConfig.SelfAssignableRoles)
+                {
+                    var name = guild.Roles.Where(x => x.Key == roleId).Select(x => x.Value).SingleOrDefault();
+                    if (name == null)
+                    {
+                        Log.Logger.Information("The role {id} was not found in the guild(manual deletion?). Removing it from the list of assignable roles.");
+                        await _guildService.RemoveSelfAssignableRoleAsync(guild.Id, name.Id);
+                        continue;
+                    }
+                    roles.Add(name.Name);
+                }
+
+                var roleHelpEmbed = new LocalEmbed()
+                    .WithAuthor(guild.Name, guild.GetIconUrl())
+                    .WithTitle("How do I get roles?")
+                    .WithColor(Color.Aqua)
+                    .WithDescription(
+                        $"To give yourself a role, use the `/role-add <roleName>` where **roleName** is whatever role you want.\nTo remove a role, use the `/role-remove <roleName>` replacing **roleName** with the role you want to remove.\n")
+                    .AddField("Roles available to you:", !roles.Any()
+                        ? "None"
+                        : roles.Humanize());
+                await eventArgs.Interaction.Response().SendMessageAsync(new LocalInteractionResponse()
+                    .WithIsEphemeral()
+                    .WithEmbeds(roleHelpEmbed));
                 break;
         }
     }

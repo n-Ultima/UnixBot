@@ -283,6 +283,11 @@ namespace Unix.Services.Core
                 {
                     throw new Exception("Guild should be configured with configure-guild first.");
                 }
+
+                if (guildConfig.SelfAssignableRoles.Contains(roleId.RawValue))
+                {
+                    throw new Exception("That role is already marked as self assignable.");
+                }
                 guildConfig.SelfAssignableRoles.Add(roleId.RawValue);
                 unixContext.Update(guildConfig);
                 await unixContext.SaveChangesAsync();
@@ -299,6 +304,10 @@ namespace Unix.Services.Core
                 if (guildConfig == null)
                 {
                     throw new Exception("Guild should be configured with configure-guild first.");
+                }
+                if (!guildConfig.SelfAssignableRoles.Contains(roleId.RawValue))
+                {
+                    throw new Exception("That role is not currently marked as self assignable.");
                 }
                 guildConfig.SelfAssignableRoles.Remove(roleId.RawValue);
                 unixContext.Update(guildConfig);

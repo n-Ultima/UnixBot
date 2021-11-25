@@ -13,7 +13,6 @@ using Microsoft.Extensions.Options;
 using Qmmands;
 using Serilog;
 using Unix.Common;
-using Unix.Modules.Parsers;
 using Unix.Services.Core;
 
 namespace Unix
