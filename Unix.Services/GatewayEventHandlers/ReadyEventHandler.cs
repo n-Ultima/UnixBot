@@ -26,7 +26,9 @@ namespace Unix.Services.GatewayEventHandlers
             {
                 var unixContext = scope.ServiceProvider.GetRequiredService<UnixContext>();
                 var allowedGuildIds = await unixContext.GuildConfigurations.Select(x => x.Id).ToListAsync();
-                var unauthorizedGuilds = e.GuildIds.Except(allowedGuildIds);
+                var unauthorizedGuilds = allowedGuildIds
+                    .Where(x => !allowedGuildIds.Contains(x))
+                    .ToList();
                 if(unauthorizedGuilds.Any())
                 {
                     Log.Logger.Warning("Guilds were found that Unix isn't authorized to operate in. IDs: [{guildIds}]", unauthorizedGuilds.Humanize());
@@ -35,7 +37,7 @@ namespace Unix.Services.GatewayEventHandlers
                     {
                         await Bot.LeaveGuildAsync(guild, new DefaultRestRequestOptions
                         {
-                            Reason = "Unauthorized. Join the Unix server(discord.gg/6yMXWUWANW) to request access."
+                            Reason = "Unauthorized. Join the Unix server(http://www.ultima.one/unix) to request access."
                         });
                         Log.Logger.Information("Left guild {guild} due to lack of authorizaiton.", guild);
                     }
