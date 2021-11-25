@@ -272,7 +272,11 @@ namespace Unix.Services.Core
             }
         }
         #nullable  enable
+<<<<<<< HEAD
         private async Task LogAsync(CachedGuild guild, IRestUser subject, CachedMember moderator, InfractionType type, string? humanizedDuration, string reason)
+=======
+        public async Task LogAsync(CachedGuild guild, CachedMember subject, CachedMember moderator, InfractionType type, string? humanizedDuration, string reason)
+>>>>>>> main
         {
             if (!GuildModLogIds.ContainsKey(guild.Id))
             {
