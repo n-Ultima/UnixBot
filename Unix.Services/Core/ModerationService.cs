@@ -272,11 +272,7 @@ namespace Unix.Services.Core
             }
         }
         #nullable  enable
-<<<<<<< HEAD
-        private async Task LogAsync(CachedGuild guild, IRestUser subject, CachedMember moderator, InfractionType type, string? humanizedDuration, string reason)
-=======
-        public async Task LogAsync(CachedGuild guild, CachedMember subject, CachedMember moderator, InfractionType type, string? humanizedDuration, string reason)
->>>>>>> main
+        public async Task LogAsync(CachedGuild guild, IRestUser subject, CachedMember moderator, InfractionType type, string? humanizedDuration, string reason)
         {
             if (!GuildModLogIds.ContainsKey(guild.Id))
             {
@@ -285,7 +281,7 @@ namespace Unix.Services.Core
             }
 
             var modLog = GuildModLogIds[guild.Id];
-            string format = null;
+            string format = string.Empty;
             switch (type)
             {
                 case InfractionType.Ban:

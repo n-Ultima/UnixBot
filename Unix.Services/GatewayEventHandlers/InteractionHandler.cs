@@ -371,8 +371,6 @@ public class InteractionHandler : UnixService
                     await eventArgs.SendEphmeralErrorAsync(e.Message);
                     break;
                 }
-
-                break;
             case "infractions":
                 if (!eventArgs.Member.IsModerator())
                 {
@@ -457,8 +455,6 @@ public class InteractionHandler : UnixService
                     await eventArgs.SendEphmeralErrorAsync(e.Message);
                     break;
                 }
-
-                break;
             case "infraction-delete":
                 if (!eventArgs.Member.IsModerator())
                 {
@@ -485,8 +481,6 @@ public class InteractionHandler : UnixService
                     await eventArgs.SendEphmeralErrorAsync(e.Message);
                     break;
                 }
-
-                break;
             case "ban":
                 if (!eventArgs.Member.IsModerator())
                 {
@@ -520,7 +514,6 @@ public class InteractionHandler : UnixService
                     await eventArgs.SendEphmeralErrorAsync(e.Message);
                     break;
                 }
-                break;
             case "mute":
                 if (!eventArgs.Member.IsModerator())
                 {
@@ -555,8 +548,6 @@ public class InteractionHandler : UnixService
                     await eventArgs.SendEphmeralErrorAsync(e.Message);
                     break;
                 }
-
-                break;
             case "note":
                 if (!eventArgs.Member.IsModerator())
                 {
@@ -609,7 +600,6 @@ public class InteractionHandler : UnixService
                     await eventArgs.SendEphmeralErrorAsync(e.Message);
                     break;
                 }
-                break;
             case "purge":
                 if (!eventArgs.Member.IsModerator())
                 {
@@ -709,7 +699,6 @@ public class InteractionHandler : UnixService
                     await eventArgs.SendEphmeralErrorAsync(e.Message);
                     break;
                 }
-                break;
             case "unban":
                 if (!eventArgs.Member.IsModerator())
                 {
@@ -759,7 +748,6 @@ public class InteractionHandler : UnixService
                     break;
                 }
 
-                break;
             case "kick":
                 if (!eventArgs.Member.IsModerator())
                 {
@@ -786,8 +774,6 @@ public class InteractionHandler : UnixService
                     await eventArgs.SendEphmeralErrorAsync(e.Message);
                     break;
                 }
-
-                break;
             case "role-add":
                 var roleToAdd = slashCommandInteraction.Entities.Roles.Values.First();
                 if (!guildConfig.SelfAssignableRoles.Contains(roleToAdd.Id.RawValue))
@@ -845,8 +831,6 @@ public class InteractionHandler : UnixService
                     await eventArgs.SendEphmeralErrorAsync(e.Message);
                     break;
                 }
-
-                break;
             case "configure-role-remove":
                 if (!eventArgs.Member.IsAdmin())
                 {
@@ -873,7 +857,6 @@ public class InteractionHandler : UnixService
                     await eventArgs.SendEphmeralErrorAsync(e.Message);
                     break;
                 }
-                break;
             case "role":
                 List<string> roles = new();
                 foreach (var roleId in guildConfig.SelfAssignableRoles)
