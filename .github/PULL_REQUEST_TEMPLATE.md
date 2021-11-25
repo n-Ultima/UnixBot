@@ -6,7 +6,7 @@ Fixes #issue-number
 
 ## Checklist
 
-[//]: # 'Put an x in [ ] to check the checkbox, like [x]"
+[//]: # "Put an x in [ ] to check the checkbox, like [x]"
 
 - [ ] I discussed this pull request with Ultima or another developer before opening.
 - [ ] I read the [contributing guidelines](https://www.github.com/n-Ultima/UnixBot/blob/main/.github/CONTRIBUTING.md).
