@@ -891,6 +891,9 @@ public class InteractionHandler : UnixService
                     .WithIsEphemeral()
                     .WithEmbeds(roleHelpEmbed));
                 break;
+            default:
+                Log.Logger.Error("Didn't work");
+                Log.Logger.Error(slashCommandInteraction.CommandName);
         }
     }
 }
