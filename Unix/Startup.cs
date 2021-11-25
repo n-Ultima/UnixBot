@@ -18,8 +18,6 @@ using Serilog.Events;
 using Serilog.Sinks.SystemConsole.Themes;
 using Unix.Common;
 using Unix.Data;
-using Unix.Modules;
-using Unix.Modules.Bases;
 using Unix.Services.Core;
 
 namespace Unix
@@ -47,7 +45,6 @@ namespace Unix
                 {
                     services
                         .AddSingleton<HttpClient>()
-                        .AddPrefixProvider<UnixPrefixProvider>()
                         .AddDbContext<UnixContext>()
                         .AddCommands();
                 })
@@ -68,7 +65,7 @@ namespace Unix
                     {
                         typeof(GuildService).Assembly,
                         typeof(UnixConfiguration).Assembly,
-                        typeof(UnixGuildModuleBase).Assembly,
+                        typeof(UnixBot).Assembly,
                         typeof(UnixContext).Assembly
                     }.ToList();
                     Log.Logger.Information("OwnerIds: {ownerIds}", bot.OwnerIds.Humanize());

@@ -198,6 +198,11 @@ namespace Unix.Services.Core
                 {
                     throw new Exception("Guild should be configured with configure-guild first.");
                 }
+
+                if (guildConfig.BannedTerms.Contains(bannedTerm))
+                {
+                    throw new Exception("That term already is already banned.");
+                }
                 guildConfig.BannedTerms.Add(bannedTerm);
                 unixContext.Update(guildConfig);
                 await unixContext.SaveChangesAsync();
@@ -215,7 +220,10 @@ namespace Unix.Services.Core
                 {
                     throw new Exception("Guild should be configured with configure-guild first.");
                 }
-
+                if (!guildConfig.BannedTerms.Contains(bannedTerm))
+                {
+                    throw new Exception("That term already is not currently banned.");
+                }
                 guildConfig.BannedTerms.Remove(bannedTerm);
                 unixContext.Update(guildConfig);
                 await unixContext.SaveChangesAsync();
@@ -233,6 +241,11 @@ namespace Unix.Services.Core
                 {
                     throw new Exception("Guild should be configured with configure-guild first.");
                 }
+
+                if (guildConfig.WhitelistedInvites.Contains(inviteGuildId))
+                {
+                    throw new Exception("The ID provided is already whitelisted.");
+                }
                 guildConfig.WhitelistedInvites.Add(inviteGuildId.RawValue);
                 unixContext.Update(guildConfig);
                 await unixContext.SaveChangesAsync();
@@ -248,6 +261,10 @@ namespace Unix.Services.Core
                 if (guildConfig == null)
                 {
                     throw new Exception("Guild should be configured with configure-guild first.");
+                }
+                if (!guildConfig.WhitelistedInvites.Contains(inviteGuildId))
+                {
+                    throw new Exception("The ID provided is not currently whitelisted.");
                 }
                 guildConfig.WhitelistedInvites.Remove(inviteGuildId.RawValue);
                 unixContext.Update(guildConfig);
@@ -266,6 +283,11 @@ namespace Unix.Services.Core
                 {
                     throw new Exception("Guild should be configured with configure-guild first.");
                 }
+
+                if (guildConfig.SelfAssignableRoles.Contains(roleId.RawValue))
+                {
+                    throw new Exception("That role is already marked as self assignable.");
+                }
                 guildConfig.SelfAssignableRoles.Add(roleId.RawValue);
                 unixContext.Update(guildConfig);
                 await unixContext.SaveChangesAsync();
@@ -282,6 +304,10 @@ namespace Unix.Services.Core
                 if (guildConfig == null)
                 {
                     throw new Exception("Guild should be configured with configure-guild first.");
+                }
+                if (!guildConfig.SelfAssignableRoles.Contains(roleId.RawValue))
+                {
+                    throw new Exception("That role is not currently marked as self assignable.");
                 }
                 guildConfig.SelfAssignableRoles.Remove(roleId.RawValue);
                 unixContext.Update(guildConfig);

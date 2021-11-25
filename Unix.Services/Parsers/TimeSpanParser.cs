@@ -3,18 +3,11 @@ using System.Threading.Tasks;
 using Disqord.Bot;
 using Qmmands;
 
-namespace Unix.Modules.Parsers
+namespace Unix.Services.Parsers
 {
-    public class TimeSpanParser : DiscordGuildTypeParser<TimeSpan>
+    public static class TimeSpanParser 
     {
-        public override ValueTask<TypeParserResult<TimeSpan>> ParseAsync(Parameter parameter, string value, DiscordGuildCommandContext context)
-        {
-            return TryParseTimeSpan(value, out var result)
-                ? Success(result)
-                : Failure("Failed to parse the provided timespan.");
-        }
-
-        private bool TryParseTimeSpan(ReadOnlySpan<char> input, out TimeSpan result)
+        public static bool TryParseTimeSpan(this ReadOnlySpan<char> input, out TimeSpan result)
         {
             result = TimeSpan.Zero;
 

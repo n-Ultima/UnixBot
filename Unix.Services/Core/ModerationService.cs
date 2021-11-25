@@ -31,7 +31,7 @@ namespace Unix.Services.Core
             using (var scope = ServiceProvider.CreateScope())
             {
                 var guild = Bot.GetGuild(guildId);
-                var member = guild.GetMember(subjectId);
+                var member = await Bot.FetchUserAsync(subjectId);
                 var moderator = guild.GetMember(moderatorId);
                 if (member == null)
                 {
@@ -157,8 +157,8 @@ namespace Unix.Services.Core
                         }
 
                         var muteRole = guild.Roles.GetValueOrDefault(guildConfig.MuteRoleId);
-                        
-                        await member.GrantRoleAsync(muteRole.Id, new DefaultRestRequestOptions
+                        var gMember = guild.GetMember(subjectId);
+                        await gMember.GrantRoleAsync(muteRole.Id, new DefaultRestRequestOptions
                         {
                             Reason = $"{moderator.Tag} - {reason}"
                         });
@@ -272,7 +272,11 @@ namespace Unix.Services.Core
             }
         }
         #nullable  enable
+<<<<<<< HEAD
+        private async Task LogAsync(CachedGuild guild, IRestUser subject, CachedMember moderator, InfractionType type, string? humanizedDuration, string reason)
+=======
         public async Task LogAsync(CachedGuild guild, CachedMember subject, CachedMember moderator, InfractionType type, string? humanizedDuration, string reason)
+>>>>>>> main
         {
             if (!GuildModLogIds.ContainsKey(guild.Id))
             {
@@ -394,5 +398,7 @@ namespace Unix.Services.Core
             }
             
         }
+        
+        
     }
 }
