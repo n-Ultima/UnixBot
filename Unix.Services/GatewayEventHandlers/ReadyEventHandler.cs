@@ -22,13 +22,12 @@ namespace Unix.Services.GatewayEventHandlers
 
         protected override async ValueTask OnReady(ReadyEventArgs e)
         {
+            Log.Logger.Information("Ready received");
             using (var scope = ServiceProvider.CreateScope())
             {
                 var unixContext = scope.ServiceProvider.GetRequiredService<UnixContext>();
                 var allowedGuildIds = await unixContext.GuildConfigurations.Select(x => x.Id).ToListAsync();
-                var unauthorizedGuilds = allowedGuildIds
-                    .Where(x => !allowedGuildIds.Contains(x))
-                    .ToList();
+                var unauthorizedGuilds = e.GuildIds.Except(allowedGuildIds);
                 if(unauthorizedGuilds.Any())
                 {
                     Log.Logger.Warning("Guilds were found that Unix isn't authorized to operate in. IDs: [{guildIds}]", unauthorizedGuilds.Humanize());
