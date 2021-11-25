@@ -60,12 +60,15 @@ public class InteractionHandler : UnixService
         }
 
         var guild = Bot.GetGuild(eventArgs.GuildId.Value);
+        Log.Logger.Information("Switch");
         switch (slashCommandInteraction.CommandName)
         {
             case "ping":
+                Log.Logger.Information("ping");
                 var dateTime = DateTimeOffset.UtcNow - eventArgs.Interaction.CreatedAt();
                 var heartbeatLatency = eventArgs.Interaction.GetGatewayClient().ApiClient.Heartbeater.Latency;
                 var builder = new StringBuilder();
+                Log.Logger.Information("Heartbeat check");
                 if (!heartbeatLatency.HasValue)
                 {
                     builder.Append($"🏓 Pong!\nShard Latency: {Bot.GetShard(eventArgs.GuildId.Value).Heartbeater.Latency.Value.Milliseconds} ms\nMessage Latency: {dateTime.Milliseconds} ms");
@@ -74,6 +77,7 @@ public class InteractionHandler : UnixService
                 {
                     builder.Append($"🏓 Pong!\nDirect API Latency: {heartbeatLatency.Value.Milliseconds} ms\nShard Latency: {Bot.GetShard(eventArgs.GuildId.Value).Heartbeater.Latency.Value.Milliseconds} ms\nMessage Latency: {dateTime.Milliseconds} ms");
                 }
+                Log.Logger.Information("Send");
                 await eventArgs.Interaction.Response().SendMessageAsync(new LocalInteractionResponse()
                     .WithContent(builder.ToString()));
                 break;
