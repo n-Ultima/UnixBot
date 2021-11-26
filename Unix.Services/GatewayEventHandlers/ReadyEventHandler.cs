@@ -42,6 +42,7 @@ namespace Unix.Services.GatewayEventHandlers
                     }
                 }
 
+                await SetupUnixGlobalSlashCommandsAsync();
                 var globalCmds = await Bot.FetchGlobalApplicationCommandsAsync(Bot.CurrentUser.Id);
                 if (!globalCmds.Any())
                 {
@@ -504,6 +505,18 @@ namespace Unix.Services.GatewayEventHandlers
                 .WithName("role")
                 .WithDescription("Shows a helpful embed describing how to add and remove roles from yourself.");
             cmds.Add(roleHelpCmd);
+            var configReqRoleCmd = new LocalSlashCommand()
+                .WithName("configure-requiredrole")
+                .WithDescription("Sets the required role that members must have for Unix to listen to commands for.")
+                .WithOptions(new[]
+                {
+                    new LocalSlashCommandOption()
+                        .WithName("id")
+                        .WithDescription("The ID of the role(provide the guild ID if you don't want a role gate)")
+                        .WithType(SlashCommandOptionType.String)
+                        .WithIsRequired()
+                });
+            cmds.Add(configReqRoleCmd);
             await Bot.SetGlobalApplicationCommandsAsync(Bot.CurrentUser.Id, cmds);
         }
     }

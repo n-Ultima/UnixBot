@@ -21,7 +21,7 @@ public class InteractionHandler : UnixService
     private readonly OwnerService _ownerService;
     private readonly GuildService _guildService;
     private readonly ModerationService _moderationService;
-    
+
     public InteractionHandler(IServiceProvider serviceProvider, OwnerService ownerService, GuildService guildService, ModerationService moderationService) : base(serviceProvider)
     {
         _ownerService = ownerService;
@@ -31,35 +31,53 @@ public class InteractionHandler : UnixService
 
     protected override async ValueTask OnInteractionReceived(InteractionReceivedEventArgs eventArgs)
     {
-        Log.Logger.Information("Test");
         if (eventArgs.Interaction.Type != InteractionType.ApplicationCommand)
         {
-            Log.Logger.Information("Not an application command.");
             return;
         }
 
         if (eventArgs.Interaction is not ISlashCommandInteraction slashCommandInteraction)
         {
-            Log.Logger.Information("Not a slash command.");
             return;
         }
 
         if (!eventArgs.GuildId.HasValue)
         {
-            Log.Logger.Information("Guild is null.");
             return;
         }
 
         var guildConfig = await _guildService.FetchGuildConfigurationAsync(eventArgs.GuildId.Value);
         if (guildConfig == null)
         {
-            Log.Logger.Information("Guild config is null.");
             await eventArgs.SendEphmeralErrorAsync($"You must request access with Unix before use. Please see http://www.ultima.one/unix");
             return;
         }
 
         var guild = Bot.GetGuild(eventArgs.GuildId.Value);
-        Log.Logger.Information("Switch");
+        if (eventArgs.Member.RoleIds.Any())
+        {
+            if (guildConfig.RequiredRoleToUse != guildConfig.Id)
+            {
+                if (!eventArgs.Member.RoleIds.Contains(guildConfig.RequiredRoleToUse))
+                {
+                    // err
+                    await eventArgs.SendEphmeralErrorAsync($"Missing permissions.");
+                }
+            }
+            else
+            {
+                goto switchStatement;
+            }
+        }
+        else
+        {
+            if (guildConfig.RequiredRoleToUse != guild.Id)
+            {
+                await eventArgs.SendEphmeralErrorAsync("Missing permissions.");
+            }
+        }
+
+        switchStatement:
         switch (slashCommandInteraction.CommandName)
         {
             case "ping":
@@ -67,7 +85,6 @@ public class InteractionHandler : UnixService
                 var dateTime = DateTimeOffset.UtcNow - eventArgs.Interaction.CreatedAt();
                 var heartbeatLatency = eventArgs.Interaction.GetGatewayClient().ApiClient.Heartbeater.Latency;
                 var builder = new StringBuilder();
-                Log.Logger.Information("Heartbeat check");
                 if (!heartbeatLatency.HasValue)
                 {
                     builder.Append($"🏓 Pong!\nShard Latency: {Bot.GetShard(eventArgs.GuildId.Value).Heartbeater.Latency.Value.Milliseconds} ms\nMessage Latency: {dateTime.Milliseconds} ms");
@@ -76,6 +93,7 @@ public class InteractionHandler : UnixService
                 {
                     builder.Append($"🏓 Pong!\nDirect API Latency: {heartbeatLatency.Value.Milliseconds} ms\nShard Latency: {Bot.GetShard(eventArgs.GuildId.Value).Heartbeater.Latency.Value.Milliseconds} ms\nMessage Latency: {dateTime.Milliseconds} ms");
                 }
+
                 Log.Logger.Information("Send");
                 await eventArgs.Interaction.Response().SendMessageAsync(new LocalInteractionResponse()
                     .WithContent(builder.ToString()));
@@ -190,6 +208,44 @@ public class InteractionHandler : UnixService
                 await _guildService.ModifyGuildSpamThresholdAsync(eventArgs.GuildId.Value, actualSpamAmount);
                 await eventArgs.SendSuccessAsync($"If a user sends more than `{actualSpamAmount}` in `3` seconds, they will be warned.");
                 break;
+            case "configure-requiredrole":
+                if (!eventArgs.Member.IsAdmin())
+                {
+                    await eventArgs.SendEphmeralErrorAsync(PermissionLevel.Administrator);
+                    break;
+                }
+
+                var reqRole = slashCommandInteraction.Options.GetValueOrDefault("id")?.Value as string;
+                if (!Snowflake.TryParse(reqRole, out var reqRoleId))
+                {
+                    await eventArgs.SendEphmeralErrorAsync($"Invalid ID provided.");
+                    break;
+                }
+
+                try
+                {
+                    await _guildService.ModifyRequiredRoleAsync(guild.Id, reqRoleId);
+                    if (guild.Id == reqRoleId)
+                    {
+                        await eventArgs.SendSuccessAsync($"No users are blocked from using commands in this server(except moderation and administration commands).");
+                        break;
+                    }
+
+                    var role = guild.Roles.GetValueOrDefault(reqRoleId);
+                    if (role == null)
+                    {
+                        await eventArgs.SendEphmeralErrorAsync($"Invalid role ID provided.");
+                        break;
+                    }
+
+                    await eventArgs.SendSuccessAsync($"Unix will now ignore commands from users without the **{role.Name}** role.");
+                    break;
+                }
+                catch (Exception e)
+                {
+                    await eventArgs.SendEphmeralErrorAsync(e.Message);
+                    break;
+                }
             case "add-banned-term":
                 if (!eventArgs.Member.IsAdmin())
                 {
@@ -350,8 +406,17 @@ public class InteractionHandler : UnixService
                 }
 
                 // configure the guild
-                await eventArgs.SendSuccessAsync($"Successfully configured!");
-                break;
+                try
+                {
+                    await _ownerService.ConfigureGuildAsync(realGuildId, realMuteRole, realModLog, realMessageLog, realModRole, realAdminRole, autoModEnabled);
+                    await eventArgs.SendSuccessAsync($"Successfully configured!");
+                    break;
+                }
+                catch (Exception e)
+                {
+                    await eventArgs.SendEphmeralErrorAsync(e.Message);
+                    break;
+                }
             case "disallow-guild":
                 if (!Bot.OwnerIds.Contains(eventArgs.Member.Id))
                 {
@@ -526,7 +591,7 @@ public class InteractionHandler : UnixService
                     await eventArgs.SendEphmeralErrorAsync(PermissionLevel.Moderator);
                     break;
                 }
-                
+
                 TimeSpan? mtS = null;
                 var muteUser = slashCommandInteraction.Entities.Users.Values.First();
                 var muteReason = slashCommandInteraction.Options.GetValueOrDefault("reason")?.Value as string;
@@ -536,12 +601,13 @@ public class InteractionHandler : UnixService
                     await eventArgs.SendEphmeralErrorAsync("Member not found.");
                     break;
                 }
+
                 if (!TimeSpanParser.TryParseTimeSpan(muteDuration, out var muteTimeSpanDuration))
                 {
                     await eventArgs.SendEphmeralErrorAsync("The duration provided is not valid.");
                     break;
                 }
-                
+
                 mtS = muteTimeSpanDuration;
                 try
                 {
@@ -644,6 +710,7 @@ public class InteractionHandler : UnixService
                     await eventArgs.SendSuccessAsync($"Purged **{delMessages.Count()}** sent by **{purgeUser.Tag}**");
                     break;
                 }
+
                 await eventArgs.SendSuccessAsync($"Purged **{delMessages.Count()}**");
                 break;
             case "unmute":
@@ -793,6 +860,7 @@ public class InteractionHandler : UnixService
                     await eventArgs.SendEphmeralErrorAsync("You already have that role, so I can't give it to you.");
                     break;
                 }
+
                 await Bot.GrantRoleAsync(guild.Id, eventArgs.Member.Id, roleToAdd.Id);
                 await eventArgs.SendSuccessAsync($"Granted you the **{roleToAdd.Name}** role.");
                 break;
@@ -803,11 +871,13 @@ public class InteractionHandler : UnixService
                     await eventArgs.SendEphmeralErrorAsync("Unknown role.");
                     break;
                 }
+
                 if (!eventArgs.Member.RoleIds.Contains(roleToRemove.Id))
                 {
                     await eventArgs.SendEphmeralErrorAsync("You don't have that role, so I can't remove it.");
                     break;
                 }
+
                 await Bot.RevokeRoleAsync(guild.Id, eventArgs.Member.Id, roleToRemove.Id);
                 await eventArgs.SendSuccessAsync($"Removed the **{roleToRemove.Name}** role from you.");
                 break;
@@ -843,7 +913,7 @@ public class InteractionHandler : UnixService
                     await eventArgs.SendEphmeralErrorAsync(PermissionLevel.Administrator);
                     break;
                 }
-                
+
                 var configRoleToRemove = slashCommandInteraction.Entities.Roles.Values.First();
                 var bUser = guild.GetMember(Bot.CurrentUser.Id);
                 if (configRoleToRemove.Position > bUser.GetHierarchy())
@@ -874,6 +944,7 @@ public class InteractionHandler : UnixService
                         await _guildService.RemoveSelfAssignableRoleAsync(guild.Id, name.Id);
                         continue;
                     }
+
                     roles.Add(name.Name);
                 }
 

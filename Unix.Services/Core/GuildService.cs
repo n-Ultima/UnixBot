@@ -95,19 +95,6 @@ namespace Unix.Services.Core
             }
         }
         
-        public async Task ModifyGuildPrefixAsync(Snowflake guildId, string newPrefix)
-        {
-            using (var scope = ServiceProvider.CreateScope())
-            {
-                var unixContext = scope.ServiceProvider.GetRequiredService<UnixContext>();
-                var guild = await unixContext.GuildConfigurations
-                    .FindAsync(guildId);
-                if (guild == null)
-                    throw new Exception("Guild should be configured using the `configure-guild` command first.");
-                guild.Prefix = newPrefix;
-                await unixContext.SaveChangesAsync();
-            }
-        }
 
         public async Task ModifyGuildModRoleAsync(Snowflake guildId, Snowflake modRoleId)
         {
@@ -142,18 +129,24 @@ namespace Unix.Services.Core
                 await unixContext.SaveChangesAsync();
             }
         }
-        public async Task<string> FetchGuildPrefixAsync(Snowflake guildId)
+
+        public async Task ModifyRequiredRoleAsync(Snowflake guildId, Snowflake requiredRole)
         {
             using (var scope = ServiceProvider.CreateScope())
             {
                 var unixContext = scope.ServiceProvider.GetRequiredService<UnixContext>();
-                return await unixContext.GuildConfigurations
-                    .Where(x => x.Id == guildId)
-                    .Select(x => x.Prefix)
-                    .SingleOrDefaultAsync();
+                var guildConfig = await unixContext.GuildConfigurations
+                    .FindAsync(guildId);
+                if (guildConfig == null)
+                {
+                    throw new Exception("Guild should be configured using the `configure-guild` command first.");
+                }
+
+                guildConfig.RequiredRoleToUse = requiredRole;
+                await unixContext.SaveChangesAsync();
             }
         }
-
+        
         public async Task ModifyGuildSpamThresholdAsync(Snowflake guildId, int amount)
         {
             using (var scope = ServiceProvider.CreateScope())
@@ -169,21 +162,6 @@ namespace Unix.Services.Core
                 guildConfig.AmountOfMessagesConsideredSpam = amount;
                 await unixContext.SaveChangesAsync();
                 SpamHandler.AmountOfMessages[guildConfig.Id] = amount;
-            }
-        }
-        public async Task<List<IPrefix>> FetchIPrefixesAsync(Snowflake guildId)
-        {
-            using (var scope = ServiceProvider.CreateScope())
-            {
-                var unixContext = scope.ServiceProvider.GetRequiredService<UnixContext>();
-                var results = await unixContext.GuildConfigurations
-                    .Where(x => x.Id == guildId)
-                    .Select(x => x.Prefix)
-                    .SingleOrDefaultAsync();
-                List<IPrefix> prefixes = new();
-                prefixes.Add(new StringPrefix(results));
-                prefixes.Add(new MentionPrefix(Bot.CurrentUser.Id));
-                return prefixes;
             }
         }
 

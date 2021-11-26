@@ -33,7 +33,7 @@ namespace Unix.Services
             }
         }
         
-        public async Task ConfigureGuildAsync(Snowflake guildId, string prefix, Snowflake muteRoleId, Snowflake modLogChannelId, Snowflake messageLogChannelId,Snowflake modRoleId, Snowflake adminRoleId, bool automodEnabled)
+        public async Task ConfigureGuildAsync(Snowflake guildId, Snowflake muteRoleId, Snowflake modLogChannelId, Snowflake messageLogChannelId,Snowflake modRoleId, Snowflake adminRoleId, bool automodEnabled)
         {
             using (var scope = ServiceProvider.CreateScope())
             {
@@ -44,7 +44,6 @@ namespace Unix.Services
                 unixContext.GuildConfigurations.Add(new GuildConfiguration
                 {
                     Id = guildId,
-                    Prefix = prefix,
                     MuteRoleId = muteRoleId,
                     ModLogChannelId = modLogChannelId,
                     MessageLogChannelId = messageLogChannelId,

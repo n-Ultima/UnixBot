@@ -7,8 +7,6 @@ namespace Unix.Data.Models.Core
     {
         public Snowflake Id { get; set; }
         
-        public string Prefix { get; set; }
-        
         public Snowflake ModLogChannelId { get; set; }
         
         public Snowflake ModeratorRoleId { get; set; }
