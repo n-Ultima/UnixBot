@@ -234,7 +234,7 @@ public class InteractionHandler : UnixService
                     break;
                 }
 
-                var bannedTermOption = slashCommandInteraction.Options.GetValueOrDefault("amount")?.Value as string;
+                var bannedTermOption = slashCommandInteraction.Options.GetValueOrDefault("term")?.Value as string;
                 try
                 {
                     await _guildService.AddBannedTermAsync(eventArgs.GuildId.Value, bannedTermOption);
@@ -254,7 +254,7 @@ public class InteractionHandler : UnixService
                     break;
                 }
 
-                var removedBannedTermOption = slashCommandInteraction.Options.GetValueOrDefault("amount")?.Value as string;
+                var removedBannedTermOption = slashCommandInteraction.Options.GetValueOrDefault("term")?.Value as string;
                 try
                 {
                     await _guildService.RemoveBannedTermAsync(eventArgs.GuildId.Value, removedBannedTermOption);
