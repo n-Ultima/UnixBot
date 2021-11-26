@@ -54,30 +54,11 @@ public class InteractionHandler : UnixService
         }
 
         var guild = Bot.GetGuild(eventArgs.GuildId.Value);
-        if (eventArgs.Member.RoleIds.Any())
+        if (!eventArgs.Member.CanUseCommands())
         {
-            if (guildConfig.RequiredRoleToUse != guildConfig.Id)
-            {
-                if (!eventArgs.Member.RoleIds.Contains(guildConfig.RequiredRoleToUse))
-                {
-                    // err
-                    await eventArgs.SendEphmeralErrorAsync($"Missing permissions.");
-                }
-            }
-            else
-            {
-                goto switchStatement;
-            }
+            await eventArgs.SendEphmeralErrorAsync($"Missing permissions.");
+            return;
         }
-        else
-        {
-            if (guildConfig.RequiredRoleToUse != guild.Id)
-            {
-                await eventArgs.SendEphmeralErrorAsync("Missing permissions.");
-            }
-        }
-
-        switchStatement:
         switch (slashCommandInteraction.CommandName)
         {
             case "ping":

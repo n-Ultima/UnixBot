@@ -42,7 +42,6 @@ namespace Unix.Services.GatewayEventHandlers
                     }
                 }
 
-                await SetupUnixGlobalSlashCommandsAsync();
                 var globalCmds = await Bot.FetchGlobalApplicationCommandsAsync(Bot.CurrentUser.Id);
                 if (!globalCmds.Any())
                 {

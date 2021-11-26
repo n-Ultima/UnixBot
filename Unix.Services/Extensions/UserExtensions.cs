@@ -11,6 +11,44 @@ public static class UserExtensions
     public static ConcurrentDictionary<Snowflake, Snowflake> GuildModRoleIds = new();
     public static ConcurrentDictionary<Snowflake, Snowflake> GuildAdminRoleIds = new();
 
+    public static bool CanUseCommands(this IMember member)
+    {
+        if (member.IsModerator() || member.IsAdmin() || member.GetGuild().OwnerId == member.Id)
+        {
+            return true;
+        }
+        using var unixContext = new UnixContext();
+        var guildConfig = unixContext.GuildConfigurations
+            .Find(member.GuildId);
+        if (guildConfig == null)
+        {
+            return false;
+        }
+        if (member.RoleIds.Any())
+        {
+            if (guildConfig.RequiredRoleToUse != guildConfig.Id)
+            {
+                if (!member.RoleIds.Contains(guildConfig.RequiredRoleToUse))
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return true;
+            }
+        }
+        else
+        {
+            if (guildConfig.RequiredRoleToUse != member.GuildId)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+    
     public static bool IsModerator(this IMember member)
     {
         var roles = member.RoleIds.ToList();
