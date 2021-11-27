@@ -998,10 +998,12 @@ public class InteractionHandler : UnixService
                 {
                     await eventArgs.SendEphmeralErrorAsync($"No reminders found.");
                 }
-                var currentRemindersEmbed = new LocalEmbed();
+
+                var currentRemindersEmbed = new LocalEmbed()
+                    .WithColor(System.Drawing.Color.Gold);
                 foreach (var reminder in currentReminders.OrderBy(x => x.ExecutionTime))
                 {
-                    currentRemindersEmbed.AddField($"{reminder.Value}", $"{Markdown.Timestamp(reminder.ExecutionTime)}");
+                    currentRemindersEmbed.AddField($"ID: {reminder.Id} - {reminder.Value}", $"I will remind you on {Markdown.Timestamp(reminder.ExecutionTime)}");
                 }
 
                 await eventArgs.Interaction.Response().SendMessageAsync(new LocalInteractionResponse()

@@ -40,9 +40,9 @@ public class ReminderExecutionHandler : UnixService
                     .FirstOrDefault();
                 if (expiringReminder.ExecutionTime <= DateTimeOffset.UtcNow)
                 {
-                    var timeAgo = (DateTimeOffset.UtcNow - expiringReminder.CreatedAt).Humanize(precision: 10);
                     await Bot.SendMessageAsync(expiringReminder.ChannelId, new LocalMessage()
-                        .WithContent($"{Mention.User(expiringReminder.UserId)} - **{timeAgo}** | `{expiringReminder.Value}`"));
+                        .WithContent($"{Mention.User(expiringReminder.UserId)} - reminder created on {Markdown.Timestamp(expiringReminder.CreatedAt)} | `{expiringReminder.Value}`"));
+                    await _reminderService.DeleteReminderAsync(expiringReminder.Id);
                     await Task.Delay(30000);
                     continue;
                 }
