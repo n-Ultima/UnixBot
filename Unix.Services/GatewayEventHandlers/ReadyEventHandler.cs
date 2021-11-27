@@ -42,6 +42,7 @@ namespace Unix.Services.GatewayEventHandlers
                     }
                 }
 
+                await SetupUnixGlobalSlashCommandsAsync();
                 var globalCmds = await Bot.FetchGlobalApplicationCommandsAsync(Bot.CurrentUser.Id);
                 if (!globalCmds.Any())
                 {
@@ -516,6 +517,39 @@ namespace Unix.Services.GatewayEventHandlers
                         .WithIsRequired()
                 });
             cmds.Add(configReqRoleCmd);
+            var remindCmd = new LocalSlashCommand()
+                .WithName("remind")
+                .WithDescription("Sets yourself a reminder.")
+                .WithOptions(new[]
+                {
+                    new LocalSlashCommandOption()
+                        .WithName("duration")
+                        .WithDescription("The duration of the reminder(when do you want to be reminded).")
+                        .WithType(SlashCommandOptionType.String)
+                        .WithIsRequired(),
+                    new LocalSlashCommandOption()
+                        .WithName("message")
+                        .WithDescription("What do you want to be reminded of?")
+                        .WithType(SlashCommandOptionType.String)
+                        .WithIsRequired()
+                });
+            cmds.Add(remindCmd);
+            var deleteRemindCmd = new LocalSlashCommand()
+                .WithName("reminder-delete")
+                .WithDescription("Deletes one of your reminders.")
+                .WithOptions(new[]
+                {
+                    new LocalSlashCommandOption()
+                        .WithName("id")
+                        .WithDescription("The ID of the reminder you want to delete.")
+                        .WithType(SlashCommandOptionType.Integer)
+                        .WithIsRequired()
+                });
+            cmds.Add(deleteRemindCmd);
+            var reminderCmd = new LocalSlashCommand()
+                .WithName("reminders")
+                .WithDescription("Fetches a list of your current reminders.");
+            cmds.Add(reminderCmd);
             await Bot.SetGlobalApplicationCommandsAsync(Bot.CurrentUser.Id, cmds);
         }
     }

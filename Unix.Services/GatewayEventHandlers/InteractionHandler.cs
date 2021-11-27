@@ -21,12 +21,13 @@ public class InteractionHandler : UnixService
     private readonly OwnerService _ownerService;
     private readonly GuildService _guildService;
     private readonly ModerationService _moderationService;
-
-    public InteractionHandler(IServiceProvider serviceProvider, OwnerService ownerService, GuildService guildService, ModerationService moderationService) : base(serviceProvider)
+    private readonly ReminderService _reminderService;
+    public InteractionHandler(IServiceProvider serviceProvider, OwnerService ownerService, GuildService guildService, ModerationService moderationService, ReminderService reminderService) : base(serviceProvider)
     {
         _ownerService = ownerService;
         _guildService = guildService;
         _moderationService = moderationService;
+        _reminderService = reminderService;
     }
 
     protected override async ValueTask OnInteractionReceived(InteractionReceivedEventArgs eventArgs)
@@ -942,9 +943,69 @@ public class InteractionHandler : UnixService
                     .WithIsEphemeral()
                     .WithEmbeds(roleHelpEmbed));
                 break;
-            default:
-                Log.Logger.Error("Didn't work");
-                Log.Logger.Error(slashCommandInteraction.CommandName);
+            case "remind":
+                var remindTs= slashCommandInteraction.Options.GetValueOrDefault("duration")?.Value as string;
+                var remindMessage = slashCommandInteraction.Options.GetValueOrDefault("message")?.Value as string;
+                if (!TimeSpanParser.TryParseTimeSpan(remindTs, out var reminderTimeSpan))
+                {
+                    await eventArgs.SendEphmeralErrorAsync("Invalid time span provided.");
+                    break;
+                }
+
+                try
+                {
+                    await _reminderService.CreateReminderAsync(guild.Id, eventArgs.ChannelId, eventArgs.Member.Id, reminderTimeSpan, remindMessage);
+                    await eventArgs.SendSuccessAsync($"Reminder set for {reminderTimeSpan.Humanize(precision: 10)}");
+                    break;
+                }
+                catch (Exception e)
+                {
+                    await eventArgs.SendEphmeralErrorAsync(e.Message);
+                    break;
+                }
+            case "reminder-delete":
+                var reminderId = Convert.ToInt64(slashCommandInteraction.Options.GetValueOrDefault("id")?.Value);
+                var reminderToDelete = await _reminderService.FetchReminderAsync(reminderId);
+                if (reminderToDelete == null)
+                {
+                    await eventArgs.SendEphmeralErrorAsync("A reminder with that ID doesn't exist.");
+                    break;
+                }
+
+                if (reminderToDelete.UserId != eventArgs.Member.Id)
+                {
+                    if (!eventArgs.Member.IsModerator() || !eventArgs.Member.IsAdmin())
+                    {
+                        await eventArgs.SendEphmeralErrorAsync("You must either own this reminder or be a moderator or administrator to delete it.");
+                        break;
+                    }
+                }
+
+                try
+                {
+                    await _reminderService.DeleteReminderAsync(reminderId);
+                    await eventArgs.SendSuccessAsync($"Reminder deleted.");
+                    break;
+                }
+                catch (Exception e)
+                {
+                    await eventArgs.SendEphmeralErrorAsync(e.Message);
+                    break;
+                }
+            case "reminders":
+                var currentReminders = await _reminderService.FetchRemindersForUserAsync(guild.Id, eventArgs.Member.Id);
+                if (!currentReminders.Any())
+                {
+                    await eventArgs.SendEphmeralErrorAsync($"No reminders found.");
+                }
+                var currentRemindersEmbed = new LocalEmbed();
+                foreach (var reminder in currentReminders.OrderBy(x => x.ExecutionTime))
+                {
+                    currentRemindersEmbed.AddField($"{reminder.Value}", $"{Markdown.Timestamp(reminder.ExecutionTime)}");
+                }
+
+                await eventArgs.Interaction.Response().SendMessageAsync(new LocalInteractionResponse()
+                    .WithEmbeds(currentRemindersEmbed));
                 break;
         }
     }

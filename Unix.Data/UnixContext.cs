@@ -26,6 +26,8 @@ namespace Unix.Data
             optionsBuilder.UseNpgsql(UnixConfig.ConnectionString);
         }
         public DbSet<GuildConfiguration> GuildConfigurations { get; set; }
+        
+        public DbSet<Reminder> Reminders { get; set; }
         public DbSet<Infraction> Infractions { get; set; }
     }
 }
