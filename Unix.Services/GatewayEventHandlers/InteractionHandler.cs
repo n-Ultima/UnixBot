@@ -190,6 +190,25 @@ public class InteractionHandler : UnixService
                 await _guildService.ModifyGuildSpamThresholdAsync(eventArgs.GuildId.Value, actualSpamAmount);
                 await eventArgs.SendSuccessAsync($"If a user sends more than `{actualSpamAmount}` in `3` seconds, they will be warned.");
                 break;
+            case "configure-phisherman":
+                if (!eventArgs.Member.IsAdmin())
+                {
+                    await eventArgs.SendEphmeralErrorAsync(PermissionLevel.Administrator);
+                    break;
+                }
+
+                var apiKey = slashCommandInteraction.Options.GetValueOrDefault("key")?.Value as string;
+                try
+                {
+                    await _guildService.ModifyGuildPhishermanApiKeyAsync(guild.Id, apiKey);
+                    await eventArgs.SendSuccessAsync($"Phisherman API Key set!");
+                    break;
+                }
+                catch (Exception e)
+                {
+                    await eventArgs.SendEphmeralErrorAsync(e.Message);
+                    break;
+                }
             case "configure-requiredrole":
                 if (!eventArgs.Member.IsAdmin())
                 {

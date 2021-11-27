@@ -10,6 +10,7 @@ using Disqord.Gateway;
 using Disqord.Rest;
 using Disqord.Rest.Api;
 using Newtonsoft.Json;
+using Serilog;
 using Unix.Data.Models.Core;
 using Unix.Data.Models.Moderation;
 using Unix.Services.Core;
@@ -21,12 +22,14 @@ namespace Unix.Services.GatewayEventHandlers
         private readonly GuildService _guildService;
         private readonly ModerationService _moderationService;
         private readonly HttpClient _httpClient;
+        private readonly PhishermanService _phishermanService;
         public Dictionary<Snowflake, bool> GuildProcessMessages = new();
-        public MessageCreateHandler(HttpClient httpClient, IServiceProvider serviceProvider, GuildService guildService, ModerationService moderationService) : base(serviceProvider)
+        public MessageCreateHandler(HttpClient httpClient, IServiceProvider serviceProvider, GuildService guildService, ModerationService moderationService, PhishermanService phishermanService) : base(serviceProvider)
         {
             _moderationService = moderationService;
             _guildService = guildService;
             _httpClient = httpClient;
+            _phishermanService = phishermanService;
         }
 
         protected override async ValueTask OnMessageReceived(BotMessageReceivedEventArgs eventArgs)
@@ -62,7 +65,12 @@ namespace Unix.Services.GatewayEventHandlers
                 return;
             }
 
-            if (eventArgs.Member.RoleIds.Contains(guildConfig.AdministratorRoleId) || eventArgs.Member.RoleIds.Contains(guildConfig.ModeratorRoleId))
+            if (eventArgs.Member.RoleIds.Contains(guildConfig.AdministratorRoleId) || eventArgs.Member.RoleIds.Contains(guildConfig.ModeratorRoleId) || eventArgs.Member.Id == eventArgs.Member.GetGuild().OwnerId)
+            {
+                return;
+            }
+
+            if (eventArgs.Member.IsBot)
             {
                 return;
             }
@@ -83,6 +91,29 @@ namespace Unix.Services.GatewayEventHandlers
                 await _moderationService.CreateInfractionAsync(eventArgs.GuildId.Value, Bot.CurrentUser.Id, eventArgs.Message.Author.Id, InfractionType.Warn, "Message contained invite link not present on whitelist.", null);
                 return;
             }
+
+            if (guildConfig.PhishermanApiKey != null)
+            {
+                var linkMatch = Regex.Match(eventArgs.Message.Content, @"(https?://)?(www\.)?([a-z]+)\.([a-z]+)");
+                if (linkMatch.Success)
+                {
+                    var group = linkMatch.Groups[0].ToString();
+                    var isSus = await _phishermanService.IsDomainSuspiciousAsync(eventArgs.GuildId.Value, group);
+                    if (isSus)
+                    {
+                        // The domain is marked as suspicious. We now need to actually see if it's a verified phish.
+                        var isVerifiedPhish = await _phishermanService.IsVerifiedPhishAsync(eventArgs.GuildId.Value, group);
+                        if (isVerifiedPhish)
+                        {
+                            // delete the message, report back to the API.
+                            await eventArgs.Message.DeleteAsync();
+                            await _moderationService.CreateInfractionAsync(eventArgs.GuildId.Value, Bot.CurrentUser.Id, eventArgs.Message.Author.Id, InfractionType.Warn, $"Message sent contained a suspicious link({group})", null);
+                            await _phishermanService.ReportCaughtPhishAsync(eventArgs.GuildId.Value, group);
+                            return;
+                        }
+                    }
+                }
+            }
         }
 
         public async Task AutoModerateAsync(IUserMessage message, GuildConfiguration guildConfig)
@@ -101,6 +132,28 @@ namespace Unix.Services.GatewayEventHandlers
                 }
                 await message.DeleteAsync();
                 await _moderationService.CreateInfractionAsync(guildConfig.Id, Bot.CurrentUser.Id, message.Author.Id, InfractionType.Warn, "Message contained invite link not present on whitelist.", null);
+            }
+            if (guildConfig.PhishermanApiKey != null)
+            {
+                var linkMatch = Regex.Match(message.Content, @"(https?://)?(www\.)?([a-z]+)\.([a-z]+)");
+                if (linkMatch.Success)
+                {
+                    var group = linkMatch.Groups[0].ToString();
+                    var isSus = await _phishermanService.IsDomainSuspiciousAsync(guildConfig.Id, group);
+                    if (isSus)
+                    {
+                        // The domain is marked as suspicious. We now need to actually see if it's a verified phish.
+                        var isVerifiedPhish = await _phishermanService.IsVerifiedPhishAsync(guildConfig.Id, group);
+                        if (isVerifiedPhish)
+                        {
+                            // delete the message, report back to the API.
+                            await message.DeleteAsync();
+                            await _moderationService.CreateInfractionAsync(guildConfig.Id, Bot.CurrentUser.Id, message.Author.Id, InfractionType.Warn, $"Message sent contained a suspicious link({group})", null);
+                            await _phishermanService.ReportCaughtPhishAsync(guildConfig.Id, group);
+                            return;
+                        }
+                    }
+                }
             }
         }
         private async Task<bool> IsGuildWhitelisted(GuildConfiguration guildConfiguration, string code)

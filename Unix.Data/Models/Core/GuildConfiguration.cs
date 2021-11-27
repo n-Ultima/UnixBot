@@ -26,5 +26,7 @@ namespace Unix.Data.Models.Core
 
         public List<ulong> SelfAssignableRoles { get; set; } = new();
         public int AmountOfMessagesConsideredSpam { get; set; }
+        
+        public string PhishermanApiKey { get; set; }
     }
 }

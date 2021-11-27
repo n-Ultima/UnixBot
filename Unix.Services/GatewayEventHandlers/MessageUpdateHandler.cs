@@ -58,7 +58,10 @@ namespace Unix.Services.GatewayEventHandlers
 
                 if (msgHandler.GuildProcessMessages[eventArgs.GuildId.Value])
                 {
-                    await msgHandler.AutoModerateAsync(eventArgs.NewMessage, guildConfig);
+                    if (!eventArgs.NewMessage.Author.IsBot)
+                    {
+                        await msgHandler.AutoModerateAsync(eventArgs.NewMessage, guildConfig);
+                    }
                 }
             }
 

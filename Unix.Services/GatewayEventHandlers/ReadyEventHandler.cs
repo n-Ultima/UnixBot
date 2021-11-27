@@ -42,7 +42,6 @@ namespace Unix.Services.GatewayEventHandlers
                     }
                 }
 
-                await SetupUnixGlobalSlashCommandsAsync();
                 var globalCmds = await Bot.FetchGlobalApplicationCommandsAsync(Bot.CurrentUser.Id);
                 if (!globalCmds.Any())
                 {
@@ -550,6 +549,18 @@ namespace Unix.Services.GatewayEventHandlers
                 .WithName("reminders")
                 .WithDescription("Fetches a list of your current reminders.");
             cmds.Add(reminderCmd);
+            var configPhishermanCmd = new LocalSlashCommand()
+                .WithName("configure-phisherman")
+                .WithDescription("Configures your guild's API key to the phisherman API.")
+                .WithOptions(new[]
+                {
+                    new LocalSlashCommandOption()
+                        .WithName("key")
+                        .WithDescription("Your API key.")
+                        .WithType(SlashCommandOptionType.String)
+                        .WithIsRequired()
+                });
+            cmds.Add(configPhishermanCmd);
             await Bot.SetGlobalApplicationCommandsAsync(Bot.CurrentUser.Id, cmds);
         }
     }

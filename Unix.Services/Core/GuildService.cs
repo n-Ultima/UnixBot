@@ -165,6 +165,22 @@ namespace Unix.Services.Core
             }
         }
 
+        public async Task ModifyGuildPhishermanApiKeyAsync(Snowflake guildId, string apiKey)
+        {
+            using (var scope = ServiceProvider.CreateScope())
+            {
+                var unixContext = scope.ServiceProvider.GetRequiredService<UnixContext>();
+                var guildConfig = await unixContext.GuildConfigurations
+                    .FindAsync(guildId);
+                if (guildConfig == null)
+                {
+                    throw new Exception("Guild should be configured using the `configure-guild` command first.");
+                }
+
+                guildConfig.PhishermanApiKey = apiKey;
+                await unixContext.SaveChangesAsync();
+            }
+        }
         public async Task AddBannedTermAsync(Snowflake guildId, string bannedTerm)
         {
             using (var scope = ServiceProvider.CreateScope())
