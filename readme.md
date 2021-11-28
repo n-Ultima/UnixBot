@@ -10,28 +10,13 @@ This is the main source code repository for Unix. It contains the source code fo
 - This bot is still in development; if any issue arises feel free to create an issue on Github.
 #### **Contributing**
 
-If you are interested in contributing to the Unix Bot:
+This README is for users and server admins, You can get more details on how to contribute [HERE](https://github.com/nUltima/UnixBot/blob/main/.github/CONTRIBUTING.md).
 
-* Create a fork:
-* Clone your fork:
-```sh
-git clone https://github.com/<usernameHere>/UnixBot.git
-```
-* Create a branch:
-```sh
-git checkout -b feature/MyAmazingFeature
-```
-* Commit your changes:
-```sh
-git add *
-git commit "Commit message"
-git push origin feature/MyAmazingFeature
-```
-* Open a Pull Request!
+
 
 #### **License**
 
-Copyright 2021  Ultima.
+Copyright 2021 Ultima.
 
 This Software is distributed under the MIT license.
 See [MIT](https://github.com/n-Ultima/UnixBot/blob/main/LICENSE) for details.
