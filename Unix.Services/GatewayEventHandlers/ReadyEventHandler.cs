@@ -22,7 +22,6 @@ namespace Unix.Services.GatewayEventHandlers
 
         protected override async ValueTask OnReady(ReadyEventArgs e)
         {
-            Log.Logger.Information("Ready received");
             using (var scope = ServiceProvider.CreateScope())
             {
                 var unixContext = scope.ServiceProvider.GetRequiredService<UnixContext>();
@@ -49,6 +48,8 @@ namespace Unix.Services.GatewayEventHandlers
                     await SetupUnixGlobalSlashCommandsAsync();
                 }
             }
+
+            await Bot.SetPresenceAsync(UserStatus.Online, new LocalActivity("Request access to use Unix at http://www.ultima.one/unix", ActivityType.Custom));
         }
         public async Task SetupUnixGlobalSlashCommandsAsync()
         {
