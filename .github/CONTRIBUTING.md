@@ -16,7 +16,8 @@ If you have any questions regarding Unix, you can join the [Unix Discord Server]
 * Download the [.NET SDK](https://dotnet.microsoft.com/download)
 
 ## How to Contribute:
-* Create and clone your fork(git clone <your fork> )
+* Create and clone your fork
+`git clone <your fork>` 
 * Create a branch:
 ```
 git checkout -b feature/FeatureName
