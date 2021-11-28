@@ -2,9 +2,9 @@
 ## Description
 This file serves as a base mark for those who wish to contribute to the UnixBot project. Maintainers, and guidelines, are listed here, along with steps that should be taken before attempting to contribute.
 ## Maintainers
-Ultima#2000
+* Ultima#2000
 ## Contributors
-Voxel#8113
+* Voxel#8113
 ## Before Contributing
 
 *  Before you contribute(via a pull request), it is asked that you run `dotnet build -c Release /warnaserror` on your local branch. We strive to not have any warnings, and this command will flag all warnings as errors. It is also asked that when naming variables, properties, etc, that they represent the data there holding and make sense to the context of what you're writing.
