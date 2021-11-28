@@ -1,6 +1,6 @@
 #  Unix Discord Bot
 ### A Moderation Utility to make moderation easier.
-This is the main source code repository for Unix. It contains the source code for the Unix Discord Bot.
+This is the main source code repository for Unix. It contains the source code for the Unix Discord Bot, as well as the eventual documentation
 
 
 #### Notes
