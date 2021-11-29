@@ -7,7 +7,9 @@ import (
 )
 
 func main() {
-	http.Handle("/unix", http.FileServer(http.Dir("./static")))
+	fs := http.FileServer(http.Dir("./static"))
+	http.Handle("/unix", http.StripPrefix("/unix", fs))
+	//http.Handle("/unix", http.FileServer(http.Dir("./static")))
 	http.HandleFunc("/unix/docs", serveDocs)
 	http.HandleFunc("/unix/docs/configuration", serveConfigDocs)
 	http.HandleFunc("/unix/docs/automod", serveAutomodDocs)
@@ -16,7 +18,7 @@ func main() {
 	http.HandleFunc("/unix/docs/role", serveRoleDocs)
 	http.HandleFunc("/unix/docs/utility", serveUtilDocs)
 	log.Info("Setting up application on port 8080.")
-	if err := http.ListenAndServe(":20128", nil); err != nil {
+	if err := http.ListenAndServe(":8080", nil); err != nil {
 		log.Fatal(err)
 	}
 }
