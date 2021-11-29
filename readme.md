@@ -1,6 +1,6 @@
 #  Unix Discord Bot
 ### A Moderation Utility to make moderation easier.
-This is the main source code repository for Unix. It contains the source code for the Unix Discord Bot.
+This is the main source code repository for Unix. It contains the source code for the Unix Discord Bot, as well as the eventual documentation
 
 
 #### Notes
@@ -9,29 +9,13 @@ This is the main source code repository for Unix. It contains the source code fo
 
 - This bot is still in development; if any issue arises feel free to create an issue on Github.
 #### **Contributing**
+If you are interested in contributing, please check out the [guidelines] (https://github.com/n-Ultima/UnixBot/blob/main/.github/CONTRIBUTING.md)
 
-If you are interested in contributing to the Unix Bot:
 
-* Create a fork:
-* Clone your fork:
-```sh
-git clone https://github.com/<usernameHere>/UnixBot.git
-```
-* Create a branch:
-```sh
-git checkout -b feature/MyAmazingFeature
-```
-* Commit your changes:
-```sh
-git add *
-git commit "Commit message"
-git push origin feature/MyAmazingFeature
-```
-* Open a Pull Request!
 
 #### **License**
 
-Copyright 2021  Ultima.
+Copyright 2021 Ultima.
 
 This Software is distributed under the MIT license.
 See [MIT](https://github.com/n-Ultima/UnixBot/blob/main/LICENSE) for details.
