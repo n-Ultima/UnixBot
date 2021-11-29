@@ -7,14 +7,14 @@ import (
 )
 
 func main() {
-	http.Handle("/", http.FileServer(http.Dir("./static")))
-	http.HandleFunc("/docs", serveDocs)
-	http.HandleFunc("/docs/configuration", serveConfigDocs)
-	http.HandleFunc("/docs/automod", serveAutomodDocs)
-	http.HandleFunc("/docs/moderation", serveModDocs)
-	http.HandleFunc("/docs/infraction", serveInfractionDocs)
-	http.HandleFunc("/docs/role", serveRoleDocs)
-	http.HandleFunc("/docs/utility", serveUtilDocs)
+	http.Handle("/unix", http.FileServer(http.Dir("./static")))
+	http.HandleFunc("/unix/docs", serveDocs)
+	http.HandleFunc("/unix/docs/configuration", serveConfigDocs)
+	http.HandleFunc("/unix/docs/automod", serveAutomodDocs)
+	http.HandleFunc("/unix/docs/moderation", serveModDocs)
+	http.HandleFunc("/unix/docs/infraction", serveInfractionDocs)
+	http.HandleFunc("/unix/docs/role", serveRoleDocs)
+	http.HandleFunc("/unix/docs/utility", serveUtilDocs)
 	log.Info("Setting up application on port 8080.")
 	if err := http.ListenAndServe(":8080", nil); err != nil {
 		log.Fatal(err)
