@@ -98,7 +98,7 @@ namespace Unix.Services.Core
                     ModeratorId = moderatorId,
                     Type = type,
                     SubjectId = subjectId
-                });    
+                });
                 await unixContext.SaveChangesAsync();
                 var guildConfig = await _guildService.FetchGuildConfigurationAsync(guild.Id);
                 switch (type)
@@ -111,7 +111,7 @@ namespace Unix.Services.Core
                         }
                         catch (RestApiException)
                         {
-                            
+
                         }
                         goto Log;
                     case InfractionType.Note:
@@ -124,7 +124,7 @@ namespace Unix.Services.Core
                         }
                         catch (RestApiException)
                         {
-                            
+
                         }
 
                         await guild.CreateBanAsync(subjectId, $"{moderator.Tag} - {reason}");
@@ -137,7 +137,7 @@ namespace Unix.Services.Core
                         }
                         catch (RestApiException)
                         {
-                            
+
                         }
 
                         await guild.KickMemberAsync(subjectId, new DefaultRestRequestOptions
@@ -153,7 +153,7 @@ namespace Unix.Services.Core
                         }
                         catch (RestApiException)
                         {
-                            
+
                         }
 
                         var muteRole = guild.Roles.GetValueOrDefault(guildConfig.MuteRoleId);
@@ -169,7 +169,7 @@ namespace Unix.Services.Core
                         }
                         goto Log;
                 }
-                Log:
+            Log:
                 await LogAsync(guild, member, moderator, type, duration.HasValue
                         ? duration.Value.Humanize(10)
                         : null,
@@ -245,7 +245,7 @@ namespace Unix.Services.Core
                         });
                         goto Log;
                 }
-                Log:
+            Log:
                 await LogInfractionDeletionAsync(infraction, remover, subject, removalMessage);
             }
         }
@@ -271,7 +271,7 @@ namespace Unix.Services.Core
                     .ToListAsync();
             }
         }
-        #nullable  enable
+#nullable enable
         public async Task LogAsync(CachedGuild guild, IRestUser subject, CachedMember moderator, InfractionType type, string? humanizedDuration, string reason)
         {
             if (!GuildModLogIds.ContainsKey(guild.Id))
@@ -307,7 +307,7 @@ namespace Unix.Services.Core
                 await Bot.SendMessageAsync(modLog, new LocalMessage()
                     .WithContent($"**{subject.Tag}**(`{subject.Id}`) received a notice by **{moderator.Tag}**(`{moderator.Id}`). Reason:\n```\n{reason}\n```"));
             }
-            if(type == InfractionType.Mute)
+            if (type == InfractionType.Mute)
             {
                 if (humanizedDuration != null)
                 {
@@ -346,10 +346,10 @@ namespace Unix.Services.Core
                 await Bot.SendMessageAsync(modLog, new LocalMessage()
                     .WithContent($"**{subject.Tag}**(`{subject.Id}`) was {format} by **{moderator.Tag}**(`{moderator.Id}`). Reason:\n```\n{reason}\n```"));
             }
-            
+
         }
-        
-        #nullable  disable
+
+#nullable disable
         public async Task LogInfractionDeletionAsync(Infraction infraction, IRestUser infractionRemover, IRestUser infractionSubject, string reason)
         {
             Snowflake modLog = default;
@@ -392,9 +392,9 @@ namespace Unix.Services.Core
                     Reason = $"{infractionRemover.Tag} - {reason}"
                 });
             }
-            
+
         }
-        
-        
+
+
     }
 }

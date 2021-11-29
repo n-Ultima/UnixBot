@@ -53,7 +53,7 @@ namespace Unix.Services.GatewayEventHandlers
                         continue;
                     }
                     await _moderationService.CreateInfractionAsync(user.Key.GuildId, Bot.CurrentUser.Id, user.Key.Id, InfractionType.Warn, "Spamming messages", null);
-                    if(!SpamDictionary.TryRemove(user.Key, out _))
+                    if (!SpamDictionary.TryRemove(user.Key, out _))
                     {
                         Log.Logger.Error("Failed to remove {key} from the spam dictionary.", user.Key);
                     }
@@ -79,8 +79,12 @@ namespace Unix.Services.GatewayEventHandlers
             {
                 return;
             }
-            
+
             if (eventArgs.Message is not IUserMessage message) return;
+            if (eventArgs.Member == null)
+            {
+                return;
+            }
             if (!AmountOfMessages.TryGetValue(eventArgs.GuildId.Value, out _))
             {
                 var guildConfigTemp = await _guildService.FetchGuildConfigurationAsync(eventArgs.GuildId.Value);
@@ -88,7 +92,7 @@ namespace Unix.Services.GatewayEventHandlers
                 {
                     return;
                 }
-                
+
                 AmountOfMessages.TryAdd(eventArgs.GuildId.Value, guildConfigTemp.AmountOfMessagesConsideredSpam);
             }
             var guildConfig = await _guildService.FetchGuildConfigurationAsync(eventArgs.GuildId.Value);
@@ -105,7 +109,7 @@ namespace Unix.Services.GatewayEventHandlers
             {
                 return;
             }
-            botCheck:
+        botCheck:
             if (message.Author.IsBot)
             {
                 return;

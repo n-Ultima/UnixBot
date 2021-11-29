@@ -20,7 +20,7 @@ namespace Unix.Services.Core
             : base(serviceProvider)
         {
         }
-        
+
         public async Task<GuildConfiguration> FetchGuildConfigurationAsync(Snowflake guildId)
         {
             using (var scope = ServiceProvider.CreateScope())
@@ -38,7 +38,7 @@ namespace Unix.Services.Core
                 var unixContext = scope.ServiceProvider.GetRequiredService<UnixContext>();
                 var guild = await unixContext.GuildConfigurations
                     .FindAsync(guildId);
-                if(guild == null)
+                if (guild == null)
                     throw new Exception("Guild should be configured using the `configure-guild` command first.");
                 guild.MuteRoleId = muteRoleId;
                 await unixContext.SaveChangesAsync();
@@ -52,7 +52,7 @@ namespace Unix.Services.Core
                 var unixContext = scope.ServiceProvider.GetRequiredService<UnixContext>();
                 var guild = await unixContext.GuildConfigurations
                     .FindAsync(guildId);
-                if(guild == null)
+                if (guild == null)
                     throw new Exception("Guild should be configured using the `configure-guild` command first.");
                 guild.ModLogChannelId = modlogChannelId;
                 await unixContext.SaveChangesAsync();
@@ -66,13 +66,13 @@ namespace Unix.Services.Core
                 var unixContext = scope.ServiceProvider.GetRequiredService<UnixContext>();
                 var guild = await unixContext.GuildConfigurations
                     .FindAsync(guildId);
-                if(guild == null)
+                if (guild == null)
                     throw new Exception("Guild should be configured using the `configure-guild` command first.");
                 guild.MessageLogChannelId = messageLogChannelId;
                 await unixContext.SaveChangesAsync();
             }
         }
-        
+
 
         public async Task ConfigureGuildAutomodAsync(Snowflake guildId, bool automodEnabled)
         {
@@ -81,7 +81,7 @@ namespace Unix.Services.Core
                 var unixContext = scope.ServiceProvider.GetRequiredService<UnixContext>();
                 var guild = await unixContext.GuildConfigurations
                     .FindAsync(guildId);
-                if(guild == null)
+                if (guild == null)
                     throw new Exception("Guild should be configured using the `configure-guild` command first.");
                 if (guild.AutomodEnabled == automodEnabled)
                     throw new Exception($"Automod enabled is already {guild.AutomodEnabled}");
@@ -94,7 +94,7 @@ namespace Unix.Services.Core
                 }
             }
         }
-        
+
 
         public async Task ModifyGuildModRoleAsync(Snowflake guildId, Snowflake modRoleId)
         {
@@ -146,7 +146,7 @@ namespace Unix.Services.Core
                 await unixContext.SaveChangesAsync();
             }
         }
-        
+
         public async Task ModifyGuildSpamThresholdAsync(Snowflake guildId, int amount)
         {
             using (var scope = ServiceProvider.CreateScope())
@@ -287,7 +287,7 @@ namespace Unix.Services.Core
                 await unixContext.SaveChangesAsync();
             }
         }
-        
+
         public async Task RemoveSelfAssignableRoleAsync(Snowflake guildId, Snowflake roleId)
         {
             using (var scope = ServiceProvider.CreateScope())

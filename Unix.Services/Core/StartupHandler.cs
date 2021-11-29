@@ -18,7 +18,7 @@ namespace Unix.Services.Core
         {
             _applicationLifetime = applicationLifetime;
         }
-        
+
         public override async Task StartAsync(CancellationToken ct)
         {
             using (var scope = ServiceProvider.CreateScope())
@@ -26,7 +26,7 @@ namespace Unix.Services.Core
                 var unixContext = scope.ServiceProvider.GetRequiredService<UnixContext>();
                 var whitelistedGuilds = await unixContext.GuildConfigurations.Select(x => x.Id).ToListAsync();
                 OwnerService.WhitelistedGuilds.AddRange(whitelistedGuilds);
-            }           
+            }
         }
     }
 }

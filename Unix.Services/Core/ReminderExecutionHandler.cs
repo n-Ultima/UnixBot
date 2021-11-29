@@ -15,7 +15,7 @@ namespace Unix.Services.Core;
 public class ReminderExecutionHandler : UnixService
 {
     private readonly ReminderService _reminderService;
-    
+
     public ReminderExecutionHandler(ReminderService reminderService, IServiceProvider serviceProvider) : base(serviceProvider)
     {
         _reminderService = reminderService;
@@ -23,7 +23,7 @@ public class ReminderExecutionHandler : UnixService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        remindLoop:
+    remindLoop:
         while (true)
         {
             try

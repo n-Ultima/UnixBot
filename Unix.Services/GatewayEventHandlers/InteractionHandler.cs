@@ -160,7 +160,7 @@ public class InteractionHandler : UnixService
                     break;
                 }
 
-                var isEnabled = (bool) enabled.Value;
+                var isEnabled = (bool)enabled.Value;
                 try
                 {
                     await _guildService.ConfigureGuildAutomodAsync(eventArgs.GuildId.Value, isEnabled);
@@ -186,7 +186,7 @@ public class InteractionHandler : UnixService
                     break;
                 }
 
-                var actualSpamAmount = (int) amount.Value;
+                var actualSpamAmount = (int)amount.Value;
                 await _guildService.ModifyGuildSpamThresholdAsync(eventArgs.GuildId.Value, actualSpamAmount);
                 await eventArgs.SendSuccessAsync($"If a user sends more than `{actualSpamAmount}` in `3` seconds, they will be warned.");
                 break;
@@ -369,7 +369,7 @@ public class InteractionHandler : UnixService
                 var modRoleString = slashCommandInteraction.Options.GetValueOrDefault("moderator-role-id")?.Value as string;
                 var adminRoleString = slashCommandInteraction.Options.GetValueOrDefault("administrator-role-id")?.Value as string;
                 var isAutomodEnabled = slashCommandInteraction.Options.TryGetValue("automod-enabled", out var sCommandInteraction);
-                var autoModEnabled = (bool) sCommandInteraction.Value;
+                var autoModEnabled = (bool)sCommandInteraction.Value;
                 if (!Snowflake.TryParse(guildIdString, out var realGuildId))
                 {
                     await eventArgs.SendEphmeralErrorAsync($"Invalid snowflake provided for guild ID.");
@@ -963,7 +963,7 @@ public class InteractionHandler : UnixService
                     .WithEmbeds(roleHelpEmbed));
                 break;
             case "remind":
-                var remindTs= slashCommandInteraction.Options.GetValueOrDefault("duration")?.Value as string;
+                var remindTs = slashCommandInteraction.Options.GetValueOrDefault("duration")?.Value as string;
                 var remindMessage = slashCommandInteraction.Options.GetValueOrDefault("message")?.Value as string;
                 if (!TimeSpanParser.TryParseTimeSpan(remindTs, out var reminderTimeSpan))
                 {

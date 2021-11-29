@@ -9,7 +9,7 @@ namespace Unix.Services.Core
     public class InfractionRescindBehavior : UnixService
     {
         private readonly ModerationService _moderationService;
-        
+
         public InfractionRescindBehavior(IServiceProvider serviceProvider, ModerationService moderationService) : base(serviceProvider)
         {
             _moderationService = moderationService;
@@ -23,7 +23,7 @@ namespace Unix.Services.Core
         protected override async Task ExecuteAsync(CancellationToken ct)
         {
             await Bot.WaitUntilReadyAsync(ct);
-            whileLoop:
+        whileLoop:
             while (true)
             {
                 try
@@ -50,7 +50,7 @@ namespace Unix.Services.Core
                                 reason = "Mute expired.";
                                 break;
                         }
-                    
+
                         await _moderationService.RemoveInfractionAsync(expiringInfraction.Id, expiringInfraction.GuildId, Bot.CurrentUser.Id, reason);
                     }
 
@@ -62,7 +62,7 @@ namespace Unix.Services.Core
                     goto whileLoop;
                 }
             }
-            
+
         }
     }
 }

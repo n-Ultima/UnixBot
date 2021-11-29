@@ -48,7 +48,7 @@ public static class UserExtensions
 
         return true;
     }
-    
+
     public static bool IsModerator(this IMember member)
     {
         var roles = member.RoleIds.ToList();
@@ -80,7 +80,7 @@ public static class UserExtensions
         if (member.Id == member.GetGuild().OwnerId)
         {
             return true;
-            
+
         }
         var roles = member.RoleIds.ToList();
 

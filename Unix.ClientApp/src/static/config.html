@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<head>
+    <title>Unix Documentation</title>
+    <meta charset="utf-8">
+    <meta http-equiv="=X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content = "width=devide-width,initial-scale=1.0">
+</head>
+<style>
+body {
+    background-color: #030115;
+}
+h1 {
+    color: whitesmoke;
+}
+
+h2 {
+    color: whitesmoke;
+}
+h3 {
+    color: whitesmoke;
+}
+p {
+    color: whitesmoke;
+}
+</style>
+<body>
+    <h1>Guild Configuration Commands</h1>
+    <h2>Parameters are marked as optional if surrounded by ( ).</h2>
+    <h3>These commands require you to have Administrator permissions within your guild's configuration, or be the guild owner.</h3>
+    <br>
+    <p>configure-modrole [role] - Configures your guild's moderator role.</p>
+    <p>configure-adminrole [role] - Configures your guild's admin role.</p>
+    <p>configure-requiredrole [role] - Configures the role that members must have to use commands. This only applies to non moderators and administrators.</p>
+    <p>configure-muterole [role] - Sets the mute role for your guild.</p>
+    <p>configure-messagelog [channel] - Sets the message log channel for your guild. Message edits and deletions are logged here.</p>
+    <p>configure-modlog [channel] - Sets the moderation log channel for your guild. Actions taken via commands with Unix are logged here.</p>
+    <p>configure-automod [true | false] - Sets whether to automoderate your server. True for yes, false for no.</p>
+    <p>configure-spam [amount] - Sets the amount of messages considered spam. If a user sends more than x amount of messages within 3 seconds, they will be warned.</p>
+    <p>configure-phisherman [api-key] - Sets the provided API key to your guild for use with Phisherman. View <a href="https://docs.phisherman.gg">phisherman documentation</a> to learn more.</p>
+</body>
