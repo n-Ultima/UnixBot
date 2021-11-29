@@ -37,7 +37,7 @@ public class PhishermanService : UnixService
         using (var request = new HttpRequestMessage(HttpMethod.Get, PhishermanAPIUri + $"/{domain}"))
         {
             request.Headers.Authorization = new AuthenticationHeaderValue($"Bearer", guildConfig.PhishermanApiKey);
-            request.Headers.TryAddWithoutValidation("Content-Type", new[] {"application/json"});
+            request.Headers.TryAddWithoutValidation("Content-Type", new[] { "application/json" });
             var responseMessage = await _httpClient.SendAsync(request);
             var stringResponseMessage = await responseMessage.Content.ReadAsStringAsync();
             var boolRes = Convert.ToBoolean(stringResponseMessage);
@@ -45,7 +45,7 @@ public class PhishermanService : UnixService
         }
     }
 
-    
+
     public async Task<bool> IsVerifiedPhishAsync(Snowflake guildId, string domain)
     {
         var guildConfig = await _guildService.FetchGuildConfigurationAsync(guildId);
@@ -61,7 +61,7 @@ public class PhishermanService : UnixService
         using (var request = new HttpRequestMessage(HttpMethod.Get, PhishermanAPIUri + $"/info/{domain}"))
         {
             request.Headers.Authorization = new AuthenticationHeaderValue($"Bearer", guildConfig.PhishermanApiKey);
-            request.Headers.TryAddWithoutValidation("Content-Type", new[] {"application/json"});
+            request.Headers.TryAddWithoutValidation("Content-Type", new[] { "application/json" });
             var responseMessage = await _httpClient.SendAsync(request);
             var stringResponseMessage = await responseMessage.Content.ReadAsStringAsync();
             JObject jObject = JObject.Parse(stringResponseMessage);
@@ -69,7 +69,7 @@ public class PhishermanService : UnixService
             return isVerified;
         }
     }
-    
+
     public async Task ReportCaughtPhishAsync(Snowflake guildId, string domain)
     {
         var guildConfig = await _guildService.FetchGuildConfigurationAsync(guildId);
@@ -85,8 +85,8 @@ public class PhishermanService : UnixService
         using (var request = new HttpRequestMessage(HttpMethod.Put, PhishermanAPIUri + $"/{domain}"))
         {
             request.Headers.Authorization = new AuthenticationHeaderValue($"Bearer", guildConfig.PhishermanApiKey);
-            request.Headers.TryAddWithoutValidation("Content-Type", new[] {"application/json"});
-            request.Headers.Add("guild", new[] {guildId.ToString()});
+            request.Headers.TryAddWithoutValidation("Content-Type", new[] { "application/json" });
+            request.Headers.Add("guild", new[] { guildId.ToString() });
             await _httpClient.SendAsync(request);
         }
     }

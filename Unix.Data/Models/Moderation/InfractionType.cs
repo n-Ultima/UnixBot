@@ -2,10 +2,10 @@
 {
     public enum InfractionType
     {
-         Note,
-         Warn,
-         Mute,
-         Kick,
-         Ban
+        Note,
+        Warn,
+        Mute,
+        Kick,
+        Ban
     }
 }

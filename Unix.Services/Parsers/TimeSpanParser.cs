@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Threading.Tasks;
-using Disqord.Bot;
-using Qmmands;
 
 namespace Unix.Services.Parsers
 {
-    public static class TimeSpanParser 
+    public static class TimeSpanParser
     {
         public static bool TryParseTimeSpan(this ReadOnlySpan<char> input, out TimeSpan result)
         {

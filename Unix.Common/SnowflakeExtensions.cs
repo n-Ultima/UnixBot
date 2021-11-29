@@ -9,7 +9,7 @@ namespace Unix.Common
         public static Snowflake[] ToSnowflakeArray(this ulong[] ulongArray)
         {
             List<Snowflake> Snowflakes = new();
-            foreach(var entry in ulongArray)
+            foreach (var entry in ulongArray)
             {
                 if (Snowflake.TryParse(entry.ToString(), out Snowflake newFlake))
                 {
@@ -20,6 +20,7 @@ namespace Unix.Common
                     throw new Exception($"An entry provided could not be parsed as a valid snowflake: {entry}");
                 }
             }
-            return Snowflakes.ToArray();         }
+            return Snowflakes.ToArray();
+        }
     }
 }

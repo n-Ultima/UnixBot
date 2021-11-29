@@ -43,6 +43,10 @@ namespace Unix.Services.GatewayEventHandlers
                 return;
             }
 
+            if (eventArgs.Member == null)
+            {
+                return;
+            }
             if (!OwnerService.WhitelistedGuilds.Contains(eventArgs.GuildId.Value))
             {
                 return;
@@ -174,5 +178,5 @@ namespace Unix.Services.GatewayEventHandlers
     {
         public ulong id { get; set; }
     }
-    
+
 }

@@ -18,7 +18,7 @@ namespace Unix.Services.GatewayEventHandlers
     public class ReadyEventHandler : UnixService
     {
         public ReadyEventHandler(IServiceProvider serviceProvider) : base(serviceProvider)
-        {}
+        { }
 
         protected override async ValueTask OnReady(ReadyEventArgs e)
         {
@@ -28,7 +28,7 @@ namespace Unix.Services.GatewayEventHandlers
                 var unixContext = scope.ServiceProvider.GetRequiredService<UnixContext>();
                 var allowedGuildIds = await unixContext.GuildConfigurations.Select(x => x.Id).ToListAsync();
                 var unauthorizedGuilds = e.GuildIds.Except(allowedGuildIds);
-                if(unauthorizedGuilds.Any())
+                if (unauthorizedGuilds.Any())
                 {
                     Log.Logger.Warning("Guilds were found that Unix isn't authorized to operate in. IDs: [{guildIds}]", unauthorizedGuilds.Humanize());
                     // Now, we leave each of the guilds that Unix shouldn't be in.
@@ -52,7 +52,7 @@ namespace Unix.Services.GatewayEventHandlers
         }
         public async Task SetupUnixGlobalSlashCommandsAsync()
         {
-            List<LocalSlashCommand> cmds = new(); 
+            List<LocalSlashCommand> cmds = new();
             var pingCmd = new LocalSlashCommand()
                 .WithName("ping")
                 .WithDescription("Pings the Discord API and returns the latency.");

@@ -9,7 +9,7 @@ namespace Unix.Common
         private string _Token = null!;
         private string _ConnectionString = null!;
         private ulong[] _OwnerIds = default!;
-        
+
         public string Token
         {
             get => _Token;
@@ -31,7 +31,7 @@ namespace Unix.Common
                 _ConnectionString = value;
             }
         }
-        
+
         public ulong[] OwnerIds
         {
             get => _OwnerIds;
@@ -42,7 +42,7 @@ namespace Unix.Common
                 _OwnerIds = value;
             }
         }
-        
+
         public UnixConfiguration()
         {
             LoadConfiguration();

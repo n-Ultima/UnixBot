@@ -47,7 +47,7 @@ public class ReminderService : UnixService
                 .ToListAsync();
         }
     }
-    
+
     public async Task<IEnumerable<Reminder>> FetchRemindersAsync()
     {
         using (var scope = ServiceProvider.CreateScope())
