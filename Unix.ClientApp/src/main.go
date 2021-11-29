@@ -18,7 +18,7 @@ func main() {
 	http.HandleFunc("/unix/docs/role", serveRoleDocs)
 	http.HandleFunc("/unix/docs/utility", serveUtilDocs)
 	log.Info("Setting up application on port 8080.")
-	if err := http.ListenAndServe(":80", nil); err != nil {
+	if err := http.ListenAndServe(":85", nil); err != nil {
 		log.Fatal(err)
 	}
 }
