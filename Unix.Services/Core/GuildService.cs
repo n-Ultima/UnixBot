@@ -10,17 +10,19 @@ using Microsoft.Extensions.DependencyInjection;
 using Unix.Common;
 using Unix.Data;
 using Unix.Data.Models.Core;
+using Unix.Services.Core.Abstractions;
 using Unix.Services.GatewayEventHandlers;
 
 namespace Unix.Services.Core
 {
-    public class GuildService : UnixService
+    public class GuildService : UnixService, IGuildService
     {
         public GuildService(IServiceProvider serviceProvider)
             : base(serviceProvider)
         {
         }
 
+        /// <inheritdoc />
         public async Task<GuildConfiguration> FetchGuildConfigurationAsync(Snowflake guildId)
         {
             using (var scope = ServiceProvider.CreateScope())
@@ -31,6 +33,7 @@ namespace Unix.Services.Core
             }
         }
 
+        /// <inheritdoc />
         public async Task ModifyGuildMuteRoleIdAsync(Snowflake guildId, Snowflake muteRoleId)
         {
             using (var scope = ServiceProvider.CreateScope())
@@ -45,6 +48,7 @@ namespace Unix.Services.Core
             }
         }
 
+        /// <inheritdoc />
         public async Task ModifyGuildModLogChannelIdAsync(Snowflake guildId, Snowflake modlogChannelId)
         {
             using (var scope = ServiceProvider.CreateScope())
@@ -59,6 +63,7 @@ namespace Unix.Services.Core
             }
         }
 
+        /// <inheritdoc />
         public async Task ModifyGuildMessageLogChannelIdAsync(Snowflake guildId, Snowflake messageLogChannelId)
         {
             using (var scope = ServiceProvider.CreateScope())
@@ -73,8 +78,8 @@ namespace Unix.Services.Core
             }
         }
 
-
-        public async Task ConfigureGuildAutomodAsync(Snowflake guildId, bool automodEnabled)
+        /// <inheritdoc />
+        public async Task ModifyGuildAutomodAsync(Snowflake guildId, bool automodEnabled)
         {
             using (var scope = ServiceProvider.CreateScope())
             {
@@ -95,7 +100,7 @@ namespace Unix.Services.Core
             }
         }
 
-
+        /// <inheritdoc />
         public async Task ModifyGuildModRoleAsync(Snowflake guildId, Snowflake modRoleId)
         {
             using (var scope = ServiceProvider.CreateScope())
@@ -112,7 +117,7 @@ namespace Unix.Services.Core
                 await unixContext.SaveChangesAsync();
             }
         }
-
+        /// <inheritdoc />
         public async Task ModifyGuildAdminRoleAsync(Snowflake guildId, Snowflake adminRoleId)
         {
             using (var scope = ServiceProvider.CreateScope())
@@ -130,7 +135,8 @@ namespace Unix.Services.Core
             }
         }
 
-        public async Task ModifyRequiredRoleAsync(Snowflake guildId, Snowflake requiredRole)
+        /// <inheritdoc />
+        public async Task ModifyGuildRequiredRoleAsync(Snowflake guildId, Snowflake requiredRoleId)
         {
             using (var scope = ServiceProvider.CreateScope())
             {
@@ -142,11 +148,12 @@ namespace Unix.Services.Core
                     throw new Exception("Guild should be configured using the `configure-guild` command first.");
                 }
 
-                guildConfig.RequiredRoleToUse = requiredRole;
+                guildConfig.RequiredRoleToUse = requiredRoleId;
                 await unixContext.SaveChangesAsync();
             }
         }
 
+        /// <inheritdoc />
         public async Task ModifyGuildSpamThresholdAsync(Snowflake guildId, int amount)
         {
             using (var scope = ServiceProvider.CreateScope())
@@ -165,6 +172,7 @@ namespace Unix.Services.Core
             }
         }
 
+        /// <inheritdoc />
         public async Task ModifyGuildPhishermanApiKeyAsync(Snowflake guildId, string apiKey)
         {
             using (var scope = ServiceProvider.CreateScope())
@@ -181,6 +189,8 @@ namespace Unix.Services.Core
                 await unixContext.SaveChangesAsync();
             }
         }
+
+        /// <inheritdoc />
         public async Task AddBannedTermAsync(Snowflake guildId, string bannedTerm)
         {
             using (var scope = ServiceProvider.CreateScope())
@@ -203,6 +213,7 @@ namespace Unix.Services.Core
             }
         }
 
+        /// <inheritdoc />
         public async Task RemoveBannedTermAsync(Snowflake guildId, string bannedTerm)
         {
             using (var scope = ServiceProvider.CreateScope())
@@ -224,6 +235,7 @@ namespace Unix.Services.Core
             }
         }
 
+        /// <inheritdoc />
         public async Task AddWhitelistedInviteAsync(Snowflake guildId, Snowflake inviteGuildId)
         {
             using (var scope = ServiceProvider.CreateScope())
@@ -245,6 +257,8 @@ namespace Unix.Services.Core
                 await unixContext.SaveChangesAsync();
             }
         }
+
+        /// <inheritdoc />
         public async Task RemoveWhitelistedInviteAsync(Snowflake guildId, Snowflake inviteGuildId)
         {
             using (var scope = ServiceProvider.CreateScope())
@@ -265,7 +279,7 @@ namespace Unix.Services.Core
                 await unixContext.SaveChangesAsync();
             }
         }
-
+        /// <inheritdoc />
         public async Task AddSelfAssignableRoleAsync(Snowflake guildId, Snowflake roleId)
         {
             using (var scope = ServiceProvider.CreateScope())
@@ -288,6 +302,7 @@ namespace Unix.Services.Core
             }
         }
 
+        /// <inheritdoc />
         public async Task RemoveSelfAssignableRoleAsync(Snowflake guildId, Snowflake roleId)
         {
             using (var scope = ServiceProvider.CreateScope())

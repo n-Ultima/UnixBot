@@ -8,15 +8,16 @@ using Humanizer;
 using Microsoft.Extensions.DependencyInjection;
 using Unix.Common;
 using Unix.Data;
+using Unix.Services.Core.Abstractions;
 using Color = System.Drawing.Color;
 
 namespace Unix.Services.Core;
 
 public class ReminderExecutionHandler : UnixService
 {
-    private readonly ReminderService _reminderService;
+    private readonly IReminderService _reminderService;
 
-    public ReminderExecutionHandler(ReminderService reminderService, IServiceProvider serviceProvider) : base(serviceProvider)
+    public ReminderExecutionHandler(IReminderService reminderService, IServiceProvider serviceProvider) : base(serviceProvider)
     {
         _reminderService = reminderService;
     }

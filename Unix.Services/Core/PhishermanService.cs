@@ -8,10 +8,11 @@ using Disqord.Http;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Newtonsoft.Json.Linq;
 using Serilog;
+using Unix.Services.Core.Abstractions;
 
 namespace Unix.Services.Core;
 
-public class PhishermanService : UnixService
+public class PhishermanService : UnixService, IPhishermanService
 {
     private readonly GuildService _guildService;
     private const string PhishermanAPIUri = "https://api.phisherman.gg/v1/domains";
@@ -22,6 +23,7 @@ public class PhishermanService : UnixService
         _guildService = guildService;
     }
 
+    /// <inheritdoc />
     public async Task<bool> IsDomainSuspiciousAsync(Snowflake guildId, string domain)
     {
         var guildConfig = await _guildService.FetchGuildConfigurationAsync(guildId);
@@ -45,7 +47,7 @@ public class PhishermanService : UnixService
         }
     }
 
-
+    /// <inheritdoc />
     public async Task<bool> IsVerifiedPhishAsync(Snowflake guildId, string domain)
     {
         var guildConfig = await _guildService.FetchGuildConfigurationAsync(guildId);
@@ -70,6 +72,7 @@ public class PhishermanService : UnixService
         }
     }
 
+    /// <inheritdoc />
     public async Task ReportCaughtPhishAsync(Snowflake guildId, string domain)
     {
         var guildConfig = await _guildService.FetchGuildConfigurationAsync(guildId);

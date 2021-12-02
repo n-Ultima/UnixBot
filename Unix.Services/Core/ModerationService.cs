@@ -13,10 +13,11 @@ using Serilog;
 using Unix.Common;
 using Unix.Data;
 using Unix.Data.Models.Moderation;
+using Unix.Services.Core.Abstractions;
 
 namespace Unix.Services.Core
 {
-    public class ModerationService : UnixService
+    public class ModerationService : UnixService, IModerationService
     {
         private readonly GuildService _guildService;
         public ModerationService(IServiceProvider serviceProvider, GuildService guildService) : base(serviceProvider)
@@ -26,6 +27,8 @@ namespace Unix.Services.Core
 
         public Dictionary<Snowflake, Snowflake> GuildModLogIds = new();
         public Dictionary<Snowflake, Snowflake> GuildMuteRoleIds = new();
+
+        /// <inheritdoc /> 
         public async Task CreateInfractionAsync(Snowflake guildId, Snowflake moderatorId, Snowflake subjectId, InfractionType type, string reason, TimeSpan? duration)
         {
             using (var scope = ServiceProvider.CreateScope())
@@ -178,6 +181,7 @@ namespace Unix.Services.Core
             }
         }
 
+        /// <inheritdoc /> 
         public async Task<IEnumerable<Infraction>> FetchTimedInfractionsAsync()
         {
             using (var scope = ServiceProvider.CreateScope())
@@ -189,6 +193,7 @@ namespace Unix.Services.Core
             }
         }
 
+        /// <inheritdoc /> 
         public async Task UpdateInfractionAsync(Guid infractionId, Snowflake guildId, string newReason)
         {
             using (var scope = ServiceProvider.CreateScope())
@@ -207,6 +212,8 @@ namespace Unix.Services.Core
                 await unixContext.SaveChangesAsync();
             }
         }
+
+        /// <inheritdoc /> 
         public async Task RemoveInfractionAsync(Guid infractionId, Snowflake guildId, Snowflake removerId, string removalMessage)
         {
             using (var scope = ServiceProvider.CreateScope())
@@ -250,17 +257,20 @@ namespace Unix.Services.Core
             }
         }
 
-        public async Task<Infraction> FetchInfractionAsync(Guid infractionId)
+        /// <inheritdoc /> 
+        public async Task<Infraction> FetchInfractionAsync(Guid infractionId, Snowflake guildId)
         {
             using (var scope = ServiceProvider.CreateScope())
             {
                 var unixContext = scope.ServiceProvider.GetRequiredService<UnixContext>();
                 return await unixContext.Infractions
-                    .FindAsync(infractionId);
+                    .Where(x => x.GuildId == guildId)
+                    .Where(x => x.Id == infractionId)
+                    .SingleOrDefaultAsync();
             }
         }
 
-        public async Task<IEnumerable<Infraction>> FetchInfractionsAsync(Snowflake userId)
+        public async Task<IEnumerable<Infraction>> FetchInfractionsAsync(Snowflake guildId, Snowflake userId)
         {
             using (var scope = ServiceProvider.CreateScope())
             {
@@ -272,6 +282,7 @@ namespace Unix.Services.Core
             }
         }
 #nullable enable
+        /// <inheritdoc /> 
         public async Task LogAsync(CachedGuild guild, IRestUser subject, CachedMember moderator, InfractionType type, string? humanizedDuration, string reason)
         {
             if (!GuildModLogIds.ContainsKey(guild.Id))
@@ -350,6 +361,7 @@ namespace Unix.Services.Core
         }
 
 #nullable disable
+        /// <inheritdoc /> 
         public async Task LogInfractionDeletionAsync(Infraction infraction, IRestUser infractionRemover, IRestUser infractionSubject, string reason)
         {
             Snowflake modLog = default;

@@ -9,10 +9,11 @@ using Newtonsoft.Json.Converters;
 using Unix.Data;
 using Unix.Data.Models.Core;
 using Unix.Services.Core;
+using Unix.Services.Core.Abstractions;
 
 namespace Unix.Services
 {
-    public class OwnerService : UnixService
+    public class OwnerService : UnixService, IOwnerService
     {
         private readonly GuildService _guildService;
 
@@ -23,16 +24,8 @@ namespace Unix.Services
         }
 
         public static List<Snowflake> WhitelistedGuilds = new();
-        public async Task<IEnumerable<Snowflake>> FetchWhitelistedGuildsAsync()
-        {
-            using (var scope = ServiceProvider.CreateScope())
-            {
-                var unixContext = scope.ServiceProvider.GetRequiredService<UnixContext>();
-                var guilds = await unixContext.GuildConfigurations.Select(x => x.Id).ToListAsync();
-                return guilds;
-            }
-        }
 
+        /// <inheritdoc />
         public async Task ConfigureGuildAsync(Snowflake guildId, Snowflake muteRoleId, Snowflake modLogChannelId, Snowflake messageLogChannelId, Snowflake modRoleId, Snowflake adminRoleId, bool automodEnabled)
         {
             using (var scope = ServiceProvider.CreateScope())
@@ -54,6 +47,8 @@ namespace Unix.Services
                 await unixContext.SaveChangesAsync();
             }
         }
+
+        /// <inheritdoc />
         public async Task BlacklistGuildAsync(Snowflake guildId)
         {
             using (var scope = ServiceProvider.CreateScope())

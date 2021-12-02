@@ -46,6 +46,7 @@ namespace Unix
                     services
                         .AddSingleton<HttpClient>()
                         .AddDbContext<UnixContext>()
+                        .AddUnixServices()
                         .AddCommands();
                 })
                 .ConfigureDiscordBotSharder<UnixBot>((_, bot) =>

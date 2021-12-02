@@ -6,14 +6,15 @@ using Disqord.Gateway;
 using Disqord.Rest;
 using Unix.Data.Models.Core;
 using Unix.Services.Core;
+using Unix.Services.Core.Abstractions;
 
 namespace Unix.Services.GatewayEventHandlers
 {
     public class MessageDeleteHandler : UnixService
     {
-        private readonly GuildService _guildService;
+        private readonly IGuildService _guildService;
 
-        public MessageDeleteHandler(IServiceProvider serviceProvider, GuildService guildService) : base(serviceProvider)
+        public MessageDeleteHandler(IServiceProvider serviceProvider, IGuildService guildService) : base(serviceProvider)
         {
             _guildService = guildService;
         }

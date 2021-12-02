@@ -11,6 +11,7 @@ using Serilog;
 using Unix.Common;
 using Unix.Data.Models.Moderation;
 using Unix.Services.Core;
+using Unix.Services.Core.Abstractions;
 using Unix.Services.Extensions;
 using Unix.Services.Parsers;
 
@@ -18,11 +19,11 @@ namespace Unix.Services.GatewayEventHandlers;
 
 public class InteractionHandler : UnixService
 {
-    private readonly OwnerService _ownerService;
-    private readonly GuildService _guildService;
-    private readonly ModerationService _moderationService;
-    private readonly ReminderService _reminderService;
-    public InteractionHandler(IServiceProvider serviceProvider, OwnerService ownerService, GuildService guildService, ModerationService moderationService, ReminderService reminderService) : base(serviceProvider)
+    private readonly IOwnerService _ownerService;
+    private readonly IGuildService _guildService;
+    private readonly IModerationService _moderationService;
+    private readonly IReminderService _reminderService;
+    public InteractionHandler(IServiceProvider serviceProvider, IOwnerService ownerService, IGuildService guildService, IModerationService moderationService, IReminderService reminderService) : base(serviceProvider)
     {
         _ownerService = ownerService;
         _guildService = guildService;
@@ -163,7 +164,7 @@ public class InteractionHandler : UnixService
                 var isEnabled = (bool)enabled.Value;
                 try
                 {
-                    await _guildService.ConfigureGuildAutomodAsync(eventArgs.GuildId.Value, isEnabled);
+                    await _guildService.ModifyGuildAutomodAsync(eventArgs.GuildId.Value, isEnabled);
                     await eventArgs.SendSuccessAsync($"Automod is enabled: **{isEnabled}**");
                     break;
                 }
@@ -225,7 +226,7 @@ public class InteractionHandler : UnixService
 
                 try
                 {
-                    await _guildService.ModifyRequiredRoleAsync(guild.Id, reqRoleId);
+                    await _guildService.ModifyGuildRequiredRoleAsync(guild.Id, reqRoleId);
                     if (guild.Id == reqRoleId)
                     {
                         await eventArgs.SendSuccessAsync($"No users are blocked from using commands in this server(except moderation and administration commands).");
@@ -343,7 +344,7 @@ public class InteractionHandler : UnixService
 
                 try
                 {
-                    await _guildService.AddWhitelistedInviteAsync(eventArgs.GuildId.Value, realBlacklistSnowflake);
+                    await _guildService.RemoveWhitelistedInviteAsync(eventArgs.GuildId.Value, realBlacklistSnowflake);
                     await eventArgs.SendSuccessAsync($"Invites pointing towards **{guild.Name}** will now be deleted.");
                     break;
                 }
@@ -451,7 +452,7 @@ public class InteractionHandler : UnixService
                 }
 
                 var user = slashCommandInteraction.Entities.Users.Values.First();
-                var infractions = await _moderationService.FetchInfractionsAsync(user.Id);
+                var infractions = await _moderationService.FetchInfractionsAsync(guild.Id, user.Id);
                 if (!infractions.Any())
                 {
                     await eventArgs.Interaction.Response().SendMessageAsync(new LocalInteractionResponse()
@@ -485,7 +486,7 @@ public class InteractionHandler : UnixService
                     break;
                 }
 
-                var infraction = await _moderationService.FetchInfractionAsync(guidInfractionLookupId);
+                var infraction = await _moderationService.FetchInfractionAsync(guidInfractionLookupId, guild.Id);
                 if (infraction == null)
                 {
                     await eventArgs.SendEphmeralErrorAsync("That infraction ID does not exist.");
@@ -731,7 +732,7 @@ public class InteractionHandler : UnixService
                 }
 
                 var gUnmuteUser = guild.GetMember(unmuteUser.Id);
-                var unmuteUserInfractions = await _moderationService.FetchInfractionsAsync(unmuteUser.Id);
+                var unmuteUserInfractions = await _moderationService.FetchInfractionsAsync(guild.Id, unmuteUser.Id);
                 var mute = unmuteUserInfractions
                     .Where(x => x.Type == InfractionType.Mute)
                     .Where(x => x.GuildId == guild.Id)
@@ -782,10 +783,9 @@ public class InteractionHandler : UnixService
 
                 var unbanUser = slashCommandInteraction.Entities.Users.Values.First();
                 var unbanReason = slashCommandInteraction.Options.GetValueOrDefault("reason")?.Value as string;
-                var unbanUserInfractions = await _moderationService.FetchInfractionsAsync(unbanUser.Id);
+                var unbanUserInfractions = await _moderationService.FetchInfractionsAsync(unbanUser.Id, guild.Id);
                 var banInfraction = unbanUserInfractions
                     .Where(x => x.Type == InfractionType.Ban)
-                    .Where(x => x.GuildId == guild.Id)
                     .SingleOrDefault();
                 IRestUser unbanSubject = null;
                 IRestUser unbanModerator = null;

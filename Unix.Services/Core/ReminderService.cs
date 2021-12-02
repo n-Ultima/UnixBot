@@ -9,15 +9,17 @@ using Microsoft.Extensions.DependencyInjection;
 using Unix.Common;
 using Unix.Data;
 using Unix.Data.Models.Core;
+using Unix.Services.Core.Abstractions;
 
 namespace Unix.Services.Core;
 
-public class ReminderService : UnixService
+public class ReminderService : UnixService, IReminderService
 {
     public ReminderService(IServiceProvider serviceProvider) : base(serviceProvider)
     {
     }
 
+    /// <inheritdoc />
     public async Task CreateReminderAsync(Snowflake guildId, Snowflake channelId, Snowflake userId, TimeSpan duration, string reminderMessage)
     {
         using (var scope = ServiceProvider.CreateScope())
@@ -37,17 +39,7 @@ public class ReminderService : UnixService
         }
     }
 
-    public async Task<IEnumerable<Reminder>> FetchRemindersAsync(Snowflake guildId)
-    {
-        using (var scope = ServiceProvider.CreateScope())
-        {
-            var unixContext = scope.ServiceProvider.GetRequiredService<UnixContext>();
-            return await unixContext.Reminders
-                .Where(x => x.GuildId == guildId)
-                .ToListAsync();
-        }
-    }
-
+    /// <inheritdoc />
     public async Task<IEnumerable<Reminder>> FetchRemindersAsync()
     {
         using (var scope = ServiceProvider.CreateScope())
@@ -57,6 +49,7 @@ public class ReminderService : UnixService
         }
     }
 
+    /// <inheritdoc />
     public async Task<IEnumerable<Reminder>> FetchRemindersForUserAsync(Snowflake guildId, Snowflake userId)
     {
         using (var scope = ServiceProvider.CreateScope())
@@ -69,6 +62,7 @@ public class ReminderService : UnixService
         }
     }
 
+    /// <inheritdoc />
     public async Task<Reminder> FetchReminderAsync(long id)
     {
         using (var scope = ServiceProvider.CreateScope())
@@ -79,6 +73,7 @@ public class ReminderService : UnixService
         }
     }
 
+    /// <inheritdoc />
     public async Task DeleteReminderAsync(long id)
     {
         using (var scope = ServiceProvider.CreateScope())

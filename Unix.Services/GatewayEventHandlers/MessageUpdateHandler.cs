@@ -9,16 +9,17 @@ using Disqord.Rest;
 using Microsoft.Extensions.DependencyInjection;
 using Unix.Data.Models.Core;
 using Unix.Services.Core;
+using Unix.Services.Core.Abstractions;
 
 namespace Unix.Services.GatewayEventHandlers
 {
     public class MessageUpdateHandler : UnixService
     {
-        private readonly GuildService _guildService;
-        private readonly ModerationService _moderationService;
+        private readonly IGuildService _guildService;
+        private readonly IModerationService _moderationService;
         private readonly HttpClient _httpClient;
 
-        public MessageUpdateHandler(IServiceProvider serviceProvider, GuildService guildService, ModerationService moderationService, HttpClient httpClient) : base(serviceProvider)
+        public MessageUpdateHandler(IServiceProvider serviceProvider, IGuildService guildService, IModerationService moderationService, HttpClient httpClient) : base(serviceProvider)
         {
             _guildService = guildService;
             _moderationService = moderationService;

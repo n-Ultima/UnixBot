@@ -14,17 +14,18 @@ using Serilog;
 using Unix.Data.Models.Core;
 using Unix.Data.Models.Moderation;
 using Unix.Services.Core;
+using Unix.Services.Core.Abstractions;
 
 namespace Unix.Services.GatewayEventHandlers
 {
     public class MessageCreateHandler : UnixService
     {
-        private readonly GuildService _guildService;
-        private readonly ModerationService _moderationService;
+        private readonly IGuildService _guildService;
+        private readonly IModerationService _moderationService;
         private readonly HttpClient _httpClient;
-        private readonly PhishermanService _phishermanService;
+        private readonly IPhishermanService _phishermanService;
         public Dictionary<Snowflake, bool> GuildProcessMessages = new();
-        public MessageCreateHandler(HttpClient httpClient, IServiceProvider serviceProvider, GuildService guildService, ModerationService moderationService, PhishermanService phishermanService) : base(serviceProvider)
+        public MessageCreateHandler(HttpClient httpClient, IServiceProvider serviceProvider, IGuildService guildService, IModerationService moderationService, IPhishermanService phishermanService) : base(serviceProvider)
         {
             _moderationService = moderationService;
             _guildService = guildService;
