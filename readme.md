@@ -9,7 +9,7 @@ This is the main source code repository for Unix. It contains the source code fo
 
 - This bot is still in development; if any issue arises feel free to create an issue on Github.
 #### **Contributing**
-If you are interested in contributing, please check out the [guidelines] (https://github.com/n-Ultima/UnixBot/blob/main/.github/CONTRIBUTING.md)
+If you are interested in contributing, please check out the [guidelines](https://github.com/n-Ultima/UnixBot/blob/main/.github/CONTRIBUTING.md)
 
 
 
