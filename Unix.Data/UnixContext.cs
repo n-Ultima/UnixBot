@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
 using Disqord;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
@@ -18,7 +21,12 @@ namespace Unix.Data
                 static snowflake => snowflake,
                 static @ulong => new Snowflake(@ulong));
             modelBuilder.UseValueConverterForType<Snowflake>(snowflakeConverter);
-            modelBuilder.ConfigureUlongListConverters();
+            modelBuilder.Entity<GuildConfiguration>()
+                .Property(x => x.WhitelistedInvites)
+                .HasPostgresArrayConversion<ulong, decimal>(ulongs => Convert.ToDecimal(ulongs), decimals => Convert.ToUInt64(decimals));
+            modelBuilder.Entity<GuildConfiguration>()
+                .Property(x => x.SelfAssignableRoles)
+                .HasPostgresArrayConversion<ulong, decimal>(ulongs => Convert.ToDecimal(ulongs), decimals => Convert.ToUInt64(decimals));
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
