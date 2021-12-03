@@ -38,7 +38,9 @@ namespace Unix.Services.GatewayEventHandlers
                         {
                             Reason = "Unauthorized. Join the Unix server(http://www.ultima.one/unix) to request access."
                         });
-                        Log.Logger.Information("Left guild {guild} due to lack of authorizaiton.", guild);
+                        var g = await Bot.FetchGuildAsync(guild);
+                        var gName = g.Name;
+                        Log.Logger.Information("Left guild {g} due to lack of authorizaiton.", gName);
                     }
                 }
 

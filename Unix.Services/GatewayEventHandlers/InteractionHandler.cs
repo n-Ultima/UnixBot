@@ -64,7 +64,6 @@ public class InteractionHandler : UnixService
         switch (slashCommandInteraction.CommandName)
         {
             case "ping":
-                Log.Logger.Information("ping");
                 var dateTime = DateTimeOffset.UtcNow - eventArgs.Interaction.CreatedAt();
                 var heartbeatLatency = eventArgs.Interaction.GetGatewayClient().ApiClient.Heartbeater.Latency;
                 var builder = new StringBuilder();
@@ -77,7 +76,6 @@ public class InteractionHandler : UnixService
                     builder.Append($"🏓 Pong!\nDirect API Latency: {heartbeatLatency.Value.Milliseconds} ms\nShard Latency: {Bot.GetShard(eventArgs.GuildId.Value).Heartbeater.Latency.Value.Milliseconds} ms\nMessage Latency: {dateTime.Milliseconds} ms");
                 }
 
-                Log.Logger.Information("Send");
                 await eventArgs.Interaction.Response().SendMessageAsync(new LocalInteractionResponse()
                     .WithContent(builder.ToString()));
                 break;
@@ -318,9 +316,8 @@ public class InteractionHandler : UnixService
                 catch (Exception e)
                 {
                     await eventArgs.SendEphmeralErrorAsync(e.Message);
+                    break;
                 }
-
-                break;
             case "remove-whitelisted-guild":
                 if (!eventArgs.Member.IsAdmin())
                 {
@@ -1029,5 +1026,6 @@ public class InteractionHandler : UnixService
                     .WithEmbeds(currentRemindersEmbed));
                 break;
         }
+        Log.Logger.Information("Slash command {sName}(executed by {userName}) was handled successfully.", slashCommandInteraction.CommandName, eventArgs.Member.Tag);
     }
 }
