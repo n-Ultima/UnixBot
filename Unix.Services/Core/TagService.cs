@@ -84,7 +84,7 @@ public class TagService : UnixService, ITagService
             }
             
             var guildUserRequestor = await Bot.FetchMemberAsync(guildId, requestorId);
-            if (!await CanUserMaintainTagAsync(guildConfig, tag, guildUserRequestor))
+            if (!await CanUserMaintainTag(guildConfig, tag, guildUserRequestor))
             {
                 throw new Exception("You must either have moderator/administrator permissions or own the tag to edit it.");
             }
@@ -111,7 +111,7 @@ public class TagService : UnixService, ITagService
             }
 
             var guildUserRequestor = await Bot.FetchMemberAsync(guildId, requestorId);
-            if (!await CanUserMaintainTagAsync(guildConfig, tag, guildUserRequestor))
+            if (!await CanUserMaintainTag(guildConfig, tag, guildUserRequestor))
             {
                 throw new Exception("You must either have moderator/administrator permissions or own the tag to transfer ownership of it.");
             }
@@ -138,7 +138,7 @@ public class TagService : UnixService, ITagService
             }
 
             var guildUserRequestor = await Bot.FetchMemberAsync(guildId, requestorId);
-            if (!await CanUserMaintainTagAsync(guildConfig, tag, guildUserRequestor))
+            if (!await CanUserMaintainTag(guildConfig, tag, guildUserRequestor))
             {
                 throw new Exception("You must either have the moderator/administrator permissions or own the tag to delete it.");
             }
@@ -148,7 +148,7 @@ public class TagService : UnixService, ITagService
         }
     }
 
-    private async Task<bool> CanUserMaintainTagAsync(GuildConfiguration guildConfig, Tag tag, IMember member)
+    private bool CanUserMaintainTag(GuildConfiguration guildConfig, Tag tag, IMember member)
     {
         if (tag.OwnerId == member.Id)
         {
