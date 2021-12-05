@@ -35,6 +35,7 @@ namespace Unix.Data
         }
         public DbSet<GuildConfiguration> GuildConfigurations { get; set; }
 
+        public DbSet<Tag> Tags { get; set; }
         public DbSet<Reminder> Reminders { get; set; }
         public DbSet<Infraction> Infractions { get; set; }
     }

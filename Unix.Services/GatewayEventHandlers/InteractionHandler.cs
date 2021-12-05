@@ -1013,6 +1013,7 @@ public class InteractionHandler : UnixService
                 if (!currentReminders.Any())
                 {
                     await eventArgs.SendEphmeralErrorAsync($"No reminders found.");
+                    break;
                 }
 
                 var currentRemindersEmbed = new LocalEmbed()
