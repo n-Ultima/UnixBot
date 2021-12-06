@@ -19,6 +19,7 @@ public class TagService : UnixService, ITagService
     {
     }
 
+    /// <inheritdoc /> 
     public async Task CreateTagAsync(Snowflake guildId, Snowflake ownerId, string tagName, string tagContent)
     {
         using (var scope = ServiceProvider.CreateScope())
@@ -43,7 +44,8 @@ public class TagService : UnixService, ITagService
             await unixContext.SaveChangesAsync();
         }
     }
-
+    
+    /// <inheritdoc /> 
     public async Task<IEnumerable<Tag>> FetchTagsAsync(Snowflake guildId)
     {
         using (var scope = ServiceProvider.CreateScope())
@@ -51,6 +53,7 @@ public class TagService : UnixService, ITagService
             var unixContext = scope.ServiceProvider.GetRequiredService<UnixContext>();
             return await unixContext.Tags
                 .Where(x => x.GuildId == guildId)
+                .OrderBy(x => x.Name)
                 .ToListAsync();
         }
     }
@@ -67,6 +70,7 @@ public class TagService : UnixService, ITagService
         }
     }
 
+    /// <inheritdoc /> 
     public async Task EditTagContentAsync(Snowflake guildId, Snowflake requestorId, string tagName, string tagContent)
     {
         using (var scope = ServiceProvider.CreateScope())
@@ -94,6 +98,7 @@ public class TagService : UnixService, ITagService
         }
     }
 
+    /// <inheritdoc /> 
     public async Task EditTagOwnershipAsync(Snowflake guildId, Snowflake requestorId, string tagName, Snowflake newOwnerId)
     {
         using (var scope = ServiceProvider.CreateScope())
@@ -121,6 +126,7 @@ public class TagService : UnixService, ITagService
         }
     }
 
+    /// <inheritdoc /> 
     public async Task DeleteTagAsync(Snowflake guildId, Snowflake requestorId, string tagName)
     {
         using (var scope = ServiceProvider.CreateScope())

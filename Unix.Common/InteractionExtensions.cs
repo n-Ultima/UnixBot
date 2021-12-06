@@ -42,4 +42,13 @@ public static class InteractionExtensions
         await eventArgs.Interaction.Response().SendMessageAsync(new LocalInteractionResponse()
             .WithContent($"<:unixok:884524202458222662> {message}"));
     }
+
+    public static LocalInteractionResponse ToLocalInteractionResponse(this LocalMessage message)
+    {
+        var localInteraction = new LocalInteractionResponse()
+            .WithContent(message.Content)
+            .WithEmbeds(message.Embeds)
+            .WithType(InteractionResponseType.ChannelMessage);
+        return localInteraction;
+    }
 }

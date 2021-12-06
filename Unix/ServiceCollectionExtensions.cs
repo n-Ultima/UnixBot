@@ -15,6 +15,7 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddSingleton<IOwnerService, OwnerService>();
         serviceCollection.AddSingleton<IPhishermanService, PhishermanService>();
         serviceCollection.AddSingleton<IReminderService, ReminderService>();
+        serviceCollection.AddSingleton<ITagService, TagService>();
         return serviceCollection;
     }
 }

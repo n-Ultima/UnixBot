@@ -4,11 +4,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Disqord;
+using Disqord.Extensions.Interactivity;
+using Disqord.Extensions.Interactivity.Menus;
+using Disqord.Extensions.Interactivity.Menus.Paged;
 using Disqord.Gateway;
 using Disqord.Rest;
 using Humanizer;
 using Serilog;
 using Unix.Common;
+using Unix.Data.Models.Core;
 using Unix.Data.Models.Moderation;
 using Unix.Services.Core;
 using Unix.Services.Core.Abstractions;
@@ -23,12 +27,14 @@ public class InteractionHandler : UnixService
     private readonly IGuildService _guildService;
     private readonly IModerationService _moderationService;
     private readonly IReminderService _reminderService;
-    public InteractionHandler(IServiceProvider serviceProvider, IOwnerService ownerService, IGuildService guildService, IModerationService moderationService, IReminderService reminderService) : base(serviceProvider)
+    private readonly ITagService _tagService;
+    public InteractionHandler(IServiceProvider serviceProvider, IOwnerService ownerService, IGuildService guildService, IModerationService moderationService, IReminderService reminderService, ITagService tagService) : base(serviceProvider)
     {
         _ownerService = ownerService;
         _guildService = guildService;
         _moderationService = moderationService;
         _reminderService = reminderService;
+        _tagService = tagService;
     }
 
     protected override async ValueTask OnInteractionReceived(InteractionReceivedEventArgs eventArgs)
@@ -1026,6 +1032,84 @@ public class InteractionHandler : UnixService
                 await eventArgs.Interaction.Response().SendMessageAsync(new LocalInteractionResponse()
                     .WithEmbeds(currentRemindersEmbed));
                 break;
+            case "tags":
+                var tags = await _tagService.FetchTagsAsync(guild.Id);
+                if (!tags.Any())
+                {
+                    await eventArgs.SendEphmeralErrorAsync("No tags were found.");
+                    break;
+                }
+
+                var arrTags = tags.Select(x => x.Name).ToArray();
+                var arrPageProvider = new ArrayPageProvider<string>(arrTags, itemsPerPage: arrTags.Length > 10 
+                    ? 10 
+                    : arrTags.Length);
+                var pgView = new PagedView(arrPageProvider);
+                var interactionPgView = pgView.ToLocalMessage().ToLocalInteractionResponse();
+                await eventArgs.Interaction.Response().SendMessageAsync(interactionPgView);
+                var message = await eventArgs.Interaction.Followup().FetchResponseAsync();
+                var menu = new DefaultMenu(pgView, message.Id);
+                await Bot.StartMenuAsync(eventArgs.ChannelId, menu);
+                break;
+            case "tag":
+                var tagOption = slashCommandInteraction.Options.GetValueOrDefault("name")?.Value as string;
+                var tagToSend = await _tagService.FetchTagAsync(guild.Id, tagOption);
+                if (tagToSend == null)
+                {
+                    await eventArgs.SendEphmeralErrorAsync("That tag does not exist.");
+                    break;
+                }
+
+                await eventArgs.Interaction.Response().SendMessageAsync(new LocalInteractionResponse()
+                    .WithContent(tagToSend.Content));
+                break;
+            case "tag-edit":
+                var tagEditOption = slashCommandInteraction.Options.GetValueOrDefault("name")?.Value as string;
+                var tagContentOption = slashCommandInteraction.Options.GetValueOrDefault("content")?.Value as string;
+                try
+                {
+                    await _tagService.EditTagContentAsync(guild.Id, eventArgs.Member.Id, tagEditOption, tagContentOption);
+                    await eventArgs.SendSuccessAsync("Tag contenet modified.");
+                    break;
+                }
+                catch (Exception e)
+                {
+                    await eventArgs.SendEphmeralErrorAsync(e.Message);
+                    break;
+                }
+            case "tag-transfer":
+                var tagTransferOption = slashCommandInteraction.Options.GetValueOrDefault("name")?.Value as string;
+                var newOwner = slashCommandInteraction.Entities.Users.Select(x => x.Value).First();
+                if (guild.GetMember(newOwner.Id) == null)
+                {
+                    await eventArgs.SendEphmeralErrorAsync("Member not found.");
+                    break;
+                }
+
+                try
+                {
+                    await _tagService.EditTagOwnershipAsync(guild.Id, eventArgs.Member.Id, tagTransferOption, newOwner.Id);
+                    await eventArgs.SendSuccessAsync($"Tag successfully transfered to **{newOwner.Tag}**");
+                    break;
+                }
+                catch (Exception e)
+                {
+                    await eventArgs.SendEphmeralErrorAsync(e.Message);
+                    break;
+                }
+            case "tag-delete":
+                var tagDeleteOption = slashCommandInteraction.Options.GetValueOrDefault("name")?.Value as string;
+                try
+                {
+                    await _tagService.DeleteTagAsync(guild.Id, eventArgs.Member.Id, tagDeleteOption);
+                    await eventArgs.SendSuccessAsync("Tag deleted.");
+                    break;
+                }
+                catch (Exception e)
+                {
+                    await eventArgs.SendEphmeralErrorAsync(e.Message);
+                    break;
+                }
         }
         Log.Logger.Information("Slash command {sName}(executed by {userName}) was handled successfully.", slashCommandInteraction.CommandName, eventArgs.Member.Tag);
     }

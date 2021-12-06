@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Bot;
+using Disqord.Extensions.Interactivity.Menus;
 using Disqord.Gateway;
 using Disqord.Rest;
 using Humanizer;
@@ -50,6 +51,9 @@ namespace Unix.Services.GatewayEventHandlers
                     Log.Logger.Warning("Setting up global slash commands(takes 1 hour approximately)");
                     await SetupUnixGlobalSlashCommandsAsync();
                 }
+                #if DEBUG
+                await SetupUnixGlobalSlashCommandsAsync();
+                #endif
             }
         }
         public async Task SetupUnixGlobalSlashCommandsAsync()
@@ -563,6 +567,68 @@ namespace Unix.Services.GatewayEventHandlers
                         .WithIsRequired()
                 });
             cmds.Add(configPhishermanCmd);
+            var tagCmd = new LocalSlashCommand()
+                .WithName("tag")
+                .WithDescription("Uses a tag, sending back it's response.")
+                .WithOptions(new[]
+                {
+                    new LocalSlashCommandOption()
+                        .WithName("name")
+                        .WithDescription("The name of the tag.")
+                        .WithType(SlashCommandOptionType.String)
+                        .WithIsRequired()
+                });
+            cmds.Add(tagCmd);
+            var tagsCmd = new LocalSlashCommand()
+                .WithName("tags")
+                .WithDescription("Fetches a list of tags.");
+            cmds.Add(tagsCmd);
+            var editTagCmd = new LocalSlashCommand()
+                .WithName("tag-edit")
+                .WithDescription("Edits a tags content.")
+                .WithOptions(new[]
+                {
+                    new LocalSlashCommandOption()
+                        .WithName("name")
+                        .WithDescription("The name of the tag.")
+                        .WithType(SlashCommandOptionType.String)
+                        .WithIsRequired(),
+                    new LocalSlashCommandOption()
+                        .WithName("content")
+                        .WithDescription("The new content of the tag.")
+                        .WithType(SlashCommandOptionType.String)
+                        .WithIsRequired()
+                });
+            cmds.Add(editTagCmd);
+            var transferTagCmd = new LocalSlashCommand()
+                .WithName("tag-transfer")
+                .WithDescription("Transfers ownership of a tag to another user.")
+                .WithOptions(new[]
+                {
+                    new LocalSlashCommandOption()
+                        .WithName("name")
+                        .WithDescription("The name of the tag.")
+                        .WithType(SlashCommandOptionType.String)
+                        .WithIsRequired(),
+                    new LocalSlashCommandOption()
+                        .WithName("user")
+                        .WithDescription("The user to transfer the tag to.")
+                        .WithType(SlashCommandOptionType.User)
+                        .WithIsRequired()
+                });
+            cmds.Add(transferTagCmd);
+            var deleteTagCmd = new LocalSlashCommand()
+                .WithName("tag-delete")
+                .WithDescription("Deletes a tag.")
+                .WithOptions(new[]
+                {
+                    new LocalSlashCommandOption()
+                        .WithName("name")
+                        .WithDescription("The name of the tag.")
+                        .WithType(SlashCommandOptionType.String)
+                        .WithIsRequired()
+                });
+            cmds.Add(deleteTagCmd);
             await Bot.SetGlobalApplicationCommandsAsync(Bot.CurrentUser.Id, cmds);
         }
     }
