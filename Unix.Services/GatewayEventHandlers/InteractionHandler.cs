@@ -724,7 +724,6 @@ public class InteractionHandler : UnixService
                     await eventArgs.SendEphmeralErrorAsync(PermissionLevel.Moderator);
                     break;
                 }
-
                 var unmuteUser = slashCommandInteraction.Entities.Users.Values.First();
                 var unmuteReason = slashCommandInteraction.Options.GetValueOrDefault("reason")?.Value as string;
 
@@ -1041,8 +1040,8 @@ public class InteractionHandler : UnixService
                 }
 
                 var arrTags = tags.Select(x => x.Name).ToArray();
-                var arrPageProvider = new ArrayPageProvider<string>(arrTags, itemsPerPage: arrTags.Length > 10 
-                    ? 10 
+                var arrPageProvider = new ArrayPageProvider<string>(arrTags, itemsPerPage: arrTags.Length > 10
+                    ? 10
                     : arrTags.Length);
                 var pgView = new PagedView(arrPageProvider);
                 var interactionPgView = pgView.ToLocalMessage().ToLocalInteractionResponse();
@@ -1063,6 +1062,20 @@ public class InteractionHandler : UnixService
                 await eventArgs.Interaction.Response().SendMessageAsync(new LocalInteractionResponse()
                     .WithContent(tagToSend.Content));
                 break;
+            case "tag-create":
+                var newTagName = slashCommandInteraction.Options.GetValueOrDefault("name")?.Value as string;
+                var newTagContent = slashCommandInteraction.Options.GetValueOrDefault("content")?.Value as string;
+                try
+                {
+                    await _tagService.CreateTagAsync(guild.Id, eventArgs.Member.Id, newTagName, newTagContent);
+                    await eventArgs.SendSuccessAsync($"Tag **{newTagName}** created.");
+                    break;
+                }
+                catch (Exception e)
+                {
+                    await eventArgs.SendEphmeralErrorAsync(e.Message);
+                    break;
+                }
             case "tag-edit":
                 var tagEditOption = slashCommandInteraction.Options.GetValueOrDefault("name")?.Value as string;
                 var tagContentOption = slashCommandInteraction.Options.GetValueOrDefault("content")?.Value as string;

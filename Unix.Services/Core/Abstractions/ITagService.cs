@@ -19,7 +19,7 @@ public interface ITagService
     /// <param name="tagContent">The content that the tag should hold.</param>
     /// <returns></returns>
     Task CreateTagAsync(Snowflake guildId, Snowflake ownerId, string tagName, string tagContent);
-    
+
     /// <summary>
     ///     Fetches a tag.
     /// </summary>
@@ -34,7 +34,7 @@ public interface ITagService
     /// <param name="guildId">The guild ID.</param>
     /// <returns>A <see cref="IEnumerable{Tag}"/> of the guild's tags.</returns>
     Task<IEnumerable<Tag>> FetchTagsAsync(Snowflake guildId);
-    
+
     /// <summary>
     ///     Edits the content of a tag.
     /// </summary>

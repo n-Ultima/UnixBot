@@ -35,25 +35,41 @@ namespace Unix.Services.GatewayEventHandlers
                     // Now, we leave each of the guilds that Unix shouldn't be in.
                     foreach (var guild in unauthorizedGuilds)
                     {
+                        var g = await Bot.FetchGuildAsync(guild);
                         await Bot.LeaveGuildAsync(guild, new DefaultRestRequestOptions
                         {
                             Reason = "Unauthorized. Join the Unix server(http://www.ultima.one/unix) to request access."
                         });
-                        var g = await Bot.FetchGuildAsync(guild);
                         var gName = g.Name;
                         Log.Logger.Information("Left guild {g} due to lack of authorizaiton.", gName);
                     }
                 }
 
+                if (allowedGuildIds.Any())
+                {
+                    foreach (var allowedGuild in allowedGuildIds)
+                    {
+                        try
+                        {
+                            var t2 = Bot.GetGuild(allowedGuild);
+                            await Bot.Chunker.ChunkAsync(t2);
+                            Log.Logger.Information("Cached guild {n}", t2.Name);
+                        }
+                        catch (RestApiException)
+                        {
+                            continue;
+                        }
+                    }
+                }
                 var globalCmds = await Bot.FetchGlobalApplicationCommandsAsync(Bot.CurrentUser.Id);
                 if (!globalCmds.Any())
                 {
                     Log.Logger.Warning("Setting up global slash commands(takes 1 hour approximately)");
                     await SetupUnixGlobalSlashCommandsAsync();
                 }
-                #if DEBUG
+#if DEBUG
                 await SetupUnixGlobalSlashCommandsAsync();
-                #endif
+#endif
             }
         }
         public async Task SetupUnixGlobalSlashCommandsAsync()
@@ -578,6 +594,23 @@ namespace Unix.Services.GatewayEventHandlers
                         .WithType(SlashCommandOptionType.String)
                         .WithIsRequired()
                 });
+            var createTagCmd = new LocalSlashCommand()
+                .WithName("tag-create")
+                .WithDescription("Creates a tag.")
+                .WithOptions(new[]
+                {
+                    new LocalSlashCommandOption()
+                        .WithName("name")
+                        .WithDescription("The name of the new tag.")
+                        .WithType(SlashCommandOptionType.String)
+                        .WithIsRequired(),
+                    new LocalSlashCommandOption()
+                        .WithName("content")
+                        .WithDescription("The content that the tag should hold.")
+                        .WithType(SlashCommandOptionType.String)
+                        .WithIsRequired()
+                });
+            cmds.Add(createTagCmd);
             cmds.Add(tagCmd);
             var tagsCmd = new LocalSlashCommand()
                 .WithName("tags")

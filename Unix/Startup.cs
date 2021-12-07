@@ -7,6 +7,7 @@ using Disqord;
 using Disqord.Bot;
 using Disqord.Bot.Hosting;
 using Disqord.Gateway;
+using Disqord.Gateway.Default;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -46,6 +47,7 @@ namespace Unix
                     services
                         .AddSingleton<HttpClient>()
                         .AddDbContext<UnixContext>()
+                        .Configure<DefaultGatewayCacheProviderConfiguration>(x => x.MessagesPerChannel = 200)
                         .AddUnixServices()
                         .AddCommands();
                 })

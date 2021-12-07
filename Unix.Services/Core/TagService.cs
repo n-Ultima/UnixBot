@@ -44,7 +44,7 @@ public class TagService : UnixService, ITagService
             await unixContext.SaveChangesAsync();
         }
     }
-    
+
     /// <inheritdoc /> 
     public async Task<IEnumerable<Tag>> FetchTagsAsync(Snowflake guildId)
     {
@@ -57,7 +57,7 @@ public class TagService : UnixService, ITagService
                 .ToListAsync();
         }
     }
-    
+
     public async Task<Tag> FetchTagAsync(Snowflake guildId, string tagName)
     {
         using (var scope = ServiceProvider.CreateScope())
@@ -86,7 +86,7 @@ public class TagService : UnixService, ITagService
             {
                 throw new Exception("Tag with that name does not exist.");
             }
-            
+
             var guildUserRequestor = await Bot.FetchMemberAsync(guildId, requestorId);
             if (!CanUserMaintainTag(guildConfig, tag, guildUserRequestor))
             {

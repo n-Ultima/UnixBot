@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Gateway;
@@ -372,12 +373,16 @@ namespace Unix.Services.Core
                 GuildModLogIds.Add(infraction.GuildId, guildConfig.ModLogChannelId);
                 modLog = GuildModLogIds[infraction.GuildId];
             }
+
+            modLog = GuildModLogIds[infraction.GuildId];
             if (!GuildMuteRoleIds.TryGetValue(infraction.GuildId, out _))
             {
                 var guildConfig = await _guildService.FetchGuildConfigurationAsync(infraction.GuildId);
                 GuildMuteRoleIds.Add(infraction.GuildId, guildConfig.MuteRoleId);
                 muteRole = GuildMuteRoleIds[infraction.GuildId];
             }
+
+            muteRole = GuildMuteRoleIds[infraction.GuildId];
             // Modlog has a value now.
             if (infraction.Type == InfractionType.Ban)
             {
@@ -388,13 +393,13 @@ namespace Unix.Services.Core
                 });
                 // Log
                 await Bot.SendMessageAsync(modLog, new LocalMessage()
-                    .WithContent($"**{infractionSubject.Tag}**(`{infractionSubject.Id}`) was unbanned by **{infractionRemover.Tag}**(`{infractionRemover.Id}`). Reason:\n```\n{reason}\n```"));
+                    .WithContent($"{Markdown.Timestamp(DateTimeOffset.UtcNow)} **{infractionSubject.Tag}**(`{infractionSubject.Id}`) was unbanned by **{infractionRemover.Tag}**(`{infractionRemover.Id}`). Reason:\n```\n{reason}\n```"));
             }
 
             if (infraction.Type == InfractionType.Kick || infraction.Type == InfractionType.Note || infraction.Type == InfractionType.Warn)
             {
                 await Bot.SendMessageAsync(modLog, new LocalMessage()
-                    .WithContent($"Infraction `{infraction.Id}` was removed by {infractionRemover.Tag}(`{infractionRemover.Id}`). Reason:\n```\n{reason}\n```"));
+                    .WithContent($"{Markdown.Timestamp(DateTimeOffset.UtcNow)} Infraction `{infraction.Id}` was removed by **{infractionRemover.Tag}**(`{infractionRemover.Id}`). Reason:\n```\n{reason}\n```"));
             }
 
             if (infraction.Type == InfractionType.Mute)
@@ -403,6 +408,8 @@ namespace Unix.Services.Core
                 {
                     Reason = $"{infractionRemover.Tag} - {reason}"
                 });
+                await Bot.SendMessageAsync(modLog, new LocalMessage()
+                    .WithContent($"{Markdown.Timestamp(DateTimeOffset.UtcNow)}**{infractionSubject.Tag}**(`{infractionSubject.Id}`) was unmuted by **{infractionRemover.Tag}**(`{infractionRemover.Id}`). Reason:\n```\n{reason}\n```"));
             }
 
         }
