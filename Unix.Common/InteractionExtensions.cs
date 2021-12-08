@@ -48,6 +48,7 @@ public static class InteractionExtensions
         var localInteraction = new LocalInteractionResponse()
             .WithContent(message.Content)
             .WithEmbeds(message.Embeds)
+            .WithComponents(message.Components)
             .WithType(InteractionResponseType.ChannelMessage);
         return localInteraction;
     }

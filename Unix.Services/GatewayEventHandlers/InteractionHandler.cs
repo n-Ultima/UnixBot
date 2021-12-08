@@ -1043,7 +1043,8 @@ public class InteractionHandler : UnixService
                 var arrPageProvider = new ArrayPageProvider<string>(arrTags, itemsPerPage: arrTags.Length > 10
                     ? 10
                     : arrTags.Length);
-                var pgView = new PagedView(arrPageProvider);
+                var pgView = new PagedTagView(arrPageProvider);
+                await pgView.UpdateAsync();
                 var interactionPgView = pgView.ToLocalMessage().ToLocalInteractionResponse();
                 await eventArgs.Interaction.Response().SendMessageAsync(interactionPgView);
                 var message = await eventArgs.Interaction.Followup().FetchResponseAsync();
@@ -1124,6 +1125,6 @@ public class InteractionHandler : UnixService
                     break;
                 }
         }
-        Log.Logger.Information("Slash command {sName}(executed by {userName}) was handled successfully.", slashCommandInteraction.CommandName, eventArgs.Member.Tag);
+        Log.Logger.Information("Slash command {sName}(executed by {userName}) was handled.", slashCommandInteraction.CommandName, eventArgs.Member.Tag);
     }
 }
