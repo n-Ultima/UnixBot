@@ -9,9 +9,6 @@ using Disqord.Rest;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Npgsql;
-using Serilog;
-using Unix.Common;
 using Unix.Data;
 using Unix.Data.Models.Moderation;
 using Unix.Services.Core.Abstractions;
@@ -289,6 +286,10 @@ namespace Unix.Services.Core
             if (!GuildModLogIds.ContainsKey(guild.Id))
             {
                 var guildConfig = await _guildService.FetchGuildConfigurationAsync(guild.Id);
+                if (guildConfig.ModLogChannelId == default)
+                {
+                    return;
+                }
                 GuildModLogIds.Add(guild.Id, guildConfig.ModLogChannelId);
             }
 
@@ -370,6 +371,10 @@ namespace Unix.Services.Core
             if (!GuildModLogIds.TryGetValue(infraction.GuildId, out _))
             {
                 var guildConfig = await _guildService.FetchGuildConfigurationAsync(infraction.GuildId);
+                if (guildConfig.ModLogChannelId == default)
+                {
+                    return;
+                }
                 GuildModLogIds.Add(infraction.GuildId, guildConfig.ModLogChannelId);
                 modLog = GuildModLogIds[infraction.GuildId];
             }

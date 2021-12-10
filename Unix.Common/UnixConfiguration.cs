@@ -9,7 +9,8 @@ namespace Unix.Common
         private string _Token = null!;
         private string _ConnectionString = null!;
         private ulong[] _OwnerIds = default!;
-
+        private bool _PrivelegedMode = false;
+        
         public string Token
         {
             get => _Token;
@@ -43,6 +44,11 @@ namespace Unix.Common
             }
         }
 
+        public bool PrivelegedMode
+        {
+            get => _PrivelegedMode;
+            set => _PrivelegedMode = value;
+        }
         public UnixConfiguration()
         {
             LoadConfiguration();
@@ -56,6 +62,7 @@ namespace Unix.Common
             Token = config.GetValue<string>(nameof(Token));
             ConnectionString = config.GetValue<string>(nameof(ConnectionString));
             OwnerIds = config.GetSection(nameof(OwnerIds)).Get<ulong[]>();
+            PrivelegedMode = config.GetValue<bool>(nameof(PrivelegedMode));
         }
     }
 }

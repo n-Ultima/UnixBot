@@ -12,12 +12,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
+using Unix.Common;
 using Unix.Data;
 
 namespace Unix.Services.GatewayEventHandlers
 {
     public class ReadyEventHandler : UnixService
     {
+        public UnixConfiguration UnixConfig = new();
         public ReadyEventHandler(IServiceProvider serviceProvider) : base(serviceProvider)
         { }
 
@@ -29,7 +31,7 @@ namespace Unix.Services.GatewayEventHandlers
                 var unixContext = scope.ServiceProvider.GetRequiredService<UnixContext>();
                 var allowedGuildIds = await unixContext.GuildConfigurations.Select(x => x.Id).ToListAsync();
                 var unauthorizedGuilds = e.GuildIds.Except(allowedGuildIds);
-                if (unauthorizedGuilds.Any())
+                if (unauthorizedGuilds.Any() && UnixConfig.PrivelegedMode)
                 {
                     Log.Logger.Warning("Guilds were found that Unix isn't authorized to operate in. IDs: [{guildIds}]", unauthorizedGuilds.Humanize());
                     // Now, we leave each of the guilds that Unix shouldn't be in.
@@ -44,23 +46,7 @@ namespace Unix.Services.GatewayEventHandlers
                         Log.Logger.Information("Left guild {g} due to lack of authorizaiton.", gName);
                     }
                 }
-
-                if (allowedGuildIds.Any())
-                {
-                    foreach (var allowedGuild in allowedGuildIds)
-                    {
-                        try
-                        {
-                            var t2 = Bot.GetGuild(allowedGuild);
-                            await Bot.Chunker.ChunkAsync(t2);
-                            Log.Logger.Information("Cached guild {n}", t2.Name);
-                        }
-                        catch (RestApiException)
-                        {
-                            continue;
-                        }
-                    }
-                }
+                
                 var globalCmds = await Bot.FetchGlobalApplicationCommandsAsync(Bot.CurrentUser.Id);
                 if (!globalCmds.Any())
                 {

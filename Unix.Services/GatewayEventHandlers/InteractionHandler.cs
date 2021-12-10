@@ -28,6 +28,7 @@ public class InteractionHandler : UnixService
     private readonly IModerationService _moderationService;
     private readonly IReminderService _reminderService;
     private readonly ITagService _tagService;
+    private UnixConfiguration UnixConfig = new();
     public InteractionHandler(IServiceProvider serviceProvider, IOwnerService ownerService, IGuildService guildService, IModerationService moderationService, IReminderService reminderService, ITagService tagService) : base(serviceProvider)
     {
         _ownerService = ownerService;
@@ -57,8 +58,11 @@ public class InteractionHandler : UnixService
         var guildConfig = await _guildService.FetchGuildConfigurationAsync(eventArgs.GuildId.Value);
         if (guildConfig == null)
         {
-            await eventArgs.SendEphmeralErrorAsync($"You must request access with Unix before use. Please see http://www.ultima.one/unix");
-            return;
+            if (UnixConfig.PrivelegedMode)
+            {
+                await eventArgs.SendEphmeralErrorAsync($"You must request access with Unix before use. Please see http://www.ultima.one/unix");
+                return;
+            }
         }
 
         var guild = Bot.GetGuild(eventArgs.GuildId.Value);
@@ -601,7 +605,7 @@ public class InteractionHandler : UnixService
                 var muteUser = slashCommandInteraction.Entities.Users.Values.First();
                 var muteReason = slashCommandInteraction.Options.GetValueOrDefault("reason")?.Value as string;
                 var muteDuration = slashCommandInteraction.Options.GetValueOrDefault("duration")?.Value as string;
-                if (guild.GetMember(muteUser.Id) == null)
+                if (muteUser is not IMember)
                 {
                     await eventArgs.SendEphmeralErrorAsync("Member not found.");
                     break;
@@ -634,7 +638,7 @@ public class InteractionHandler : UnixService
 
                 var noteUser = slashCommandInteraction.Entities.Users.Values.First();
                 var noteReason = slashCommandInteraction.Options.GetValueOrDefault("reason")?.Value as string;
-                if (guild.GetMember(noteUser.Id) == null)
+                if (noteUser is not IMember)
                 {
                     await eventArgs.SendEphmeralErrorAsync("Member not found.");
                     break;
@@ -660,7 +664,7 @@ public class InteractionHandler : UnixService
 
                 var warnUser = slashCommandInteraction.Entities.Users.Values.First();
                 var warnReason = slashCommandInteraction.Options.GetValueOrDefault("reason")?.Value as string;
-                if (guild.GetMember(warnUser.Id) == null)
+                if (warnUser is not IMember)
                 {
                     await eventArgs.SendEphmeralErrorAsync("Member not found.");
                     break;
@@ -727,13 +731,12 @@ public class InteractionHandler : UnixService
                 var unmuteUser = slashCommandInteraction.Entities.Users.Values.First();
                 var unmuteReason = slashCommandInteraction.Options.GetValueOrDefault("reason")?.Value as string;
 
-                if (guild.GetMember(unmuteUser.Id) == null)
+                if (unmuteUser is not IMember gUnmuteUser)
                 {
                     await eventArgs.SendEphmeralErrorAsync("Member not found.");
                     break;
                 }
 
-                var gUnmuteUser = guild.GetMember(unmuteUser.Id);
                 var unmuteUserInfractions = await _moderationService.FetchInfractionsAsync(guild.Id, unmuteUser.Id);
                 var mute = unmuteUserInfractions
                     .Where(x => x.Type == InfractionType.Mute)
@@ -833,7 +836,7 @@ public class InteractionHandler : UnixService
 
                 var kickUser = slashCommandInteraction.Entities.Users.Values.First();
                 var kickReason = slashCommandInteraction.Options.GetValueOrDefault("reason")?.Value as string;
-                if (guild.GetMember(kickUser.Id) == null)
+                if (kickUser is not IMember)
                 {
                     await eventArgs.SendEphmeralErrorAsync("Member not found.");
                     break;
@@ -1094,7 +1097,7 @@ public class InteractionHandler : UnixService
             case "tag-transfer":
                 var tagTransferOption = slashCommandInteraction.Options.GetValueOrDefault("name")?.Value as string;
                 var newOwner = slashCommandInteraction.Entities.Users.Select(x => x.Value).First();
-                if (guild.GetMember(newOwner.Id) == null)
+                if (newOwner is not IMember)
                 {
                     await eventArgs.SendEphmeralErrorAsync("Member not found.");
                     break;

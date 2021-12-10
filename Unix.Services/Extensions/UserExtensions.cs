@@ -2,12 +2,14 @@ using System.Collections.Concurrent;
 using System.Linq;
 using Disqord;
 using Disqord.Gateway;
+using Unix.Common;
 using Unix.Data;
 
 namespace Unix.Services.Extensions;
 
 public static class UserExtensions
 {
+    public static UnixConfiguration UnixConfig = new();
     public static ConcurrentDictionary<Snowflake, Snowflake> GuildModRoleIds = new();
     public static ConcurrentDictionary<Snowflake, Snowflake> GuildAdminRoleIds = new();
 
@@ -22,10 +24,21 @@ public static class UserExtensions
             .Find(member.GuildId);
         if (guildConfig == null)
         {
-            return false;
+            if (UnixConfig.PrivelegedMode)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
         }
         if (member.RoleIds.Any())
         {
+            if (guildConfig.RequiredRoleToUse == default)
+            {
+                return true;
+            }
             if (guildConfig.RequiredRoleToUse != guildConfig.Id)
             {
                 if (!member.RoleIds.Contains(guildConfig.RequiredRoleToUse))
