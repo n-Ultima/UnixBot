@@ -53,7 +53,7 @@ namespace Unix.Services.GatewayEventHandlers
                     {
                         continue;
                     }
-                    await _moderationService.CreateInfractionAsync(user.Key.GuildId, Bot.CurrentUser.Id, user.Key.Id, InfractionType.Warn, "Spamming messages", null);
+                    await _moderationService.CreateInfractionAsync(user.Key.GuildId, Bot.CurrentUser.Id, user.Key.Id, InfractionType.Warn, "Spamming messages", false, null);
                     if (!SpamDictionary.TryRemove(user.Key, out _))
                     {
                         Log.Logger.Error("Failed to remove {key} from the spam dictionary.", user.Key);

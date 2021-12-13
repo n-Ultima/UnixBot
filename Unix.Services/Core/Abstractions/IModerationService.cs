@@ -24,7 +24,7 @@ public interface IModerationService
     /// <param name="reason">The reason for the infraction creation.</param>
     /// <param name="duration">The optional duration of the infraction.</param>
     /// <returns></returns>
-    Task CreateInfractionAsync(Snowflake guildId, Snowflake moderatorId, Snowflake subjectId, InfractionType type, string reason, TimeSpan? duration);
+    Task CreateInfractionAsync(Snowflake guildId, Snowflake moderatorId, Snowflake subjectId, InfractionType type, string reason, bool manual, TimeSpan? duration);
 
     /// <summary>
     ///     Fetches all infractions that have a duration.
@@ -49,7 +49,7 @@ public interface IModerationService
     /// <param name="removerId">The ID of the user who is removing the infraction.</param>
     /// <param name="removalMessage">The reason for removing the infraction.</param>
     /// <returns></returns>
-    Task RemoveInfractionAsync(Guid infractionId, Snowflake guildId, Snowflake removerId, string removalMessage);
+    Task RemoveInfractionAsync(Guid infractionId, Snowflake guildId, Snowflake removerId, bool manual, string removalMessage);
 
     /// <summary>
     ///     Fetches the infraction provided.
@@ -87,7 +87,7 @@ public interface IModerationService
     /// <param name="infractionSubject">The user who is the subject of the infraction.</param>
     /// <param name="reason">The reason for deleting the infraction.</param>
     /// <returns></returns>
-    Task LogInfractionDeletionAsync(Infraction infraction, IRestUser infractionRemover, IRestUser infractionSubject, string reason);
+    Task LogInfractionDeletionAsync(Infraction infraction, IRestUser infractionRemover, IRestUser infractionSubject, bool manual, string reason);
 #nullable  enable
 
 }

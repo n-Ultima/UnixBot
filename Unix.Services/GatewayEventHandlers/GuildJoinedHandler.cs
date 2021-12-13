@@ -38,12 +38,12 @@ public class GuildJoinedHandler : UnixService
                 try
                 {
                     await (firstChannel as ITextChannel).SendMessageAsync(new LocalMessage()
-                        .WithContent("Thank you for adding Unix! A few things to note:\n1. Join the Unix Discord Server for support and bug issues(http://www.ultima.one/unix)\n2. Use the `/setup-guild` command to setup your guild(only the owner can do this).\n3. If this guild is found to be in violation of Discord's TOS or any other applicable laws, the guild will be blacklisted from using Unix.\n4. Please run commands to setup your guild fully! All of these commands start with the `/configure` prefix, such as `/configure-modrole`."));
+                        .WithContent("Thank you for adding Unix! A few things to note:\n1. Join the Unix Discord Server for support and bug issues(http://www.ultima.one/unix)\n2. If this guild is found to be in violation of Discord's TOS or any other applicable laws, the guild will be blacklisted from using Unix.\n3. Please run commands to setup your guild fully! All of these commands start with the `/configure` prefix, such as `/configure-modrole`."));
                 }
                 catch (RestApiException)
                 {
                     await Bot.SendMessageAsync(e.Guild.OwnerId, new LocalMessage()
-                        .WithContent("Thank you for adding Unix! A few things to note:\n1. Join the Unix Discord Server for support and bug issues(http://www.ultima.one/unix)\n2. Use the `/setup-guild` command to setup your guild(only the owner can do this).\n3. If this guild is found to be in violation of Discord's TOS or any other applicable laws, the guild will be blacklisted from using Unix.\n4. Please run commands to setup your guild fully! All of these commands start with the `/configure` prefix, such as `/configure-modrole`."));
+                        .WithContent("Thank you for adding Unix! A few things to note:\n1. Join the Unix Discord Server for support and bug issues(http://www.ultima.one/unix)\n2. If this guild is found to be in violation of Discord's TOS or any other applicable laws, the guild will be blacklisted from using Unix.\n3. Please run commands to setup your guild fully! All of these commands start with the `/configure` prefix, such as `/configure-modrole`."));
                 }
 
                 unixContext.GuildConfigurations.Add(new GuildConfiguration

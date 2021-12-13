@@ -27,7 +27,7 @@ namespace Unix.Services.Core
         public Dictionary<Snowflake, Snowflake> GuildMuteRoleIds = new();
 
         /// <inheritdoc /> 
-        public async Task CreateInfractionAsync(Snowflake guildId, Snowflake moderatorId, Snowflake subjectId, InfractionType type, string reason, TimeSpan? duration)
+        public async Task CreateInfractionAsync(Snowflake guildId, Snowflake moderatorId, Snowflake subjectId, InfractionType type, string reason, bool manual, TimeSpan? duration)
         {
             using (var scope = ServiceProvider.CreateScope())
             {
@@ -128,7 +128,10 @@ namespace Unix.Services.Core
 
                         }
 
-                        await guild.CreateBanAsync(subjectId, $"{moderator.Tag} - {reason}");
+                        if (!manual)
+                        {
+                            await guild.CreateBanAsync(subjectId, $"{moderator.Tag} - {reason}");
+                        }
                         goto Log;
                     case InfractionType.Kick:
                         try
@@ -141,10 +144,13 @@ namespace Unix.Services.Core
 
                         }
 
-                        await guild.KickMemberAsync(subjectId, new DefaultRestRequestOptions
+                        if (!manual)
                         {
-                            Reason = $"{moderator.Tag} - {reason}"
-                        });
+                            await guild.KickMemberAsync(subjectId, new DefaultRestRequestOptions
+                            {
+                                Reason = $"{moderator.Tag} - {reason}"
+                            });
+                        }
                         goto Log;
                     case InfractionType.Mute:
                         try
@@ -212,7 +218,7 @@ namespace Unix.Services.Core
         }
 
         /// <inheritdoc /> 
-        public async Task RemoveInfractionAsync(Guid infractionId, Snowflake guildId, Snowflake removerId, string removalMessage)
+        public async Task RemoveInfractionAsync(Guid infractionId, Snowflake guildId, Snowflake removerId, bool manual, string removalMessage)
         {
             using (var scope = ServiceProvider.CreateScope())
             {
@@ -238,10 +244,13 @@ namespace Unix.Services.Core
                 switch (infraction.Type)
                 {
                     case InfractionType.Ban:
-                        await Bot.DeleteBanAsync(guildId, infraction.SubjectId, new DefaultRestRequestOptions
+                        if (!manual)
                         {
-                            Reason = removalMessage
-                        });
+                            await Bot.DeleteBanAsync(guildId, infraction.SubjectId, new DefaultRestRequestOptions
+                            {
+                                Reason = removalMessage
+                            });
+                        }
                         goto Log;
                     case InfractionType.Mute:
                         await Bot.RevokeRoleAsync(guildId, infraction.SubjectId, guildConfig.MuteRoleId, new DefaultRestRequestOptions
@@ -251,7 +260,7 @@ namespace Unix.Services.Core
                         goto Log;
                 }
             Log:
-                await LogInfractionDeletionAsync(infraction, remover, subject, removalMessage);
+                await LogInfractionDeletionAsync(infraction, remover, subject, manual, removalMessage);
             }
         }
 
@@ -318,19 +327,19 @@ namespace Unix.Services.Core
             if (type == InfractionType.Note)
             {
                 await Bot.SendMessageAsync(modLog, new LocalMessage()
-                    .WithContent($"**{subject.Tag}**(`{subject.Id}`) received a notice by **{moderator.Tag}**(`{moderator.Id}`). Reason:\n```\n{reason}\n```"));
+                    .WithContent($"{Markdown.Timestamp(DateTimeOffset.UtcNow)}**{subject.Tag}**(`{subject.Id}`) received a notice by **{moderator.Tag}**(`{moderator.Id}`). Reason:\n```\n{reason}\n```"));
             }
             if (type == InfractionType.Mute)
             {
                 if (humanizedDuration != null)
                 {
                     await Bot.SendMessageAsync(modLog, new LocalMessage()
-                        .WithContent($"**{subject.Tag}**(`{subject.Id}`) was {format} by **{moderator.Tag}**(`{moderator.Id}`) for {humanizedDuration}. Reason:\n```\n{reason}\n```"));
+                        .WithContent($"{Markdown.Timestamp(DateTimeOffset.UtcNow)}**{subject.Tag}**(`{subject.Id}`) was {format} by **{moderator.Tag}**(`{moderator.Id}`) for {humanizedDuration}. Reason:\n```\n{reason}\n```"));
                 }
                 else
                 {
                     await Bot.SendMessageAsync(modLog, new LocalMessage()
-                        .WithContent($"**{subject.Tag}**(`{subject.Id}`) was {format} indefinitely by **{moderator.Tag}**(`{moderator.Id}`). Reason:\n```\n{reason}\n```"));
+                        .WithContent($"{Markdown.Timestamp(DateTimeOffset.UtcNow)}**{subject.Tag}**(`{subject.Id}`) was {format} indefinitely by **{moderator.Tag}**(`{moderator.Id}`). Reason:\n```\n{reason}\n```"));
                 }
             }
 
@@ -339,32 +348,32 @@ namespace Unix.Services.Core
                 if (humanizedDuration != null)
                 {
                     await Bot.SendMessageAsync(modLog, new LocalMessage()
-                        .WithContent($"**{subject.Tag}**(`{subject.Id}`) was temp banned by **{moderator.Tag}**(`{moderator.Id}`) for {humanizedDuration}. Reason:\n```\n{reason}\n```"));
+                        .WithContent($"{Markdown.Timestamp(DateTimeOffset.UtcNow)}**{subject.Tag}**(`{subject.Id}`) was temp banned by **{moderator.Tag}**(`{moderator.Id}`) for {humanizedDuration}. Reason:\n```\n{reason}\n```"));
                 }
                 else
                 {
                     await Bot.SendMessageAsync(modLog, new LocalMessage()
-                        .WithContent($"**{subject.Tag}**(`{subject.Id}`) was {format} by **{moderator.Tag}**(`{moderator.Id}`). Reason:\n```\n{reason}\n```"));
+                        .WithContent($"{Markdown.Timestamp(DateTimeOffset.UtcNow)}**{subject.Tag}**(`{subject.Id}`) was {format} by **{moderator.Tag}**(`{moderator.Id}`). Reason:\n```\n{reason}\n```"));
                 }
             }
 
             if (type == InfractionType.Kick)
             {
                 await Bot.SendMessageAsync(modLog, new LocalMessage()
-                    .WithContent($"**{subject.Tag}**(`{subject.Id}`) was {format} by **{moderator.Tag}**(`{moderator.Id}`). Reason:\n```\n{reason}\n```"));
+                    .WithContent($"{Markdown.Timestamp(DateTimeOffset.UtcNow)}**{subject.Tag}**(`{subject.Id}`) was {format} by **{moderator.Tag}**(`{moderator.Id}`). Reason:\n```\n{reason}\n```"));
             }
 
             if (type == InfractionType.Warn)
             {
                 await Bot.SendMessageAsync(modLog, new LocalMessage()
-                    .WithContent($"**{subject.Tag}**(`{subject.Id}`) was {format} by **{moderator.Tag}**(`{moderator.Id}`). Reason:\n```\n{reason}\n```"));
+                    .WithContent($"{Markdown.Timestamp(DateTimeOffset.UtcNow)}**{subject.Tag}**(`{subject.Id}`) was {format} by **{moderator.Tag}**(`{moderator.Id}`). Reason:\n```\n{reason}\n```"));
             }
 
         }
 
 #nullable disable
         /// <inheritdoc /> 
-        public async Task LogInfractionDeletionAsync(Infraction infraction, IRestUser infractionRemover, IRestUser infractionSubject, string reason)
+        public async Task LogInfractionDeletionAsync(Infraction infraction, IRestUser infractionRemover, IRestUser infractionSubject, bool manual, string reason)
         {
             Snowflake modLog = default;
             Snowflake muteRole = default;
@@ -391,11 +400,14 @@ namespace Unix.Services.Core
             // Modlog has a value now.
             if (infraction.Type == InfractionType.Ban)
             {
-                // Remove the ban obviously.
-                await Bot.DeleteBanAsync(GuildModLogIds.FirstOrDefault(x => x.Value == modLog).Key, infraction.SubjectId, new DefaultRestRequestOptions
+                if (!manual)
                 {
-                    Reason = $"{infractionRemover.Tag} - {reason}"
-                });
+                    // Remove the ban obviously.
+                    await Bot.DeleteBanAsync(GuildModLogIds.FirstOrDefault(x => x.Value == modLog).Key, infraction.SubjectId, new DefaultRestRequestOptions
+                    {
+                        Reason = $"{infractionRemover.Tag} - {reason}"
+                    });
+                }
                 // Log
                 await Bot.SendMessageAsync(modLog, new LocalMessage()
                     .WithContent($"{Markdown.Timestamp(DateTimeOffset.UtcNow)} **{infractionSubject.Tag}**(`{infractionSubject.Id}`) was unbanned by **{infractionRemover.Tag}**(`{infractionRemover.Id}`). Reason:\n```\n{reason}\n```"));
@@ -409,10 +421,13 @@ namespace Unix.Services.Core
 
             if (infraction.Type == InfractionType.Mute)
             {
-                await Bot.RevokeRoleAsync(GuildModLogIds.FirstOrDefault(x => x.Value == modLog).Key, infraction.SubjectId, muteRole, new DefaultRestRequestOptions
+                if (!manual)
                 {
-                    Reason = $"{infractionRemover.Tag} - {reason}"
-                });
+                    await Bot.RevokeRoleAsync(GuildModLogIds.FirstOrDefault(x => x.Value == modLog).Key, infraction.SubjectId, muteRole, new DefaultRestRequestOptions
+                    {
+                        Reason = $"{infractionRemover.Tag} - {reason}"
+                    });
+                }
                 await Bot.SendMessageAsync(modLog, new LocalMessage()
                     .WithContent($"{Markdown.Timestamp(DateTimeOffset.UtcNow)}**{infractionSubject.Tag}**(`{infractionSubject.Id}`) was unmuted by **{infractionRemover.Tag}**(`{infractionRemover.Id}`). Reason:\n```\n{reason}\n```"));
             }

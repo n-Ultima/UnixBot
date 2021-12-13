@@ -552,7 +552,7 @@ public class InteractionHandler : UnixService
                 var deleteInfractionReason = slashCommandInteraction.Options.GetValueOrDefault("reason")?.Value as string;
                 try
                 {
-                    await _moderationService.RemoveInfractionAsync(guidDeleteInfractionId, guild.Id, eventArgs.Member.Id, deleteInfractionReason);
+                    await _moderationService.RemoveInfractionAsync(guidDeleteInfractionId, guild.Id, eventArgs.Member.Id, false, deleteInfractionReason);
                     await eventArgs.SendSuccessAsync("Infraction deleted.");
                     break;
                 }
@@ -585,7 +585,7 @@ public class InteractionHandler : UnixService
 
                 try
                 {
-                    await _moderationService.CreateInfractionAsync(guild.Id, eventArgs.Member.Id, banUser.Id, InfractionType.Ban, banReason, btS);
+                    await _moderationService.CreateInfractionAsync(guild.Id, eventArgs.Member.Id, banUser.Id, InfractionType.Ban, banReason, false, btS);
                     await eventArgs.SendSuccessAsync($"Banned **{banUser.Tag}** | `{banReason}`");
                     break;
                 }
@@ -620,7 +620,7 @@ public class InteractionHandler : UnixService
                 mtS = muteTimeSpanDuration;
                 try
                 {
-                    await _moderationService.CreateInfractionAsync(guild.Id, eventArgs.Member.Id, muteUser.Id, InfractionType.Mute, muteReason, mtS);
+                    await _moderationService.CreateInfractionAsync(guild.Id, eventArgs.Member.Id, muteUser.Id, InfractionType.Mute, muteReason, false, mtS);
                     await eventArgs.SendSuccessAsync($"Muted **{muteUser.Tag}** | `{muteReason}`");
                     break;
                 }
@@ -646,7 +646,7 @@ public class InteractionHandler : UnixService
 
                 try
                 {
-                    await _moderationService.CreateInfractionAsync(guild.Id, eventArgs.Member.Id, noteUser.Id, InfractionType.Note, noteReason, null);
+                    await _moderationService.CreateInfractionAsync(guild.Id, eventArgs.Member.Id, noteUser.Id, InfractionType.Note, noteReason, false, null);
                     await eventArgs.SendSuccessAsync($"Note recorded for **{noteUser.Tag}** | `{noteReason}`");
                     break;
                 }
@@ -672,7 +672,7 @@ public class InteractionHandler : UnixService
 
                 try
                 {
-                    await _moderationService.CreateInfractionAsync(guild.Id, eventArgs.Member.Id, warnUser.Id, InfractionType.Warn, warnReason, null);
+                    await _moderationService.CreateInfractionAsync(guild.Id, eventArgs.Member.Id, warnUser.Id, InfractionType.Warn, warnReason, false, null);
                     await eventArgs.SendSuccessAsync($"Warned **{warnUser.Tag}** | `{warnReason}`");
                     break;
                 }
@@ -759,7 +759,7 @@ public class InteractionHandler : UnixService
                         {
                             GuildId = guild.Id,
                             Type = InfractionType.Mute
-                        }, unmuteModerator, unmuteSubject, unmuteReason);
+                        }, unmuteModerator, unmuteSubject, false, unmuteReason);
                         await eventArgs.SendSuccessAsync($"Unmuted **{unmuteSubject.Tag}** | `{unmuteReason}`");
                         break;
                     }
@@ -770,7 +770,7 @@ public class InteractionHandler : UnixService
 
                 try
                 {
-                    await _moderationService.RemoveInfractionAsync(mute.Id, guild.Id, eventArgs.Member.Id, unmuteReason);
+                    await _moderationService.RemoveInfractionAsync(mute.Id, guild.Id, eventArgs.Member.Id, false, unmuteReason);
                     await eventArgs.SendSuccessAsync($"Unmuted **{unmuteUser.Tag}** | `{unmuteReason}`");
                     break;
                 }
@@ -788,7 +788,7 @@ public class InteractionHandler : UnixService
 
                 var unbanUser = slashCommandInteraction.Entities.Users.Values.First();
                 var unbanReason = slashCommandInteraction.Options.GetValueOrDefault("reason")?.Value as string;
-                var unbanUserInfractions = await _moderationService.FetchInfractionsAsync(unbanUser.Id, guild.Id);
+                var unbanUserInfractions = await _moderationService.FetchInfractionsAsync(guild.Id, unbanUser.Id);
                 var banInfraction = unbanUserInfractions
                     .Where(x => x.Type == InfractionType.Ban)
                     .SingleOrDefault();
@@ -799,25 +799,25 @@ public class InteractionHandler : UnixService
                     var banNoInf = await guild.FetchBanAsync(unbanUser.Id);
                     if (banNoInf != null)
                     {
-                        await guild.DeleteBanAsync(unbanUser.Id, new DefaultRestRequestOptions
-                        {
-                            Reason = $"{eventArgs.Member.Tag} - {unbanReason}"
-                        });
                         unbanSubject = await Bot.FetchUserAsync(unbanUser.Id);
                         unbanModerator = await Bot.FetchUserAsync(unbanModerator.Id);
                         await _moderationService.LogInfractionDeletionAsync(new Infraction
                         {
                             GuildId = guild.Id,
                             Type = InfractionType.Ban
-                        }, unbanModerator, unbanSubject, unbanReason);
+                        }, unbanModerator, unbanSubject, false, unbanReason);
                         await eventArgs.SendSuccessAsync($"Unbanned **{unbanSubject.Tag}** | `{unbanReason}`");
                         break;
+                    }
+                    else
+                    {
+                        await eventArgs.SendEphmeralErrorAsync("That user is not currently banned.");
                     }
                 }
 
                 try
                 {
-                    await _moderationService.RemoveInfractionAsync(banInfraction.Id, guild.Id, eventArgs.Member.Id, unbanReason);
+                    await _moderationService.RemoveInfractionAsync(banInfraction.Id, guild.Id, eventArgs.Member.Id, false, unbanReason);
                     await eventArgs.SendSuccessAsync($"Unbanned **{unbanUser.Tag}** | `{unbanReason}`");
                     break;
                 }
@@ -844,7 +844,7 @@ public class InteractionHandler : UnixService
 
                 try
                 {
-                    await _moderationService.CreateInfractionAsync(guild.Id, eventArgs.Member.Id, kickUser.Id, InfractionType.Kick, kickReason, null);
+                    await _moderationService.CreateInfractionAsync(guild.Id, eventArgs.Member.Id, kickUser.Id, InfractionType.Kick, kickReason, false, null);
                     await eventArgs.SendSuccessAsync($"Kicked **{kickUser.Tag}** | `{kickReason}`");
                     break;
                 }

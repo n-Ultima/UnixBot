@@ -82,7 +82,7 @@ namespace Unix.Services.GatewayEventHandlers
             if (eventArgs.Message.Content.ToLower().Split(" ").Intersect(guildConfig.BannedTerms).Any())
             {
                 await eventArgs.Message.DeleteAsync();
-                await _moderationService.CreateInfractionAsync(eventArgs.GuildId.Value, Bot.CurrentUser.Id, eventArgs.Message.Author.Id, InfractionType.Warn, "Message sent contained banned terms.", null);
+                await _moderationService.CreateInfractionAsync(eventArgs.GuildId.Value, Bot.CurrentUser.Id, eventArgs.Message.Author.Id, InfractionType.Warn, "Message sent contained banned terms.", false, null);
                 return;
             }
             var match = Regex.Match(eventArgs.Message.Content, @"(https?://)?(www.)?(discord.(gg|com|io|me|li)|discordapp.com/invite)/([a-z]+)");
@@ -93,7 +93,7 @@ namespace Unix.Services.GatewayEventHandlers
                     return;
                 }
                 await eventArgs.Message.DeleteAsync();
-                await _moderationService.CreateInfractionAsync(eventArgs.GuildId.Value, Bot.CurrentUser.Id, eventArgs.Message.Author.Id, InfractionType.Warn, "Message contained invite link not present on whitelist.", null);
+                await _moderationService.CreateInfractionAsync(eventArgs.GuildId.Value, Bot.CurrentUser.Id, eventArgs.Message.Author.Id, InfractionType.Warn, "Message contained invite link not present on whitelist.", false, null);
                 return;
             }
 
@@ -112,7 +112,7 @@ namespace Unix.Services.GatewayEventHandlers
                         {
                             // delete the message, report back to the API.
                             await eventArgs.Message.DeleteAsync();
-                            await _moderationService.CreateInfractionAsync(eventArgs.GuildId.Value, Bot.CurrentUser.Id, eventArgs.Message.Author.Id, InfractionType.Warn, $"Message sent contained a suspicious link({group})", null);
+                            await _moderationService.CreateInfractionAsync(eventArgs.GuildId.Value, Bot.CurrentUser.Id, eventArgs.Message.Author.Id, InfractionType.Warn, $"Message sent contained a suspicious link({group})",false,  null);
                             await _phishermanService.ReportCaughtPhishAsync(eventArgs.GuildId.Value, group);
                             return;
                         }
@@ -126,7 +126,7 @@ namespace Unix.Services.GatewayEventHandlers
             if (message.Content.ToLower().Split(" ").Intersect(guildConfig.BannedTerms).Any())
             {
                 await message.DeleteAsync();
-                await _moderationService.CreateInfractionAsync(guildConfig.Id, Bot.CurrentUser.Id, message.Author.Id, InfractionType.Warn, "Message sent contained banned terms.", null);
+                await _moderationService.CreateInfractionAsync(guildConfig.Id, Bot.CurrentUser.Id, message.Author.Id, InfractionType.Warn, "Message sent contained banned terms.", false, null);
             }
             var match = Regex.Match(message.Content, @"(https?://)?(www.)?(discord.(gg|com|io|me|li)|discordapp.com/invite)/([a-z]+)");
             if (match.Success)
@@ -136,7 +136,7 @@ namespace Unix.Services.GatewayEventHandlers
                     return;
                 }
                 await message.DeleteAsync();
-                await _moderationService.CreateInfractionAsync(guildConfig.Id, Bot.CurrentUser.Id, message.Author.Id, InfractionType.Warn, "Message contained invite link not present on whitelist.", null);
+                await _moderationService.CreateInfractionAsync(guildConfig.Id, Bot.CurrentUser.Id, message.Author.Id, InfractionType.Warn, "Message contained invite link not present on whitelist.", false, null);
             }
             if (guildConfig.PhishermanApiKey != null)
             {
@@ -153,7 +153,7 @@ namespace Unix.Services.GatewayEventHandlers
                         {
                             // delete the message, report back to the API.
                             await message.DeleteAsync();
-                            await _moderationService.CreateInfractionAsync(guildConfig.Id, Bot.CurrentUser.Id, message.Author.Id, InfractionType.Warn, $"Message sent contained a suspicious link({group})", null);
+                            await _moderationService.CreateInfractionAsync(guildConfig.Id, Bot.CurrentUser.Id, message.Author.Id, InfractionType.Warn, $"Message sent contained a suspicious link({group})", false, null);
                             await _phishermanService.ReportCaughtPhishAsync(guildConfig.Id, group);
                             return;
                         }
