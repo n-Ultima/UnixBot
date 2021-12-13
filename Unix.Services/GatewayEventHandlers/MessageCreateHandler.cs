@@ -112,7 +112,7 @@ namespace Unix.Services.GatewayEventHandlers
                         {
                             // delete the message, report back to the API.
                             await eventArgs.Message.DeleteAsync();
-                            await _moderationService.CreateInfractionAsync(eventArgs.GuildId.Value, Bot.CurrentUser.Id, eventArgs.Message.Author.Id, InfractionType.Warn, $"Message sent contained a suspicious link({group})",false,  null);
+                            await _moderationService.CreateInfractionAsync(eventArgs.GuildId.Value, Bot.CurrentUser.Id, eventArgs.Message.Author.Id, InfractionType.Warn, $"Message sent contained a suspicious link({group})", false, null);
                             await _phishermanService.ReportCaughtPhishAsync(eventArgs.GuildId.Value, group);
                             return;
                         }

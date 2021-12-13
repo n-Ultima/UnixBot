@@ -10,7 +10,7 @@ namespace Unix.Common
         private string _ConnectionString = null!;
         private ulong[] _OwnerIds = default!;
         private bool _PrivelegedMode = false;
-        
+
         public string Token
         {
             get => _Token;

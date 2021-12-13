@@ -46,7 +46,7 @@ namespace Unix.Services.GatewayEventHandlers
                         Log.Logger.Information("Left guild {g} due to lack of authorizaiton.", gName);
                     }
                 }
-                
+
                 var globalCmds = await Bot.FetchGlobalApplicationCommandsAsync(Bot.CurrentUser.Id);
                 if (!globalCmds.Any())
                 {

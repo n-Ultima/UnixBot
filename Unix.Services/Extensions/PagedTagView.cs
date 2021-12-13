@@ -12,7 +12,7 @@ public class PagedTagView : PagedView
     public PagedTagView(PageProvider pageProvider, LocalMessage templateMessage = null) : base(pageProvider, templateMessage)
     {
     }
-    
+
     protected override async ValueTask OnStopButtonAsync(ButtonEventArgs e)
     {
         if (e.Interaction.Message == null)
