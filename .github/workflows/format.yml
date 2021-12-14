@@ -1,4 +1,4 @@
-name: Build
+name: Format
 on:
   workflow_dispatch:
   push:
@@ -20,7 +20,7 @@ on:
       - 'readme.md'
       - 'full-start.sh'
 jobs:
-  build:
+  format:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -28,15 +28,5 @@ jobs:
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 6.0.100
-      - name: dotnet build
-        run: dotnet build --configuration 'Release' /warnaserror
-  format:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: setup dotnet
-      - uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: 6.0.100
-        - name: dotnet format
-          run: dotnet format
+      - name: dotnet format
+        run: dotnet format

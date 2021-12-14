@@ -26,7 +26,7 @@ git checkout -b feature/FeatureName
 ```
 dotnet build -c Release /warnaserror
 ```
-* use dotnet format, then commit and push your changes.
+* Ccommit and push your changes.
 ```
 dotnet tool install -g dotnet-format
 dotnet format
