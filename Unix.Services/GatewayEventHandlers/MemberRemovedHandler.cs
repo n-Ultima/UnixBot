@@ -13,7 +13,7 @@ public class MemberRemovedHandler : UnixService
 {
     private readonly IGuildService _guildService;
     private readonly IModerationService _moderationService;
-    
+
     public MemberRemovedHandler(IGuildService guildService, IModerationService moderationService, IServiceProvider serviceProvider) : base(serviceProvider)
     {
         _guildService = guildService;
@@ -49,6 +49,6 @@ public class MemberRemovedHandler : UnixService
         {
             // User was kicked via command, no need to do anything.
         }
-        
+
     }
 }
