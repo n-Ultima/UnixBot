@@ -47,7 +47,15 @@ public class MemberRemovedHandler : UnixService
         }
         else
         {
-            // User was kicked via command, no need to do anything.
+            // We need to make sure that the user isn't getting an infraction because they already have one.
+            var kickInfractions = memberKickedInfractions
+                .Where(x => x.Type == InfractionType.Kick)
+                .ToList();
+            // if they have more than one, or if it's equal to one, still create the infraction.
+            if (kickInfractions.Count >= 1)
+            {
+                await _moderationService.CreateInfractionAsync(eventArgs.GuildId, memberKickedAuditLog.ActorId.Value, eventArgs.MemberId, InfractionType.Kick, memberKickedAuditLog.Reason ?? "No reason provided(manual kick).", true, null);
+            }
         }
 
     }
