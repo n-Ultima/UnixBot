@@ -37,7 +37,7 @@ public class MemberBannedHandler : UnixService
             .FirstOrDefault();
         if (memberBannedInfraction == null)
         {
-            var banAuditLogs = await Bot.FetchAuditLogsAsync<IMemberBannedAuditLog>(eventArgs.GuildId);
+            var banAuditLogs = await Bot.FetchAuditLogsAsync<IMemberBannedAuditLog>(eventArgs.GuildId, 1);
             var banAuditLog = banAuditLogs
                 .Where(x => x.TargetId == eventArgs.UserId)
                 .FirstOrDefault();

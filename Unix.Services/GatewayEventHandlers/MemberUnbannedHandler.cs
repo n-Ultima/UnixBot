@@ -34,7 +34,7 @@ public class MemberUnbannedHandler : UnixService
         if (memberUnbannedInfraction != null)
         {
             // Member was unbanned manually.
-            var memberUnbannedAuditLogs = await Bot.FetchAuditLogsAsync<IMemberUnbannedAuditLog>(eventArgs.GuildId);
+            var memberUnbannedAuditLogs = await Bot.FetchAuditLogsAsync<IMemberUnbannedAuditLog>(eventArgs.GuildId, 1);
             var memberUnbannedAuditLog = memberUnbannedAuditLogs
                 .Where(x => x.TargetId == eventArgs.UserId)
                 .FirstOrDefault();

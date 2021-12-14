@@ -28,7 +28,7 @@ public class MemberRemovedHandler : UnixService
             return;
         }
 
-        var kickedAuditLogs = await Bot.FetchAuditLogsAsync<IMemberKickedAuditLog>(eventArgs.GuildId);
+        var kickedAuditLogs = await Bot.FetchAuditLogsAsync<IMemberKickedAuditLog>(eventArgs.GuildId, 1);
         var memberKickedAuditLog = kickedAuditLogs
             .Where(x => x.TargetId == eventArgs.MemberId)
             .FirstOrDefault();
