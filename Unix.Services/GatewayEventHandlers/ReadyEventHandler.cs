@@ -648,6 +648,10 @@ namespace Unix.Services.GatewayEventHandlers
                         .WithIsRequired()
                 });
             cmds.Add(deleteTagCmd);
+            var botInfoCmd = new LocalSlashCommand()
+                .WithName("botinfo")
+                .WithDescription("Displays information about Unix.");
+            cmds.Add(botInfoCmd);
             await Bot.SetGlobalApplicationCommandsAsync(Bot.CurrentUser.Id, cmds);
         }
     }

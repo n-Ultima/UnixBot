@@ -1127,6 +1127,21 @@ public class InteractionHandler : UnixService
                     await eventArgs.SendEphmeralErrorAsync(e.Message);
                     break;
                 }
+            case "botinfo":
+                var botInfoEmbed = new LocalEmbed()
+                    .WithTitle("Unix Info")
+                    .WithAuthor(Bot.CurrentUser)
+                    .WithColor(Color.Purple)
+                    .WithDescription("Unix is a multi feature Discord bot that boasts reliability, efficiency, and simplicity.")
+                    .AddField("Developer(s)", "Ultima#2000", true)
+                    .AddField("Contributor(s)", "Voxel#8113", true)
+                    .AddField("Github", "https://www.github.com/n-Ultima/UnixBot")
+                    .AddField("Library", "Disqord", true)
+                    .AddField("Language", "C#", true)
+                    .AddField("Support Server", "http://www.ultima.one/unix", true);
+                await eventArgs.Interaction.Response().SendMessageAsync(new LocalInteractionResponse()
+                    .WithEmbeds(botInfoEmbed));
+                break;
         }
         Log.Logger.Information("Slash command {sName}(executed by {userName}) was handled.", slashCommandInteraction.CommandName, eventArgs.Member.Tag);
     }
