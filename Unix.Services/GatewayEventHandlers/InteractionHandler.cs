@@ -1142,6 +1142,46 @@ public class InteractionHandler : UnixService
                 await eventArgs.Interaction.Response().SendMessageAsync(new LocalInteractionResponse()
                     .WithEmbeds(botInfoEmbed));
                 break;
+            case "info":
+                var userOption = slashCommandInteraction.Entities.Users.Values.FirstOrDefault();
+                if (userOption is IMember guildMember)
+                {
+                    var guildMemberEmbed = new LocalEmbed()
+                        .WithTitle(guildMember.Tag)
+                        .AddField("ID", guildMember.Id)
+                        .AddField("Joined", Markdown.Timestamp(guildMember.JoinedAt.Value))
+                        .AddField("Created", Markdown.Timestamp(guildMember.CreatedAt()))
+                        .AddField("Roles", guildMember.GetRoles().Select(x => x.Value.Name).Humanize())
+                        .AddField("Hierarchy", guild.OwnerId == guildMember.Id ? "Guild Owner" : guildMember.GetHierarchy())
+                        .WithColor(Color.Gold);
+                    await eventArgs.Interaction.Response().SendMessageAsync(new LocalInteractionResponse()
+                        .WithEmbeds(guildMemberEmbed));
+                    break;
+                }
+
+                if (userOption == null)
+                {
+                    var requestor = slashCommandInteraction.Author as IMember;
+                    var requestorEmbed = new LocalEmbed()
+                        .WithTitle(requestor.Tag)
+                        .AddField("ID", requestor.Id)
+                        .AddField("Joined", Markdown.Timestamp(requestor.JoinedAt.Value))
+                        .AddField("Created", Markdown.Timestamp(requestor.CreatedAt()))
+                        .AddField("Roles", requestor.GetRoles().Select(x => x.Value.Name).Humanize())
+                        .AddField("Hierarchy", guild.OwnerId == requestor.Id ? "Guild Owner" : requestor.GetHierarchy())
+                        .WithColor(Color.Gold);
+                    await eventArgs.Interaction.Response().SendMessageAsync(new LocalInteractionResponse()
+                        .WithEmbeds(requestorEmbed));
+                    break;
+                }
+                var userEmbed = new LocalEmbed()
+                    .WithTitle(userOption.Tag)
+                    .AddField("ID", userOption.Id)
+                    .AddField("Created", Markdown.Timestamp(userOption.CreatedAt()))
+                    .WithColor(Color.Gold);
+                await eventArgs.Interaction.Response().SendMessageAsync(new LocalInteractionResponse()
+                    .WithEmbeds(userEmbed));
+                break;
         }
         Log.Logger.Information("Slash command {sName}(executed by {userName}) was handled.", slashCommandInteraction.CommandName, eventArgs.Member.Tag);
     }

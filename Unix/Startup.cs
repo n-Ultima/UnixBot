@@ -21,71 +21,70 @@ using Unix.Common;
 using Unix.Data;
 using Unix.Services.Core;
 
-namespace Unix
+namespace Unix;
+
+class Startup
 {
-    class Startup
+    private static UnixConfiguration UnixConfig = new();
+    static async Task Main(string[] args)
     {
-        private static UnixConfiguration UnixConfig = new();
-        static async Task Main(string[] args)
-        {
-            Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Verbose()
-                .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-                .Enrich.FromLogContext()
-                .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] [{SourceContext}] {Message:lj}{NewLine}{Exception}", theme: AnsiConsoleTheme.Code)
-                .CreateLogger();
-            var hostBuilder = new HostBuilder()
-                .ConfigureAppConfiguration(x =>
-                {
-                    var config = new ConfigurationBuilder()
-                        .AddJsonFile("appsettings.json")
-                        .Build();
-                    x.AddConfiguration(config);
-                })
-                .ConfigureServices((_, services) =>
-                {
-                    services
-                        .AddSingleton<HttpClient>()
-                        .AddDbContext<UnixContext>()
-                        .Configure<DefaultGatewayCacheProviderConfiguration>(x => x.MessagesPerChannel = 200)
-                        .AddUnixServices()
-                        .AddCommands();
-                })
-                .ConfigureDiscordBotSharder<UnixBot>((_, bot) =>
-                {
-                    bot.Intents = GatewayIntent.Bans |
-                                  GatewayIntent.Guilds |
-                                  GatewayIntent.Members |
-                                  GatewayIntent.EmojisAndStickers |
-                                  GatewayIntent.DirectMessages |
-                                  GatewayIntent.DirectReactions |
-                                  GatewayIntent.GuildReactions |
-                                  GatewayIntent.Webhooks |
-                                  GatewayIntent.GuildMessages;
-                    bot.OwnerIds = UnixConfig.OwnerIds.ToSnowflakeArray();
-                    bot.Token = UnixConfig.Token;
-                    bot.ServiceAssemblies = new[]
-                    {
-                        typeof(GuildService).Assembly,
-                        typeof(UnixConfiguration).Assembly,
-                        typeof(UnixBot).Assembly,
-                        typeof(UnixContext).Assembly
-                    }.ToList();
-                    Log.Logger.Information("OwnerIds: {ownerIds}", bot.OwnerIds.Humanize());
-                })
-                .UseSerilog()
-                .UseConsoleLifetime();
-            using (var host = hostBuilder.Build())
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Verbose()
+            .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+            .Enrich.FromLogContext()
+            .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] [{SourceContext}] {Message:lj}{NewLine}{Exception}", theme: AnsiConsoleTheme.Code)
+            .CreateLogger();
+        var hostBuilder = new HostBuilder()
+            .ConfigureAppConfiguration(x =>
             {
-                using (var services = host.Services.CreateScope())
+                var config = new ConfigurationBuilder()
+                    .AddJsonFile("appsettings.json")
+                    .Build();
+                x.AddConfiguration(config);
+            })
+            .ConfigureServices((_, services) =>
+            {
+                services
+                    .AddSingleton<HttpClient>()
+                    .AddDbContext<UnixContext>()
+                    .Configure<DefaultGatewayCacheProviderConfiguration>(x => x.MessagesPerChannel = 200)
+                    .AddUnixServices()
+                    .AddCommands();
+            })
+            .ConfigureDiscordBotSharder<UnixBot>((_, bot) =>
+            {
+                bot.Intents = GatewayIntent.Bans |
+                              GatewayIntent.Guilds |
+                              GatewayIntent.Members |
+                              GatewayIntent.EmojisAndStickers |
+                              GatewayIntent.DirectMessages |
+                              GatewayIntent.DirectReactions |
+                              GatewayIntent.GuildReactions |
+                              GatewayIntent.Webhooks |
+                              GatewayIntent.GuildMessages;
+                bot.OwnerIds = UnixConfig.OwnerIds.ToSnowflakeArray();
+                bot.Token = UnixConfig.Token;
+                bot.ServiceAssemblies = new[]
                 {
-                    var db = services.ServiceProvider.GetRequiredService<UnixContext>();
-                    Log.Logger.Information("Applying migrations...");
-                    await db.Database.MigrateAsync();
-                    Log.Logger.Information("Migrations applied successfully!");
-                }
-                await host.RunAsync();
+                    typeof(GuildService).Assembly,
+                    typeof(UnixConfiguration).Assembly,
+                    typeof(UnixBot).Assembly,
+                    typeof(UnixContext).Assembly
+                }.ToList();
+                Log.Logger.Information("OwnerIds: {ownerIds}", bot.OwnerIds.Humanize());
+            })
+            .UseSerilog()
+            .UseConsoleLifetime();
+        using (var host = hostBuilder.Build())
+        {
+            using (var services = host.Services.CreateScope())
+            {
+                var db = services.ServiceProvider.GetRequiredService<UnixContext>();
+                Log.Logger.Information("Applying migrations...");
+                await db.Database.MigrateAsync();
+                Log.Logger.Information("Migrations applied successfully!");
             }
+            await host.RunAsync();
         }
     }
 }

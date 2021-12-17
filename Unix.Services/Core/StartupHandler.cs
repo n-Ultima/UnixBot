@@ -9,24 +9,23 @@ using Serilog;
 using Unix.Data;
 using Unix.Data.Models.Core;
 
-namespace Unix.Services.Core
-{
-    public class StartupHandler : UnixService
-    {
-        private readonly IHostApplicationLifetime _applicationLifetime;
-        public StartupHandler(IHostApplicationLifetime applicationLifetime, IServiceProvider serviceProvider) : base(serviceProvider)
-        {
-            _applicationLifetime = applicationLifetime;
-        }
+namespace Unix.Services.Core;
 
-        public override async Task StartAsync(CancellationToken ct)
+public class StartupHandler : UnixService
+{
+    private readonly IHostApplicationLifetime _applicationLifetime;
+    public StartupHandler(IHostApplicationLifetime applicationLifetime, IServiceProvider serviceProvider) : base(serviceProvider)
+    {
+        _applicationLifetime = applicationLifetime;
+    }
+
+    public override async Task StartAsync(CancellationToken ct)
+    {
+        using (var scope = ServiceProvider.CreateScope())
         {
-            using (var scope = ServiceProvider.CreateScope())
-            {
-                var unixContext = scope.ServiceProvider.GetRequiredService<UnixContext>();
-                var whitelistedGuilds = await unixContext.GuildConfigurations.Select(x => x.Id).ToListAsync();
-                OwnerService.WhitelistedGuilds.AddRange(whitelistedGuilds);
-            }
+            var unixContext = scope.ServiceProvider.GetRequiredService<UnixContext>();
+            var whitelistedGuilds = await unixContext.GuildConfigurations.Select(x => x.Id).ToListAsync();
+            OwnerService.WhitelistedGuilds.AddRange(whitelistedGuilds);
         }
     }
 }

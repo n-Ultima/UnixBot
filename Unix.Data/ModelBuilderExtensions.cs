@@ -5,28 +5,27 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace Unix.Data
+namespace Unix.Data;
+
+public static class ModelBuilderExtensions
 {
-    public static class ModelBuilderExtensions
+    public static ModelBuilder UseValueConverterForType<T>(this ModelBuilder modelBuilder, ValueConverter converter)
     {
-        public static ModelBuilder UseValueConverterForType<T>(this ModelBuilder modelBuilder, ValueConverter converter)
-        {
-            return modelBuilder.UseValueConverterForType(typeof(T), converter);
-        }
+        return modelBuilder.UseValueConverterForType(typeof(T), converter);
+    }
 
-        public static ModelBuilder UseValueConverterForType(this ModelBuilder modelBuilder, Type type, ValueConverter converter)
+    public static ModelBuilder UseValueConverterForType(this ModelBuilder modelBuilder, Type type, ValueConverter converter)
+    {
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {
-            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            var properties = entityType.ClrType.GetProperties().Where(p => p.PropertyType == type);
+            foreach (var property in properties)
             {
-                var properties = entityType.ClrType.GetProperties().Where(p => p.PropertyType == type);
-                foreach (var property in properties)
-                {
-                    modelBuilder.Entity(entityType.Name).Property(property.Name)
-                        .HasConversion(converter);
-                }
+                modelBuilder.Entity(entityType.Name).Property(property.Name)
+                    .HasConversion(converter);
             }
-
-            return modelBuilder;
         }
+
+        return modelBuilder;
     }
 }

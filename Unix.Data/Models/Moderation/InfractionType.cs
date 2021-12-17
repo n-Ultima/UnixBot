@@ -1,11 +1,10 @@
-﻿namespace Unix.Data.Models.Moderation
+﻿namespace Unix.Data.Models.Moderation;
+
+public enum InfractionType
 {
-    public enum InfractionType
-    {
-        Note,
-        Warn,
-        Mute,
-        Kick,
-        Ban
-    }
+    Note,
+    Warn,
+    Mute,
+    Kick,
+    Ban
 }
