@@ -1148,6 +1148,8 @@ public class InteractionHandler : UnixService
                 {
                     var guildMemberEmbed = new LocalEmbed()
                         .WithTitle(guildMember.Tag)
+                        .WithAuthor(guildMember)
+                        .WithThumbnailUrl(guildMember.GetAvatarUrl() ?? guildMember.GetDefaultAvatarUrl())
                         .AddField("ID", guildMember.Id)
                         .AddField("Joined", Markdown.Timestamp(guildMember.JoinedAt.Value))
                         .AddField("Created", Markdown.Timestamp(guildMember.CreatedAt()))
@@ -1164,6 +1166,8 @@ public class InteractionHandler : UnixService
                     var requestor = slashCommandInteraction.Author as IMember;
                     var requestorEmbed = new LocalEmbed()
                         .WithTitle(requestor.Tag)
+                        .WithAuthor(requestor)
+                        .WithThumbnailUrl(requestor.GetAvatarUrl() ?? requestor.GetDefaultAvatarUrl())
                         .AddField("ID", requestor.Id)
                         .AddField("Joined", Markdown.Timestamp(requestor.JoinedAt.Value))
                         .AddField("Created", Markdown.Timestamp(requestor.CreatedAt()))
@@ -1176,6 +1180,8 @@ public class InteractionHandler : UnixService
                 }
                 var userEmbed = new LocalEmbed()
                     .WithTitle(userOption.Tag)
+                    .WithAuthor(userOption)
+                    .WithThumbnailUrl(userOption.GetAvatarUrl() ?? userOption.GetDefaultAvatarUrl())
                     .AddField("ID", userOption.Id)
                     .AddField("Created", Markdown.Timestamp(userOption.CreatedAt()))
                     .WithColor(Color.Gold);
