@@ -77,7 +77,7 @@ public interface IModerationService
     /// <param name="humanizedDuration">The optional duration of the infraction.</param>
     /// <param name="reason">The reason for the infraction.</param>
     /// <returns></returns>
-    Task LogAsync(CachedGuild guild, IRestUser subject, CachedMember moderator, InfractionType type, string? humanizedDuration, string reason);
+    Task LogAsync(CachedGuild guild, IUser subject, IUser moderator, InfractionType type, string? humanizedDuration, string reason);
 
     /// <summary>
     ///     Logs an infraction deletion.
@@ -87,7 +87,7 @@ public interface IModerationService
     /// <param name="infractionSubject">The user who is the subject of the infraction.</param>
     /// <param name="reason">The reason for deleting the infraction.</param>
     /// <returns></returns>
-    Task LogInfractionDeletionAsync(Infraction infraction, IRestUser infractionRemover, IRestUser infractionSubject, bool manual, string reason);
+    Task LogInfractionDeletionAsync(Infraction infraction, IUser infractionRemover, IUser infractionSubject, bool manual, string reason);
 #nullable  enable
 
 }

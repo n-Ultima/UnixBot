@@ -1,5 +1,4 @@
 ﻿using System;
-using Disqord;
 using Microsoft.Extensions.Configuration;
 
 namespace Unix.Common;

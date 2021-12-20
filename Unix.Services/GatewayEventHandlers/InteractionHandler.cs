@@ -742,8 +742,6 @@ public class InteractionHandler : UnixService
                     .Where(x => x.Type == InfractionType.Mute)
                     .Where(x => x.GuildId == guild.Id)
                     .SingleOrDefault();
-                IRestUser unmuteSubject = null;
-                IRestUser unmuteModerator = null;
                 if (mute == null)
                 {
                     if (gUnmuteUser.RoleIds.Contains(guildConfig.MuteRoleId))
@@ -752,15 +750,13 @@ public class InteractionHandler : UnixService
                         {
                             Reason = $"{eventArgs.Member.Tag} - {unmuteReason}"
                         });
-                        unmuteSubject = await Bot.FetchUserAsync(gUnmuteUser.Id);
-                        unmuteModerator = await Bot.FetchUserAsync(eventArgs.Member.Id);
 
                         await _moderationService.LogInfractionDeletionAsync(new Infraction()
                         {
                             GuildId = guild.Id,
                             Type = InfractionType.Mute
-                        }, unmuteModerator, unmuteSubject, false, unmuteReason);
-                        await eventArgs.SendSuccessAsync($"Unmuted **{unmuteSubject.Tag}** | `{unmuteReason}`");
+                        }, eventArgs.Member, gUnmuteUser, false, unmuteReason);
+                        await eventArgs.SendSuccessAsync($"Unmuted **{gUnmuteUser.Tag}** | `{unmuteReason}`");
                         break;
                     }
 
@@ -792,21 +788,17 @@ public class InteractionHandler : UnixService
                 var banInfraction = unbanUserInfractions
                     .Where(x => x.Type == InfractionType.Ban)
                     .SingleOrDefault();
-                IRestUser unbanSubject = null;
-                IRestUser unbanModerator = null;
                 if (banInfraction == null)
                 {
                     var banNoInf = await guild.FetchBanAsync(unbanUser.Id);
                     if (banNoInf != null)
                     {
-                        unbanSubject = await Bot.FetchUserAsync(unbanUser.Id);
-                        unbanModerator = await Bot.FetchUserAsync(unbanModerator.Id);
                         await _moderationService.LogInfractionDeletionAsync(new Infraction
                         {
                             GuildId = guild.Id,
                             Type = InfractionType.Ban
-                        }, unbanModerator, unbanSubject, false, unbanReason);
-                        await eventArgs.SendSuccessAsync($"Unbanned **{unbanSubject.Tag}** | `{unbanReason}`");
+                        }, eventArgs.Member, banNoInf.User, false, unbanReason);
+                        await eventArgs.SendSuccessAsync($"Unbanned **{banNoInf.User.Tag}** | `{unbanReason}`");
                         break;
                     }
                     else

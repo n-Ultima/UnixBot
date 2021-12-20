@@ -290,7 +290,7 @@ public class ModerationService : UnixService, IModerationService
     }
 #nullable enable
     /// <inheritdoc /> 
-    public async Task LogAsync(CachedGuild guild, IRestUser subject, CachedMember moderator, InfractionType type, string? humanizedDuration, string reason)
+    public async Task LogAsync(CachedGuild guild, IUser subject, IUser moderator, InfractionType type, string? humanizedDuration, string reason)
     {
         if (!GuildModLogIds.ContainsKey(guild.Id))
         {
@@ -373,7 +373,7 @@ public class ModerationService : UnixService, IModerationService
 
 #nullable disable
     /// <inheritdoc /> 
-    public async Task LogInfractionDeletionAsync(Infraction infraction, IRestUser infractionRemover, IRestUser infractionSubject, bool manual, string reason)
+    public async Task LogInfractionDeletionAsync(Infraction infraction, IUser infractionRemover, IUser infractionSubject, bool manual, string reason)
     {
         Snowflake modLog = default;
         Snowflake muteRole = default;
