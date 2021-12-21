@@ -147,14 +147,24 @@ public class MessageCreateHandler : UnixService
                 var isSus = await _phishermanService.IsDomainSuspiciousAsync(guildConfig.Id, group);
                 if (isSus)
                 {
+                    string reasonForDeletion = string.Empty;
                     // The domain is marked as suspicious. We now need to actually see if it's a verified phish.
                     var isVerifiedPhish = await _phishermanService.IsVerifiedPhishAsync(guildConfig.Id, group);
                     if (isVerifiedPhish)
                     {
+                        reasonForDeletion = $"Message sent contained a link that is marked as a verified phish by Phisherman. Link: {group}";
                         // delete the message, report back to the API.
                         await message.DeleteAsync();
-                        await _moderationService.CreateInfractionAsync(guildConfig.Id, Bot.CurrentUser.Id, message.Author.Id, InfractionType.Warn, $"Message sent contained a suspicious link({group})", false, null);
+                        await _moderationService.CreateInfractionAsync(guildConfig.Id, Bot.CurrentUser.Id, message.Author.Id, InfractionType.Warn, reasonForDeletion, false, null);
                         await _phishermanService.ReportCaughtPhishAsync(guildConfig.Id, group);
+                        return;
+                    }
+                    else
+                    {
+                        reasonForDeletion = $"Message sent contained a link that is marked as suspicious(but not verified) by Phisherman. Link: {group}";
+                        // delete the message, report back to the API.
+                        await message.DeleteAsync();
+                        await _moderationService.CreateInfractionAsync(guildConfig.Id, Bot.CurrentUser.Id, message.Author.Id, InfractionType.Warn, reasonForDeletion, false, null);
                         return;
                     }
                 }
