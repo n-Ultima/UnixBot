@@ -8,6 +8,7 @@ using Disqord.Bot;
 using Disqord.Bot.Sharding;
 using Disqord.Rest;
 using Disqord.Sharding;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Qmmands;
@@ -17,12 +18,8 @@ using Unix.Services.Core;
 
 namespace Unix;
 
-public class UnixBot : DiscordBotSharder
+public class UnixBot
 {
-    private readonly GuildService _guildService;
-    public UnixBot(GuildService guildService, IOptions<DiscordBotSharderConfiguration> options, ILogger<DiscordBotSharder> logger, IServiceProvider services, DiscordClientSharder client) : base(options, logger, services, client)
-    {
-        _guildService = guildService;
-    }
+    
 
 }
