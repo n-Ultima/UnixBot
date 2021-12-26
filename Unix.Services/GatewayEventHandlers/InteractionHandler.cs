@@ -1020,7 +1020,7 @@ public class InteractionHandler : UnixService
                     .WithColor(System.Drawing.Color.Gold);
                 foreach (var reminder in currentReminders.OrderBy(x => x.ExecutionTime))
                 {
-                    currentRemindersEmbed.AddField($"ID: {reminder.Id} - {reminder.Value}", $"I will remind you on {Markdown.Timestamp(reminder.ExecutionTime)}");
+                    currentRemindersEmbed.AddField($"Reminder {reminder.Id}", $"{Markdown.Timestamp(reminder.ExecutionTime)} - `{reminder.Value}`");
                 }
 
                 await eventArgs.Interaction.Response().SendMessageAsync(new LocalInteractionResponse()

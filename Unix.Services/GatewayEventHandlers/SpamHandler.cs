@@ -40,8 +40,7 @@ public class SpamHandler : UnixService
         foreach (var entry in SpamDictionary)
         {
             var member = entry.Key; // The member
-            var guild = member.GetGuild(); // The guild that the member resides in. Now have Member, Guild
-            var guildConfig = await _guildService.FetchGuildConfigurationAsync(guild.Id); // Get the guild config
+            var guildConfig = await _guildService.FetchGuildConfigurationAsync(member.GuildId); // Get the guild config
             var spamAmt = AmountOfMessages[guildConfig.Id];// The amount of messages considered spam. 
             var warnUsers = SpamDictionary
                 .Where(x => x.Value >= spamAmt)
