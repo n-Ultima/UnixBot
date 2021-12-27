@@ -17,14 +17,6 @@ public interface IGuildService
     Task<GuildConfiguration> FetchGuildConfigurationAsync(Snowflake guildId);
 
     /// <summary>
-    ///     Modifies the guild's mute role.
-    /// </summary>
-    /// <param name="guildId">The ID of the guild.</param>
-    /// <param name="muteRoleId">The ID of the mute role.</param>
-    /// <returns></returns>
-    Task ModifyGuildMuteRoleIdAsync(Snowflake guildId, Snowflake muteRoleId);
-
-    /// <summary>
     ///     Modifies the guild's mod log channel ID.
     /// </summary>
     /// <param name="guildId">The ID of the guild.</param>

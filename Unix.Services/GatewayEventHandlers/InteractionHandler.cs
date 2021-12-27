@@ -101,17 +101,6 @@ public class InteractionHandler : UnixService
                 await eventArgs.Interaction.Response().SendMessageAsync(new LocalInteractionResponse()
                     .WithContent(Bot.GetGuilds().Count.ToString()));
                 break;
-            case "configure-muterole":
-                if (!eventArgs.Member.IsAdmin())
-                {
-                    await eventArgs.SendEphmeralErrorAsync(PermissionLevel.Administrator);
-                    break;
-                }
-
-                var muteRole = slashCommandInteraction.Entities.Roles.First().Value;
-                await _guildService.ModifyGuildMuteRoleIdAsync(eventArgs.GuildId.Value, muteRole.Id);
-                await eventArgs.SendSuccessAsync($"Muterole configured to **{muteRole.Name}**");
-                break;
             case "configure-modrole":
                 if (!eventArgs.Member.IsAdmin())
                 {
@@ -371,7 +360,6 @@ public class InteractionHandler : UnixService
 
                 // get the options.
                 var guildIdString = slashCommandInteraction.Options.GetValueOrDefault("id")?.Value as string;
-                var muteRoleString = slashCommandInteraction.Options.GetValueOrDefault("mute-role-id")?.Value as string;
                 var modLogString = slashCommandInteraction.Options.GetValueOrDefault("modlog-channel-id")?.Value as string;
                 var messageLogString = slashCommandInteraction.Options.GetValueOrDefault("messagelog-channel-id")?.Value as string;
                 var modRoleString = slashCommandInteraction.Options.GetValueOrDefault("moderator-role-id")?.Value as string;
@@ -381,12 +369,6 @@ public class InteractionHandler : UnixService
                 if (!Snowflake.TryParse(guildIdString, out var realGuildId))
                 {
                     await eventArgs.SendEphmeralErrorAsync($"Invalid snowflake provided for guild ID.");
-                    break;
-                }
-
-                if (!Snowflake.TryParse(muteRoleString, out var realMuteRole))
-                {
-                    await eventArgs.SendEphmeralErrorAsync("Invalid snowflake provided for mute role ID.");
                     break;
                 }
 
@@ -417,7 +399,7 @@ public class InteractionHandler : UnixService
                 // configure the guild
                 try
                 {
-                    await _ownerService.ConfigureGuildAsync(realGuildId, realMuteRole, realModLog, realMessageLog, realModRole, realAdminRole, autoModEnabled);
+                    await _ownerService.ConfigureGuildAsync(realGuildId, realModLog, realMessageLog, realModRole, realAdminRole, autoModEnabled);
                     await eventArgs.SendSuccessAsync($"Successfully configured!");
                     break;
                 }
@@ -744,30 +726,27 @@ public class InteractionHandler : UnixService
                     .SingleOrDefault();
                 if (mute == null)
                 {
-                    if (gUnmuteUser.RoleIds.Contains(guildConfig.MuteRoleId))
+                    if (!gUnmuteUser.TimedOutUntil.HasValue || gUnmuteUser.TimedOutUntil < DateTimeOffset.UtcNow)
                     {
-                        await gUnmuteUser.RevokeRoleAsync(guildConfig.MuteRoleId, new DefaultRestRequestOptions
-                        {
-                            Reason = $"{eventArgs.Member.Tag} - {unmuteReason}"
-                        });
-
+                        await eventArgs.SendEphmeralErrorAsync("The user provided is not currently timed out.");
+                        break;
+                    }
+                    if (gUnmuteUser.TimedOutUntil > DateTimeOffset.UtcNow)
+                    {
                         await _moderationService.LogInfractionDeletionAsync(new Infraction()
                         {
                             GuildId = guild.Id,
                             Type = InfractionType.Mute
                         }, eventArgs.Member, gUnmuteUser, false, unmuteReason);
-                        await eventArgs.SendSuccessAsync($"Unmuted **{gUnmuteUser.Tag}** | `{unmuteReason}`");
+                        await eventArgs.SendSuccessAsync($"Removed the timeout for **{gUnmuteUser.Tag}** | `{unmuteReason}`");
                         break;
                     }
-
-                    await eventArgs.SendEphmeralErrorAsync("The user provided is not currently muted.");
-                    break;
                 }
 
                 try
                 {
                     await _moderationService.RemoveInfractionAsync(mute.Id, guild.Id, eventArgs.Member.Id, false, unmuteReason);
-                    await eventArgs.SendSuccessAsync($"Unmuted **{unmuteUser.Tag}** | `{unmuteReason}`");
+                    await eventArgs.SendSuccessAsync($"Removed the time out for **{unmuteUser.Tag}** | `{unmuteReason}`");
                     break;
                 }
                 catch (Exception e)

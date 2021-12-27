@@ -65,18 +65,6 @@ public class ReadyEventHandler : UnixService
             .WithName("ping")
             .WithDescription("Pings the Discord API and returns the latency.");
         cmds.Add(pingCmd);
-        var configMuteRole = new LocalSlashCommand()
-            .WithName("configure-muterole")
-            .WithDescription("Sets the mute role for your server.")
-            .WithOptions(new[]
-            {
-                new LocalSlashCommandOption()
-                    .WithName("role")
-                    .WithDescription("The role to set.")
-                    .WithType(SlashCommandOptionType.Role)
-                    .WithIsRequired()
-            });
-        cmds.Add(configMuteRole);
         var guildCountCmd = new LocalSlashCommand()
             .WithName("guild-count")
             .WithDescription("Returns the number of guilds that this instance of Unix is in.");
@@ -212,11 +200,6 @@ public class ReadyEventHandler : UnixService
                 new LocalSlashCommandOption()
                     .WithName("id")
                     .WithDescription("The ID of the guild.")
-                    .WithIsRequired()
-                    .WithType(SlashCommandOptionType.String),
-                new LocalSlashCommandOption()
-                    .WithName("mute-role-id")
-                    .WithDescription("The ID of the muted role.")
                     .WithIsRequired()
                     .WithType(SlashCommandOptionType.String),
                 new LocalSlashCommandOption()

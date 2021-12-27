@@ -24,7 +24,6 @@ public class ModerationService : UnixService, IModerationService
     }
 
     public Dictionary<Snowflake, Snowflake> GuildModLogIds = new();
-    public Dictionary<Snowflake, Snowflake> GuildMuteRoleIds = new();
 
     /// <inheritdoc /> 
     public async Task CreateInfractionAsync(Snowflake guildId, Snowflake moderatorId, Snowflake subjectId, InfractionType type, string reason, bool manual, TimeSpan? duration)
@@ -156,24 +155,15 @@ public class ModerationService : UnixService, IModerationService
                     try
                     {
                         await member.SendMessageAsync(new LocalMessage()
-                            .WithContent($"You have been muted in {guild.Name} for {duration.Value.Humanize(10)}. Reason: {reason}"));
+                            .WithContent($"You have been timed out in {guild.Name} for {duration.Value.Humanize(10)}. Reason: {reason}"));
                     }
                     catch (RestApiException)
                     {
 
                     }
 
-                    var muteRole = guild.Roles.GetValueOrDefault(guildConfig.MuteRoleId);
                     var gMember = guild.GetMember(subjectId);
-                    await gMember.GrantRoleAsync(muteRole.Id, new DefaultRestRequestOptions
-                    {
-                        Reason = $"{moderator.Tag} - {reason}"
-                    });
-                    var muteRoleCache = GuildMuteRoleIds[guild.Id];
-                    if (muteRoleCache == default)
-                    {
-                        GuildMuteRoleIds.Add(guild.Id, muteRole.Id);
-                    }
+                    await gMember.ModifyAsync(x => x.TimedOutUntil = now + duration);
                     goto Log;
             }
         Log:
@@ -253,9 +243,9 @@ public class ModerationService : UnixService, IModerationService
                     }
                     goto Log;
                 case InfractionType.Mute:
-                    await Bot.RevokeRoleAsync(guildId, infraction.SubjectId, guildConfig.MuteRoleId, new DefaultRestRequestOptions
+                    await Bot.ModifyMemberAsync(guildId, infraction.SubjectId, x => x.TimedOutUntil = null, new DefaultRestRequestOptions
                     {
-                        Reason = removalMessage
+                        Reason = $"{remover.Tag} - {removalMessage}"
                     });
                     goto Log;
             }
@@ -376,7 +366,6 @@ public class ModerationService : UnixService, IModerationService
     public async Task LogInfractionDeletionAsync(Infraction infraction, IUser infractionRemover, IUser infractionSubject, bool manual, string reason)
     {
         Snowflake modLog = default;
-        Snowflake muteRole = default;
         if (!GuildModLogIds.TryGetValue(infraction.GuildId, out _))
         {
             var guildConfig = await _guildService.FetchGuildConfigurationAsync(infraction.GuildId);
@@ -389,14 +378,6 @@ public class ModerationService : UnixService, IModerationService
         }
 
         modLog = GuildModLogIds[infraction.GuildId];
-        if (!GuildMuteRoleIds.TryGetValue(infraction.GuildId, out _))
-        {
-            var guildConfig = await _guildService.FetchGuildConfigurationAsync(infraction.GuildId);
-            GuildMuteRoleIds.Add(infraction.GuildId, guildConfig.MuteRoleId);
-            muteRole = GuildMuteRoleIds[infraction.GuildId];
-        }
-
-        muteRole = GuildMuteRoleIds[infraction.GuildId];
         // Modlog has a value now.
         if (infraction.Type == InfractionType.Ban)
         {
@@ -423,13 +404,13 @@ public class ModerationService : UnixService, IModerationService
         {
             if (!manual)
             {
-                await Bot.RevokeRoleAsync(GuildModLogIds.FirstOrDefault(x => x.Value == modLog).Key, infraction.SubjectId, muteRole, new DefaultRestRequestOptions
+                await Bot.ModifyMemberAsync(infraction.GuildId, infraction.SubjectId, x => x.TimedOutUntil = null, new DefaultRestRequestOptions
                 {
                     Reason = $"{infractionRemover.Tag} - {reason}"
                 });
             }
             await Bot.SendMessageAsync(modLog, new LocalMessage()
-                .WithContent($"{Markdown.Timestamp(DateTimeOffset.UtcNow)}**{infractionSubject.Tag}**(`{infractionSubject.Id}`) was unmuted by **{infractionRemover.Tag}**(`{infractionRemover.Id}`). Reason:\n```\n{reason}\n```"));
+                .WithContent($"{Markdown.Timestamp(DateTimeOffset.UtcNow)}**{infractionSubject.Tag}**(`{infractionSubject.Id}`) had their timeout removed by **{infractionRemover.Tag}**(`{infractionRemover.Id}`). Reason:\n```\n{reason}\n```"));
         }
 
     }

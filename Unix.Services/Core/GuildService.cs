@@ -34,21 +34,6 @@ public class GuildService : UnixService, IGuildService
     }
 
     /// <inheritdoc />
-    public async Task ModifyGuildMuteRoleIdAsync(Snowflake guildId, Snowflake muteRoleId)
-    {
-        using (var scope = ServiceProvider.CreateScope())
-        {
-            var unixContext = scope.ServiceProvider.GetRequiredService<UnixContext>();
-            var guild = await unixContext.GuildConfigurations
-                .FindAsync(guildId);
-            if (guild == null)
-                throw new Exception("Guild should be configured using the `configure-guild` command first.");
-            guild.MuteRoleId = muteRoleId;
-            await unixContext.SaveChangesAsync();
-        }
-    }
-
-    /// <inheritdoc />
     public async Task ModifyGuildModLogChannelIdAsync(Snowflake guildId, Snowflake modlogChannelId)
     {
         using (var scope = ServiceProvider.CreateScope())

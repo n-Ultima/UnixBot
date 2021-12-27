@@ -47,7 +47,7 @@ public class InfractionRescindBehavior : UnixService
                             reason = "Temporary ban expired.";
                             break;
                         case InfractionType.Mute:
-                            reason = "Mute expired.";
+                            reason = "Timeout expired.";
                             break;
                     }
 
