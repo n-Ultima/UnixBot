@@ -1124,7 +1124,7 @@ public class InteractionHandler : UnixService
                     .WithTitle("Unix Info")
                     .WithAuthor(Bot.CurrentUser)
                     .WithColor(Color.Purple)
-                    .WithDescription("Unix is a multi feature Discord bot that boasts reliability, efficiency, and simplicity.")
+                    .WithDescription("Unix is a multi feature Discord bot that boasts reliability, efficiency, and simplicity. You can vote for the bot on [top.gg](https://top.gg/bot/817577290057383947).")
                     .AddField("Developer(s)", "Ultima#2000", true)
                     .AddField("Contributor(s)", "Voxel#8113", true)
                     .AddField("Github", "https://www.github.com/n-Ultima/UnixBot")
