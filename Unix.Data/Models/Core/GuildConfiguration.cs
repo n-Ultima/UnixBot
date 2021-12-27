@@ -15,7 +15,7 @@ public class GuildConfiguration
 
     public Snowflake RequiredRoleToUse { get; set; }
     public Snowflake MessageLogChannelId { get; set; }
-    
+
     public bool AutomodEnabled { get; set; }
 
     public List<string> BannedTerms { get; set; } = new();

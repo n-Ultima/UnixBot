@@ -17,7 +17,7 @@ public class TagHandler : UnixService
     }
 
 
-    private static readonly Regex _inlineTagRegex = new(@"\$(\S+)\b");   
+    private static readonly Regex _inlineTagRegex = new(@"\$(\S+)\b");
     protected override async ValueTask OnMessageReceived(BotMessageReceivedEventArgs eventArgs)
     {
         if (!eventArgs.GuildId.HasValue)

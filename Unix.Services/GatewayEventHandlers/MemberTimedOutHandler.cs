@@ -13,13 +13,13 @@ public class MemberTimedOutHandler : UnixService
 {
     private readonly IGuildService _guildService;
     private readonly IModerationService _moderationService;
-    
+
     public MemberTimedOutHandler(IGuildService guildService, IModerationService moderationService, IServiceProvider serviceProvider) : base(serviceProvider)
     {
         _guildService = guildService;
         _moderationService = moderationService;
     }
-    
+
     protected override async ValueTask OnMemberUpdated(MemberUpdatedEventArgs eventArgs)
     {
         var guildConfig = await _guildService.FetchGuildConfigurationAsync(eventArgs.GuildId);

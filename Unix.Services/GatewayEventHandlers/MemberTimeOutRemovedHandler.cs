@@ -13,7 +13,7 @@ public class MemberTimeOutRemovedHandler : UnixService
 {
     private readonly IGuildService _guildService;
     private readonly IModerationService _moderationService;
-    
+
     public MemberTimeOutRemovedHandler(IGuildService guildService, IModerationService moderationService, IServiceProvider serviceProvider) : base(serviceProvider)
     {
         _guildService = guildService;
