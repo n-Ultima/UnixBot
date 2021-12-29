@@ -24,7 +24,7 @@ public class MemberLeftHandler : UnixService
         {
             return;
         }
-
+        
         if (guildConfig.MiscellaneousLogChannelId == default)
         {
             return;
