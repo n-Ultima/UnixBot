@@ -19,7 +19,7 @@ public interface IOwnerService
     /// <param name="adminRoleId">The ID of the guild's administrator role.</param>
     /// <param name="automodEnabled">Whether to automoderate the guild.</param>
     /// <returns></returns>
-    Task ConfigureGuildAsync(Snowflake guildId, Snowflake modLogChannelId, Snowflake messageLogChannelId,Snowflake miscellaneousLogChannelId, Snowflake modRoleId, Snowflake adminRoleId, bool automodEnabled);
+    Task ConfigureGuildAsync(Snowflake guildId, Snowflake modLogChannelId, Snowflake messageLogChannelId, Snowflake miscellaneousLogChannelId, Snowflake modRoleId, Snowflake adminRoleId, bool automodEnabled);
 
     /// <summary>
     ///   Blacklists a guild from using Unix.

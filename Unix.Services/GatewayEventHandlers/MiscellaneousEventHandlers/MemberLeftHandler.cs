@@ -8,16 +8,16 @@ using Unix.Services.Core.Abstractions;
 
 namespace Unix.Services.GatewayEventHandlers.MiscellaneousEventHandlers;
 
-public class MemberJoinedHandler : UnixService
+public class MemberLeftHandler : UnixService
 {
     private readonly IGuildService _guildService;
 
-    public MemberJoinedHandler(IServiceProvider serviceProvider, IGuildService guildService) : base(serviceProvider)
+    public MemberLeftHandler(IServiceProvider serviceProvider, IGuildService guildService) : base(serviceProvider)
     {
         _guildService = guildService;
     }
 
-    protected override async ValueTask OnMemberJoined(MemberJoinedEventArgs eventArgs)
+    protected override async ValueTask OnMemberLeft(MemberLeftEventArgs eventArgs)
     {
         var guildConfig = await _guildService.FetchGuildConfigurationAsync(eventArgs.GuildId);
         if (guildConfig == null)
@@ -32,10 +32,10 @@ public class MemberJoinedHandler : UnixService
 
         await Bot.SendMessageAsync(guildConfig.MiscellaneousLogChannelId, new LocalMessage()
             .WithEmbeds(new LocalEmbed()
-                .WithAuthor(eventArgs.Member)
-                .WithTitle("Member Joined")
-                .WithThumbnailUrl(eventArgs.Member.GetAvatarUrl() ?? eventArgs.Member.GetDefaultAvatarUrl())
-                .AddField("Username and Discriminator", eventArgs.Member.Tag)
-                .AddField("Account Age", (DateTimeOffset.UtcNow - eventArgs.Member.CreatedAt()).Humanize())));
+                .WithAuthor(eventArgs.User)
+                .WithTitle("Member Left")
+                .WithThumbnailUrl(eventArgs.User.GetAvatarUrl() ?? eventArgs.User.GetDefaultAvatarUrl())
+                .AddField("Username and Discriminator", eventArgs.User.Tag)
+                .AddField("Account Age", (DateTimeOffset.UtcNow - eventArgs.User.CreatedAt()).Humanize())));
     }
 }

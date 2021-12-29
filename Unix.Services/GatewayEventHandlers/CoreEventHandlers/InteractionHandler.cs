@@ -401,7 +401,7 @@ public class InteractionHandler : UnixService
                     await eventArgs.SendEphmeralErrorAsync("Invalid snowflake provided for miscellaneous log ID.");
                     break;
                 }
-                
+
                 if (!Snowflake.TryParse(modRoleString, out var realModRole))
                 {
                     await eventArgs.SendEphmeralErrorAsync("Invalid snowflake provided for moderator role ID.");

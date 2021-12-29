@@ -55,7 +55,7 @@ public interface IGuildService
     /// <param name="miscChannelId">The ID of the miscellaneous log channel.</param>
     /// <returns></returns>
     Task ModifyGuildMiscellaneousLogChannelIdAsync(Snowflake guildId, Snowflake miscChannelId);
-    
+
     /// <summary>
     ///     Modifies the guild's administrator role ID.
     /// </summary>
