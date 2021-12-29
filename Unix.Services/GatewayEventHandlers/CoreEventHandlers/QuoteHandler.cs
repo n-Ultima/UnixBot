@@ -10,11 +10,11 @@ namespace Unix.Services.GatewayEventHandlers.CoreEventHandlers;
 
 public class QuoteHandler : UnixService
 {
-    private readonly Regex _messageRegex = new(@"https?://(?:(ptb|canary)\.)?discord(?:app)?\.com/channels/(?<guild_id>([0-9]{15,21})|(@me))/(?<channel_id>[0-9]{15,21})/(?<message_id>[0-9]{15,21})/?", RegexOptions.Compiled);
-
     private readonly IGuildService _guildService;
 
-    public QuoteHandler(IServiceProvider serviceProvider, IGuildService guildService) : base(serviceProvider)
+    private readonly Regex _messageRegex = new(@"https?://(?:(ptb|canary)\.)?discord(?:app)?\.com/channels/(?<guild_id>([0-9]{15,21})|(@me))/(?<channel_id>[0-9]{15,21})/(?<message_id>[0-9]{15,21})/?", RegexOptions.Compiled);
+
+    public QuoteHandler(IGuildService guildService, IServiceProvider serviceProvider) : base(serviceProvider)
     {
         _guildService = guildService;
     }
@@ -26,9 +26,9 @@ public class QuoteHandler : UnixService
             return;
         }
 
-        var config = await _guildService.FetchGuildConfigurationAsync(eventArgs.GuildId.Value);
+        var guildConfig = await _guildService.FetchGuildConfigurationAsync(eventArgs.GuildId.Value);
 
-        if (config == null)
+        if (guildConfig == null)
         {
             return;
         }
