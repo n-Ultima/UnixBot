@@ -13,7 +13,7 @@ namespace Unix.Services.GatewayEventHandlers.CoreEventHandlers;
 
 public class GuildJoinedHandler : UnixService
 {
-    private UnixConfiguration UnixConfig = new();
+    private readonly UnixConfiguration UnixConfig = new();
     public GuildJoinedHandler(IServiceProvider serviceProvider) : base(serviceProvider)
     {
     }

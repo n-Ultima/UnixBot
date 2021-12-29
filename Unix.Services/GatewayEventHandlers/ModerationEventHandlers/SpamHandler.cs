@@ -17,7 +17,7 @@ namespace Unix.Services.GatewayEventHandlers;
 
 public class SpamHandler : UnixService
 {
-    private ConcurrentDictionary<CachedMember, int> SpamDictionary = new();
+    private readonly ConcurrentDictionary<CachedMember, int> SpamDictionary = new();
     public static ConcurrentDictionary<Snowflake, int> AmountOfMessages = new();
     private readonly IModerationService _moderationService;
     private readonly IGuildService _guildService;

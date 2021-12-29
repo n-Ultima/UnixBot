@@ -24,7 +24,7 @@ namespace Unix;
 
 class Startup
 {
-    private static UnixConfiguration UnixConfig = new();
+    private static readonly UnixConfiguration UnixConfig = new();
     static async Task Main(string[] args)
     {
         Log.Logger = new LoggerConfiguration()

@@ -28,7 +28,7 @@ public class InteractionHandler : UnixService
     private readonly IModerationService _moderationService;
     private readonly IReminderService _reminderService;
     private readonly ITagService _tagService;
-    private UnixConfiguration UnixConfig = new();
+    private readonly UnixConfiguration UnixConfig = new();
     public InteractionHandler(IServiceProvider serviceProvider, IOwnerService ownerService, IGuildService guildService, IModerationService moderationService, IReminderService reminderService, ITagService tagService) : base(serviceProvider)
     {
         _ownerService = ownerService;
