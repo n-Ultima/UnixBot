@@ -119,9 +119,21 @@ public class ReadyEventHandler : UnixService
 
             });
         cmds.Add(configMessageLogCmd);
+        var configMiscLogCmd = new LocalSlashCommand()
+            .WithName("configure-miscellaneouslog")
+            .WithDescription("Configures the channel that miscellaneous log events will be logged to.")
+            .WithOptions(new[]
+            {
+                new LocalSlashCommandOption()
+                    .WithName("channel")
+                    .WithDescription("The channel to log events to.")
+                    .WithType(SlashCommandOptionType.Channel)
+                    .WithIsRequired()
+            });
+        cmds.Add(configMiscLogCmd);
         var configAutomodCmd = new LocalSlashCommand()
             .WithName("configure-automod")
-            .WithDescription("Configures wheter Unix should automoderate your server.")
+            .WithDescription("Configures whether Unix should automoderate your server.")
             .WithOptions(new[]
             {
                 new LocalSlashCommandOption()
