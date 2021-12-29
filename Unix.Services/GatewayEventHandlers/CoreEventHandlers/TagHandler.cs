@@ -6,7 +6,7 @@ using Disqord.Bot.Hosting;
 using Disqord.Rest;
 using Unix.Services.Core.Abstractions;
 
-namespace Unix.Services.GatewayEventHandlers;
+namespace Unix.Services.GatewayEventHandlers.CoreEventHandlers;
 
 public class TagHandler : UnixService
 {

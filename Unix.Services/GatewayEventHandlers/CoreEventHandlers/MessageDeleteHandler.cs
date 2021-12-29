@@ -8,7 +8,7 @@ using Unix.Data.Models.Core;
 using Unix.Services.Core;
 using Unix.Services.Core.Abstractions;
 
-namespace Unix.Services.GatewayEventHandlers;
+namespace Unix.Services.GatewayEventHandlers.CoreEventHandlers;
 
 public class MessageDeleteHandler : UnixService
 {

@@ -9,7 +9,7 @@ using Unix.Common;
 using Unix.Data;
 using Unix.Data.Models.Core;
 
-namespace Unix.Services.GatewayEventHandlers;
+namespace Unix.Services.GatewayEventHandlers.CoreEventHandlers;
 
 public class GuildJoinedHandler : UnixService
 {

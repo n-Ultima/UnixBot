@@ -15,7 +15,7 @@ using Serilog;
 using Unix.Common;
 using Unix.Data;
 
-namespace Unix.Services.GatewayEventHandlers;
+namespace Unix.Services.GatewayEventHandlers.CoreEventHandlers;
 
 public class ReadyEventHandler : UnixService
 {

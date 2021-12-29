@@ -7,14 +7,14 @@ using Disqord.Rest;
 using Unix.Data.Models.Moderation;
 using Unix.Services.Core.Abstractions;
 
-namespace Unix.Services.GatewayEventHandlers;
+namespace Unix.Services.GatewayEventHandlers.ModerationEventHandlers;
 
-public class MemberTimeOutRemovedHandler : UnixService
+public class MemberTimedOutHandler : UnixService
 {
     private readonly IGuildService _guildService;
     private readonly IModerationService _moderationService;
 
-    public MemberTimeOutRemovedHandler(IGuildService guildService, IModerationService moderationService, IServiceProvider serviceProvider) : base(serviceProvider)
+    public MemberTimedOutHandler(IGuildService guildService, IModerationService moderationService, IServiceProvider serviceProvider) : base(serviceProvider)
     {
         _guildService = guildService;
         _moderationService = moderationService;
@@ -29,10 +29,10 @@ public class MemberTimeOutRemovedHandler : UnixService
         }
 
         var memberInfractions = await _moderationService.FetchInfractionsAsync(eventArgs.GuildId, eventArgs.MemberId);
-        var memberInfraction = memberInfractions
+        var memberTimedOutInfraction = memberInfractions
             .Where(x => x.Type == InfractionType.Mute)
             .FirstOrDefault();
-        if (memberInfraction != null)
+        if (memberTimedOutInfraction == null)
         {
             var memberUpdatedAuditLogs = await Bot.FetchAuditLogsAsync<IMemberUpdatedAuditLog>(eventArgs.GuildId);
             var memberUpdatedAuditLog = memberUpdatedAuditLogs
@@ -40,15 +40,15 @@ public class MemberTimeOutRemovedHandler : UnixService
                 .FirstOrDefault();
             if (memberUpdatedAuditLog == null)
             {
+                // Discord fuck up, not our issue.
                 return;
             }
 
-            if (eventArgs.NewMember.TimedOutUntil.HasValue || eventArgs.NewMember.TimedOutUntil! < DateTimeOffset.UtcNow)
+            if (!eventArgs.NewMember.TimedOutUntil.HasValue || eventArgs.NewMember.TimedOutUntil.Value < DateTimeOffset.UtcNow)
             {
                 return;
             }
-
-            await _moderationService.RemoveInfractionAsync(memberInfraction.Id, memberInfraction.GuildId, memberUpdatedAuditLog.ActorId.Value, true, memberUpdatedAuditLog.Reason ?? "No reason provided(timeout removed manually).");
+            await _moderationService.CreateInfractionAsync(eventArgs.GuildId, memberUpdatedAuditLog.ActorId.Value, memberUpdatedAuditLog.TargetId.Value, InfractionType.Mute, memberUpdatedAuditLog.Reason ?? "No reason provided(manual timeout).", true, eventArgs.NewMember.TimedOutUntil.Value - DateTimeOffset.UtcNow);
         }
     }
 }

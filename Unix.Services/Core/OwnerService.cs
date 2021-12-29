@@ -27,7 +27,7 @@ public class OwnerService : UnixService, IOwnerService
     public static List<Snowflake> WhitelistedGuilds = new();
 
     /// <inheritdoc />
-    public async Task ConfigureGuildAsync(Snowflake guildId, Snowflake modLogChannelId, Snowflake messageLogChannelId, Snowflake modRoleId, Snowflake adminRoleId, bool automodEnabled)
+    public async Task ConfigureGuildAsync(Snowflake guildId, Snowflake modLogChannelId, Snowflake messageLogChannelId, Snowflake miscellaneousLogChannelId, Snowflake modRoleId, Snowflake adminRoleId, bool automodEnabled)
     {
         using (var scope = ServiceProvider.CreateScope())
         {
@@ -40,6 +40,7 @@ public class OwnerService : UnixService, IOwnerService
                 Id = guildId,
                 ModLogChannelId = modLogChannelId,
                 MessageLogChannelId = messageLogChannelId,
+                MiscellaneousLogChannelId = miscellaneousLogChannelId,
                 ModeratorRoleId = modRoleId,
                 AdministratorRoleId = adminRoleId,
                 AutomodEnabled = automodEnabled

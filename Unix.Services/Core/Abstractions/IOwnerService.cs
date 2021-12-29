@@ -14,11 +14,12 @@ public interface IOwnerService
     /// <param name="guildId">The ID of the guild.</param>
     /// <param name="modLogChannelId">The ID of the guild's mod log channel.</param>
     /// <param name="messageLogChannelId">The ID of the guild's message log channel.</param>
+    /// <param name="miscellaneousLogChannelId">The ID of the guild's miscellaneous log channel. It's sent events such as member join, member left, etc.</param>
     /// <param name="modRoleId">The ID of the guild's moderator role.</param>
     /// <param name="adminRoleId">The ID of the guild's administrator role.</param>
     /// <param name="automodEnabled">Whether to automoderate the guild.</param>
     /// <returns></returns>
-    Task ConfigureGuildAsync(Snowflake guildId, Snowflake modLogChannelId, Snowflake messageLogChannelId, Snowflake modRoleId, Snowflake adminRoleId, bool automodEnabled);
+    Task ConfigureGuildAsync(Snowflake guildId, Snowflake modLogChannelId, Snowflake messageLogChannelId,Snowflake miscellaneousLogChannelId, Snowflake modRoleId, Snowflake adminRoleId, bool automodEnabled);
 
     /// <summary>
     ///   Blacklists a guild from using Unix.

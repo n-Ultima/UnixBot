@@ -19,7 +19,7 @@ using Unix.Services.Core.Abstractions;
 using Unix.Services.Extensions;
 using Unix.Services.Parsers;
 
-namespace Unix.Services.GatewayEventHandlers;
+namespace Unix.Services.GatewayEventHandlers.CoreEventHandlers;
 
 public class InteractionHandler : UnixService
 {
@@ -245,6 +245,17 @@ public class InteractionHandler : UnixService
                     await eventArgs.SendEphmeralErrorAsync(e.Message);
                     break;
                 }
+            case "configure-miscellaneouslog":
+                if (!eventArgs.Member.IsAdmin())
+                {
+                    await eventArgs.SendEphmeralErrorAsync(PermissionLevel.Administrator);
+                    break;
+                }
+
+                var miscChannel = slashCommandInteraction.Entities.Channels.First();
+                await _guildService.ModifyGuildMiscellaneousLogChannelIdAsync(guild.Id, miscChannel.Value.Id);
+                await eventArgs.SendSuccessAsync($"Miscellaneous log events will now be logged to {Mention.Channel(miscChannel.Value.Id)}");
+                break;
             case "add-banned-term":
                 if (!eventArgs.Member.IsAdmin())
                 {
@@ -362,6 +373,7 @@ public class InteractionHandler : UnixService
                 var guildIdString = slashCommandInteraction.Options.GetValueOrDefault("id")?.Value as string;
                 var modLogString = slashCommandInteraction.Options.GetValueOrDefault("modlog-channel-id")?.Value as string;
                 var messageLogString = slashCommandInteraction.Options.GetValueOrDefault("messagelog-channel-id")?.Value as string;
+                var miscellaneousLogString = slashCommandInteraction.Options.GetValueOrDefault("miscellaneous-channel-id")?.Value as string;
                 var modRoleString = slashCommandInteraction.Options.GetValueOrDefault("moderator-role-id")?.Value as string;
                 var adminRoleString = slashCommandInteraction.Options.GetValueOrDefault("administrator-role-id")?.Value as string;
                 var isAutomodEnabled = slashCommandInteraction.Options.TryGetValue("automod-enabled", out var sCommandInteraction);
@@ -384,6 +396,12 @@ public class InteractionHandler : UnixService
                     break;
                 }
 
+                if (!Snowflake.TryParse(miscellaneousLogString, out var realMiscellaneousLog))
+                {
+                    await eventArgs.SendEphmeralErrorAsync("Invalid snowflake provided for miscellaneous log ID.");
+                    break;
+                }
+                
                 if (!Snowflake.TryParse(modRoleString, out var realModRole))
                 {
                     await eventArgs.SendEphmeralErrorAsync("Invalid snowflake provided for moderator role ID.");
@@ -399,7 +417,7 @@ public class InteractionHandler : UnixService
                 // configure the guild
                 try
                 {
-                    await _ownerService.ConfigureGuildAsync(realGuildId, realModLog, realMessageLog, realModRole, realAdminRole, autoModEnabled);
+                    await _ownerService.ConfigureGuildAsync(realGuildId, realModLog, realMessageLog, realMiscellaneousLog, realModRole, realAdminRole, autoModEnabled);
                     await eventArgs.SendSuccessAsync($"Successfully configured!");
                     break;
                 }

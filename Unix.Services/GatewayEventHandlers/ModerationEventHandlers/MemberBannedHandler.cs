@@ -11,7 +11,7 @@ using Unix.Data;
 using Unix.Data.Models.Moderation;
 using Unix.Services.Core.Abstractions;
 
-namespace Unix.Services.GatewayEventHandlers;
+namespace Unix.Services.GatewayEventHandlers.ModerationEventHandlers;
 
 public class MemberBannedHandler : UnixService
 {

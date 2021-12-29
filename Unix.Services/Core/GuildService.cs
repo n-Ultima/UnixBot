@@ -12,6 +12,8 @@ using Unix.Data;
 using Unix.Data.Models.Core;
 using Unix.Services.Core.Abstractions;
 using Unix.Services.GatewayEventHandlers;
+using Unix.Services.GatewayEventHandlers.ModerationEventHandlers;
+
 
 namespace Unix.Services.Core;
 
@@ -102,6 +104,25 @@ public class GuildService : UnixService, IGuildService
             await unixContext.SaveChangesAsync();
         }
     }
+
+    /// <inheritdoc />
+    public async Task ModifyGuildMiscellaneousLogChannelIdAsync(Snowflake guildId, Snowflake miscChannelId)
+    {
+        using (var scope = ServiceProvider.CreateScope())
+        {
+            var unixContext = scope.ServiceProvider.GetRequiredService<UnixContext>();
+            var guild = await unixContext.GuildConfigurations
+                .FindAsync(guildId);
+            if (guild == null)
+            {
+                throw new Exception("Guild should be configured using the `configure-guild` command first.");
+            }
+
+            guild.MiscellaneousLogChannelId = miscChannelId;
+            await unixContext.SaveChangesAsync();
+        }
+    }
+
     /// <inheritdoc />
     public async Task ModifyGuildAdminRoleAsync(Snowflake guildId, Snowflake adminRoleId)
     {
