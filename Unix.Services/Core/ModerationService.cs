@@ -278,7 +278,7 @@ public class ModerationService : UnixService, IModerationService
             {
                 throw new Exception("The infraction provided is already rescinded.");
             }
-            
+
             infraction.IsRescinded = true;
             await unixContext.SaveChangesAsync();
             var guild = Bot.GetGuild(guildId);
