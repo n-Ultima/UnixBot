@@ -144,18 +144,6 @@ public class ReadyEventHandler : UnixService
 
             });
         cmds.Add(configAutomodCmd);
-        var configSpamCmd = new LocalSlashCommand()
-            .WithName("configure-spam")
-            .WithDescription("Configures the amount of messages a user must send in 3 seconds to be warned.")
-            .WithOptions(new[]
-            {
-                new LocalSlashCommandOption()
-                    .WithName("amount")
-                    .WithDescription("The amount of messages.")
-                    .WithType(SlashCommandOptionType.Number)
-                    .WithIsRequired()
-            });
-        cmds.Add(configSpamCmd);
         var addBannedTermCmd = new LocalSlashCommand()
             .WithName("add-banned-term")
             .WithDescription("Adds the provided term to the blacklist for your server, warning members for sending it.")

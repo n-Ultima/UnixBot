@@ -73,14 +73,6 @@ public interface IGuildService
     Task ModifyGuildRequiredRoleAsync(Snowflake guildId, Snowflake requiredRoleId);
 
     /// <summary>
-    ///     Modifies the guild's spam threshold. If a user sends more than the <see cref="amount"/> of messages in 3 seconds, they will be warned.
-    /// </summary>
-    /// <param name="guildId">The ID of the guild.</param>
-    /// <param name="amount">The amount of messages.</param>
-    /// <returns></returns>
-    Task ModifyGuildSpamThresholdAsync(Snowflake guildId, int amount);
-
-    /// <summary>
     ///     Modifies the guild's Phisherman API key.
     /// </summary>
     /// <param name="guildId">The ID of the guild.</param>

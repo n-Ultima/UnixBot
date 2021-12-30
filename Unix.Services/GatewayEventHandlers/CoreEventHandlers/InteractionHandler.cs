@@ -171,23 +171,6 @@ public class InteractionHandler : UnixService
                 }
 
                 break;
-            case "configure-spam":
-                if (!eventArgs.Member.IsAdmin())
-                {
-                    await eventArgs.SendEphmeralErrorAsync(PermissionLevel.Administrator);
-                    break;
-                }
-
-                var spamAmtOption = slashCommandInteraction.Options.TryGetValue("amount", out var amount);
-                if (!spamAmtOption)
-                {
-                    break;
-                }
-
-                var actualSpamAmount = Convert.ToInt32(amount.Value);
-                await _guildService.ModifyGuildSpamThresholdAsync(eventArgs.GuildId.Value, actualSpamAmount);
-                await eventArgs.SendSuccessAsync($"If a user sends more than `{actualSpamAmount}` messages within `3` seconds, they will be warned.");
-                break;
             case "configure-phisherman":
                 if (!eventArgs.Member.IsAdmin())
                 {

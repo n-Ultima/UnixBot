@@ -19,7 +19,6 @@ namespace Unix.Services.GatewayEventHandlers;
 public class SpamHandler : UnixService
 {
     private readonly ConcurrentDictionary<CachedMember, List<IUserMessage>> SpamDictionary = new();
-    public static ConcurrentDictionary<Snowflake, int> AmountOfMessages = new();
     private readonly IModerationService _moderationService;
     private readonly IGuildService _guildService;
 
@@ -31,6 +30,7 @@ public class SpamHandler : UnixService
 
     protected override async ValueTask OnMessageReceived(BotMessageReceivedEventArgs eventArgs)
     {
+
         if (eventArgs.Channel == null)
         {
             return;
@@ -42,16 +42,6 @@ public class SpamHandler : UnixService
             return;
         }
 
-        if (!AmountOfMessages.TryGetValue(eventArgs.GuildId.Value, out _))
-        {
-            var guildConfigTemp = await _guildService.FetchGuildConfigurationAsync(eventArgs.GuildId.Value);
-            if (guildConfigTemp == null)
-            {
-                return;
-            }
-
-            AmountOfMessages.TryAdd(eventArgs.GuildId.Value, guildConfigTemp.AmountOfMessagesConsideredSpam);
-        }
 
         var guildConfig = await _guildService.FetchGuildConfigurationAsync(eventArgs.GuildId.Value);
         if (guildConfig == null)
@@ -71,11 +61,6 @@ public class SpamHandler : UnixService
 
     botCheck:
         if (message.Author.IsBot)
-        {
-            return;
-        }
-
-        if (guildConfig.AmountOfMessagesConsideredSpam == 0)
         {
             return;
         }

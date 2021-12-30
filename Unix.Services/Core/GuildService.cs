@@ -160,25 +160,6 @@ public class GuildService : UnixService, IGuildService
     }
 
     /// <inheritdoc />
-    public async Task ModifyGuildSpamThresholdAsync(Snowflake guildId, int amount)
-    {
-        using (var scope = ServiceProvider.CreateScope())
-        {
-            var unixContext = scope.ServiceProvider.GetRequiredService<UnixContext>();
-            var guildConfig = await unixContext.GuildConfigurations
-                .FindAsync(guildId);
-            if (guildConfig == null)
-            {
-                throw new Exception("Guild should be configured using the `configure-guild` command first.");
-            }
-
-            guildConfig.AmountOfMessagesConsideredSpam = amount;
-            await unixContext.SaveChangesAsync();
-            SpamHandler.AmountOfMessages[guildConfig.Id] = amount;
-        }
-    }
-
-    /// <inheritdoc />
     public async Task ModifyGuildPhishermanApiKeyAsync(Snowflake guildId, string apiKey)
     {
         using (var scope = ServiceProvider.CreateScope())
