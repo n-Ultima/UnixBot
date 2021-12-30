@@ -184,9 +184,9 @@ public class InteractionHandler : UnixService
                     break;
                 }
 
-                var actualSpamAmount = (int)amount.Value;
+                var actualSpamAmount = Convert.ToInt32(amount.Value);
                 await _guildService.ModifyGuildSpamThresholdAsync(eventArgs.GuildId.Value, actualSpamAmount);
-                await eventArgs.SendSuccessAsync($"If a user sends more than `{actualSpamAmount}` in `3` seconds, they will be warned.");
+                await eventArgs.SendSuccessAsync($"If a user sends more than `{actualSpamAmount}` messages within `3` seconds, they will be warned.");
                 break;
             case "configure-phisherman":
                 if (!eventArgs.Member.IsAdmin())

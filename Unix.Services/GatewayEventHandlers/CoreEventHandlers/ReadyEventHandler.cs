@@ -54,7 +54,7 @@ public class ReadyEventHandler : UnixService
                 await SetupUnixGlobalSlashCommandsAsync();
             }
 #if DEBUG
-            await SetupUnixGlobalSlashCommandsAsync();
+            //await SetupUnixGlobalSlashCommandsAsync();
 #endif
         }
     }
