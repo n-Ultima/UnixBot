@@ -69,7 +69,7 @@ public class SpamHandler : UnixService
             return;
         }
 
-        botCheck:
+    botCheck:
         if (message.Author.IsBot)
         {
             return;
