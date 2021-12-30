@@ -332,6 +332,7 @@ public class ReadyEventHandler : UnixService
                     .WithType(SlashCommandOptionType.String)
                     .WithIsRequired()
             });
+        cmds.Add(unRescindcmd);
         var banCmd = new LocalSlashCommand()
             .WithName("ban")
             .WithDescription("Bans the user provided.")
