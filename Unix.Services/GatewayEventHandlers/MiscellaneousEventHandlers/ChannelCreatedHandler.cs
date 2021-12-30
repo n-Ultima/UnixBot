@@ -32,6 +32,12 @@ public class ChannelCreatedHandler : UnixService
 
         var auditLogs = await Bot.FetchAuditLogsAsync<IChannelCreatedAuditLog>(eventArgs.GuildId);
         var channelCreateLog = auditLogs.First();
+        if (eventArgs.Channel.Type == ChannelType.Category)
+        {
+            await Bot.SendMessageAsync(guildConfig.MiscellaneousLogChannelId, new LocalMessage()
+                .WithContent($"Category channel **{eventArgs.Channel.Name}**(`{eventArgs.ChannelId}`) was created by **{channelCreateLog.Actor.Tag}**(`{channelCreateLog.Actor.Id}`)"));
+            return;
+        }
         await Bot.SendMessageAsync(guildConfig.MiscellaneousLogChannelId, new LocalMessage()
             .WithContent($"Channel {Mention.Channel(eventArgs.ChannelId)}(#{eventArgs.Channel.Name}, `{eventArgs.ChannelId}`) was created by **{channelCreateLog.Actor.Tag}**(`{channelCreateLog.Actor.Id}`)"));
     }

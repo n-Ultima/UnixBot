@@ -32,7 +32,13 @@ public class ChannelDeletedHandler : UnixService
 
         var auditLogs = await Bot.FetchAuditLogsAsync<IChannelDeletedAuditLog>(eventArgs.GuildId);
         var channelDeleteLog = auditLogs.First();
+        if (eventArgs.Channel.Type == ChannelType.Category)
+        {
+            await Bot.SendMessageAsync(guildConfig.MiscellaneousLogChannelId, new LocalMessage()
+                .WithContent($"Category channel **{eventArgs.Channel.Name}**(`{eventArgs.ChannelId}`) was deleted by **{channelDeleteLog.Actor.Tag}**(`{channelDeleteLog.Actor.Id}`)"));
+            return;
+        }
         await Bot.SendMessageAsync(guildConfig.MiscellaneousLogChannelId, new LocalMessage()
-            .WithContent($"Channel {Mention.Channel(eventArgs.ChannelId)}(#{eventArgs.Channel.Name}, `{eventArgs.ChannelId}`) was deleted by **{channelDeleteLog.Actor.Tag}**(`{channelDeleteLog.Actor.Id}`)"));
+            .WithContent($"Channel **#{eventArgs.Channel.Name}**(`{eventArgs.ChannelId}`) was deleted by **{channelDeleteLog.Actor.Tag}**(`{channelDeleteLog.Actor.Id}`)"));
     }
 }

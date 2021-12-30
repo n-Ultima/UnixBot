@@ -617,6 +617,11 @@ public class InteractionHandler : UnixService
                     break;
                 }
 
+                if (muteTimeSpanDuration > TimeSpan.FromDays(28))
+                {
+                    await eventArgs.SendEphmeralErrorAsync("The duration of the mute can't be longer than 28 days.");
+                    break;
+                }
                 mtS = muteTimeSpanDuration;
                 try
                 {
