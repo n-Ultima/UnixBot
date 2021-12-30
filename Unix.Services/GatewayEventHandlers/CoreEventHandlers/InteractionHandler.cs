@@ -71,6 +71,7 @@ public class InteractionHandler : UnixService
             await eventArgs.SendEphmeralErrorAsync($"Missing permissions.");
             return;
         }
+
         switch (slashCommandInteraction.CommandName)
         {
             case "ping":
@@ -456,7 +457,14 @@ public class InteractionHandler : UnixService
                 foreach (var userInfraction in infractions)
                 {
                     var moderator = Bot.GetGuild(userInfraction.GuildId).GetMember(userInfraction.ModeratorId);
-                    userInfractionsEmbed.AddField($"{userInfraction.Type.ToString().ToUpper()}({userInfraction.Id}) - Created On {userInfraction.CreatedAt.ToString("M")} by {moderator.Tag}", $"Reason: {userInfraction.Reason}");
+                    if (userInfraction.IsRescinded)
+                    {
+                        userInfractionsEmbed.AddField($"(RESCINDED) {userInfraction.Type.ToString().ToUpper()}({userInfraction.Id}) - Created On {userInfraction.CreatedAt.ToString("M")} by {moderator.Tag}", $"Reason: {userInfraction.Reason}");
+                    }
+                    else
+                    {
+                        userInfractionsEmbed.AddField($"{userInfraction.Type.ToString().ToUpper()}({userInfraction.Id}) - Created On {userInfraction.CreatedAt.ToString("M")} by {moderator.Tag}", $"Reason: {userInfraction.Reason}");
+                    }
                 }
 
                 await eventArgs.Interaction.Response().SendMessageAsync(new LocalInteractionResponse()
@@ -486,9 +494,16 @@ public class InteractionHandler : UnixService
                 var subject = await Bot.FetchUserAsync(infraction.SubjectId);
                 var mod = guild.GetMember(infraction.ModeratorId);
                 var embed = new LocalEmbed()
-                    .AddField($"{infraction.Type.ToString().ToUpper()} - ({infraction.Id}) - Created On {infraction.CreatedAt.ToString("M")} by {mod.Tag}", $"Reason: {infraction.Reason}")
                     .WithColor(Color.Gold)
                     .WithTitle($"Infractions for {subject.Tag}");
+                if (infraction.IsRescinded)
+                {
+                    embed.AddField($"(RESCINDED) {infraction.Type.ToString().ToUpper()} - ({infraction.Id}) - Created On {infraction.CreatedAt.ToString("M")} by {mod.Tag}", $"Reason: {infraction.Reason}");
+                }
+                else
+                {
+                    embed.AddField($"{infraction.Type.ToString().ToUpper()} - ({infraction.Id}) - Created On {infraction.CreatedAt.ToString("M")} by {mod.Tag}", $"Reason: {infraction.Reason}");
+                }
                 await eventArgs.Interaction.Response().SendMessageAsync(new LocalInteractionResponse()
                     .WithEmbeds(embed));
                 break;
@@ -537,6 +552,58 @@ public class InteractionHandler : UnixService
                 {
                     await _moderationService.RemoveInfractionAsync(guidDeleteInfractionId, guild.Id, eventArgs.Member.Id, false, deleteInfractionReason);
                     await eventArgs.SendSuccessAsync("Infraction deleted.");
+                    break;
+                }
+                catch (Exception e)
+                {
+                    await eventArgs.SendEphmeralErrorAsync(e.Message);
+                    break;
+                }
+            case "infraction-rescind":
+                if (!eventArgs.Member.IsModerator())
+                {
+                    await eventArgs.SendEphmeralErrorAsync(PermissionLevel.Moderator);
+                    break;
+                }
+
+                var infractionIdString = slashCommandInteraction.Options.GetValueOrDefault("id")?.Value as string;
+                var rescindReason = slashCommandInteraction.Options.GetValueOrDefault("reason")?.Value as string;
+                if (!Guid.TryParse(infractionIdString, out var guidRescindInfractionId))
+                {
+                    await eventArgs.SendEphmeralErrorAsync("The ID provided is not a valid infraction ID.");
+                    break;
+                }
+
+                try
+                {
+                    await _moderationService.RescindInfractionAsync(guidRescindInfractionId, guild.Id, eventArgs.Member.Id, rescindReason);
+                    await eventArgs.SendSuccessAsync("Infraction rescinded.");
+                    break;
+                }
+                catch (Exception e)
+                {
+                    await eventArgs.SendEphmeralErrorAsync(e.Message);
+                    break;
+                }
+            case "infraction-unrescind":
+                if (!eventArgs.Member.IsModerator())
+                {
+                    await eventArgs.SendEphmeralErrorAsync(PermissionLevel.Moderator);
+                    break;
+                }
+
+                var unrescindIdString = slashCommandInteraction.Options.GetValueOrDefault("id")?.Value as string;
+                var unrescindReason = slashCommandInteraction.Options.GetValueOrDefault("reason")?.Value as string;
+                if (!Guid.TryParse(unrescindIdString, out var guidUnRescindInfractionId))
+                {
+                    await eventArgs.SendEphmeralErrorAsync("The ID provided is not a valid infraction ID.");
+                    break;
+                }
+
+                try
+                {
+                    await _moderationService.UnRescindInfractionAsync(guidUnRescindInfractionId, guild.Id, eventArgs.Member.Id, unrescindReason);
+                    await eventArgs.SendSuccessAsync("Infraction has been un-rescinded successfully.");
                     break;
                 }
                 catch (Exception e)

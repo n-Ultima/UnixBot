@@ -14,4 +14,6 @@ public class Infraction
     public DateTimeOffset? ExpiresAt { get; set; } = null;
     public string Reason { get; set; }
     public InfractionType Type { get; set; }
+
+    public bool IsRescinded { get; set; } = false;
 }

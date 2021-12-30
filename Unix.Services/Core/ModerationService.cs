@@ -254,6 +254,67 @@ public class ModerationService : UnixService, IModerationService
         }
     }
 
+    /// <inheritdoc />
+    public async Task RescindInfractionAsync(Guid infractionId, Snowflake guildId, Snowflake removerId, string rescindMessage)
+    {
+        using (var scope = ServiceProvider.CreateScope())
+        {
+            var unixContext = scope.ServiceProvider.GetRequiredService<UnixContext>();
+            var infraction = await unixContext.Infractions
+                .Where(x => x.GuildId == guildId)
+                .Where(x => x.Id == infractionId)
+                .SingleOrDefaultAsync();
+            if (infraction == null)
+            {
+                throw new Exception("That infraction does not exist.");
+            }
+
+            if (infraction.Type == InfractionType.Mute || infraction.Type == InfractionType.Ban)
+            {
+                throw new Exception($"You cannot rescind infractions of type {infraction.Type}");
+            }
+
+            if (infraction.IsRescinded)
+            {
+                throw new Exception("The infraction provided is already rescinded.");
+            }
+            
+            infraction.IsRescinded = true;
+            await unixContext.SaveChangesAsync();
+            var guild = Bot.GetGuild(guildId);
+            var moderator = guild.GetMember(removerId);
+            await LogInfractionRescinsionAsync(infraction, moderator, rescindMessage);
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task UnRescindInfractionAsync(Guid infractionId, Snowflake guildId, Snowflake moderatorId, string reason)
+    {
+        using (var scope = ServiceProvider.CreateScope())
+        {
+            var unixContext = scope.ServiceProvider.GetRequiredService<UnixContext>();
+            var infraction = await unixContext.Infractions
+                .Where(x => x.GuildId == guildId)
+                .Where(x => x.Id == infractionId)
+                .SingleOrDefaultAsync();
+            if (infraction == null)
+            {
+                throw new Exception("That infraction does not exist.");
+            }
+
+            if (!infraction.IsRescinded)
+            {
+                throw new Exception($"This infraction is not currently rescinded.");
+            }
+
+            infraction.IsRescinded = false;
+            await unixContext.SaveChangesAsync();
+            var guild = Bot.GetGuild(guildId);
+            var moderator = guild.GetMember(moderatorId);
+            await LogInfractionUnRescinsionAsync(infraction, moderator, reason);
+        }
+    }
+
     /// <inheritdoc /> 
     public async Task<Infraction> FetchInfractionAsync(Guid infractionId, Snowflake guildId)
     {
@@ -267,6 +328,7 @@ public class ModerationService : UnixService, IModerationService
         }
     }
 
+    /// <inheritdoc />
     public async Task<IEnumerable<Infraction>> FetchInfractionsAsync(Snowflake guildId, Snowflake userId)
     {
         using (var scope = ServiceProvider.CreateScope())
@@ -317,19 +379,19 @@ public class ModerationService : UnixService, IModerationService
         if (type == InfractionType.Note)
         {
             await Bot.SendMessageAsync(modLog, new LocalMessage()
-                .WithContent($"{Markdown.Timestamp(DateTimeOffset.UtcNow)}**{subject.Tag}**(`{subject.Id}`) received a notice by **{moderator.Tag}**(`{moderator.Id}`). Reason:\n```\n{reason}\n```"));
+                .WithContent($"{Markdown.Timestamp(DateTimeOffset.UtcNow)}**{subject.Tag}**(`{subject.Id}`) received a notice by **{moderator.Tag}**(`{moderator.Id}`). Reason:```{reason}```"));
         }
         if (type == InfractionType.Mute)
         {
             if (humanizedDuration != null)
             {
                 await Bot.SendMessageAsync(modLog, new LocalMessage()
-                    .WithContent($"{Markdown.Timestamp(DateTimeOffset.UtcNow)}**{subject.Tag}**(`{subject.Id}`) was {format} by **{moderator.Tag}**(`{moderator.Id}`) for {humanizedDuration}. Reason:\n```\n{reason}\n```"));
+                    .WithContent($"{Markdown.Timestamp(DateTimeOffset.UtcNow)}**{subject.Tag}**(`{subject.Id}`) was {format} by **{moderator.Tag}**(`{moderator.Id}`) for {humanizedDuration}. Reason:```{reason}```"));
             }
             else
             {
                 await Bot.SendMessageAsync(modLog, new LocalMessage()
-                    .WithContent($"{Markdown.Timestamp(DateTimeOffset.UtcNow)}**{subject.Tag}**(`{subject.Id}`) was {format} indefinitely by **{moderator.Tag}**(`{moderator.Id}`). Reason:\n```\n{reason}\n```"));
+                    .WithContent($"{Markdown.Timestamp(DateTimeOffset.UtcNow)}**{subject.Tag}**(`{subject.Id}`) was {format} indefinitely by **{moderator.Tag}**(`{moderator.Id}`). Reason:```{reason}```"));
             }
         }
 
@@ -338,25 +400,25 @@ public class ModerationService : UnixService, IModerationService
             if (humanizedDuration != null)
             {
                 await Bot.SendMessageAsync(modLog, new LocalMessage()
-                    .WithContent($"{Markdown.Timestamp(DateTimeOffset.UtcNow)}**{subject.Tag}**(`{subject.Id}`) was temp banned by **{moderator.Tag}**(`{moderator.Id}`) for {humanizedDuration}. Reason:\n```\n{reason}\n```"));
+                    .WithContent($"{Markdown.Timestamp(DateTimeOffset.UtcNow)}**{subject.Tag}**(`{subject.Id}`) was temp banned by **{moderator.Tag}**(`{moderator.Id}`) for {humanizedDuration}. Reason:```{reason}```"));
             }
             else
             {
                 await Bot.SendMessageAsync(modLog, new LocalMessage()
-                    .WithContent($"{Markdown.Timestamp(DateTimeOffset.UtcNow)}**{subject.Tag}**(`{subject.Id}`) was {format} by **{moderator.Tag}**(`{moderator.Id}`). Reason:\n```\n{reason}\n```"));
+                    .WithContent($"{Markdown.Timestamp(DateTimeOffset.UtcNow)}**{subject.Tag}**(`{subject.Id}`) was {format} by **{moderator.Tag}**(`{moderator.Id}`). Reason:```{reason}```"));
             }
         }
 
         if (type == InfractionType.Kick)
         {
             await Bot.SendMessageAsync(modLog, new LocalMessage()
-                .WithContent($"{Markdown.Timestamp(DateTimeOffset.UtcNow)}**{subject.Tag}**(`{subject.Id}`) was {format} by **{moderator.Tag}**(`{moderator.Id}`). Reason:\n```\n{reason}\n```"));
+                .WithContent($"{Markdown.Timestamp(DateTimeOffset.UtcNow)}**{subject.Tag}**(`{subject.Id}`) was {format} by **{moderator.Tag}**(`{moderator.Id}`). Reason:```{reason}```"));
         }
 
         if (type == InfractionType.Warn)
         {
             await Bot.SendMessageAsync(modLog, new LocalMessage()
-                .WithContent($"{Markdown.Timestamp(DateTimeOffset.UtcNow)}**{subject.Tag}**(`{subject.Id}`) was {format} by **{moderator.Tag}**(`{moderator.Id}`). Reason:\n```\n{reason}\n```"));
+                .WithContent($"{Markdown.Timestamp(DateTimeOffset.UtcNow)}**{subject.Tag}**(`{subject.Id}`) was {format} by **{moderator.Tag}**(`{moderator.Id}`). Reason:```{reason}```"));
         }
 
     }
@@ -391,13 +453,13 @@ public class ModerationService : UnixService, IModerationService
             }
             // Log
             await Bot.SendMessageAsync(modLog, new LocalMessage()
-                .WithContent($"{Markdown.Timestamp(DateTimeOffset.UtcNow)} **{infractionSubject.Tag}**(`{infractionSubject.Id}`) was unbanned by **{infractionRemover.Tag}**(`{infractionRemover.Id}`). Reason:\n```\n{reason}\n```"));
+                .WithContent($"{Markdown.Timestamp(DateTimeOffset.UtcNow)} **{infractionSubject.Tag}**(`{infractionSubject.Id}`) was unbanned by **{infractionRemover.Tag}**(`{infractionRemover.Id}`). Reason:```{reason}```"));
         }
 
         if (infraction.Type == InfractionType.Kick || infraction.Type == InfractionType.Note || infraction.Type == InfractionType.Warn)
         {
             await Bot.SendMessageAsync(modLog, new LocalMessage()
-                .WithContent($"{Markdown.Timestamp(DateTimeOffset.UtcNow)} Infraction `{infraction.Id}` was removed by **{infractionRemover.Tag}**(`{infractionRemover.Id}`). Reason:\n```\n{reason}\n```"));
+                .WithContent($"{Markdown.Timestamp(DateTimeOffset.UtcNow)} Infraction `{infraction.Id}` was removed by **{infractionRemover.Tag}**(`{infractionRemover.Id}`). Reason:```{reason}```"));
         }
 
         if (infraction.Type == InfractionType.Mute)
@@ -410,10 +472,48 @@ public class ModerationService : UnixService, IModerationService
                 });
             }
             await Bot.SendMessageAsync(modLog, new LocalMessage()
-                .WithContent($"{Markdown.Timestamp(DateTimeOffset.UtcNow)}**{infractionSubject.Tag}**(`{infractionSubject.Id}`) had their timeout removed by **{infractionRemover.Tag}**(`{infractionRemover.Id}`). Reason:\n```\n{reason}\n```"));
+                .WithContent($"{Markdown.Timestamp(DateTimeOffset.UtcNow)}**{infractionSubject.Tag}**(`{infractionSubject.Id}`) had their timeout removed by **{infractionRemover.Tag}**(`{infractionRemover.Id}`). Reason:```{reason}```"));
         }
 
     }
 
+    /// <inheritdoc />
+    public async Task LogInfractionRescinsionAsync(Infraction infraction, IUser moderator, string reason)
+    {
+        Snowflake modLog = default;
+        if (!GuildModLogIds.TryGetValue(infraction.GuildId, out _))
+        {
+            var guildConfig = await _guildService.FetchGuildConfigurationAsync(infraction.GuildId);
+            if (guildConfig.ModLogChannelId == default)
+            {
+                return;
+            }
+            GuildModLogIds.Add(infraction.GuildId, guildConfig.ModLogChannelId);
+            modLog = GuildModLogIds[infraction.GuildId];
+        }
+        modLog = GuildModLogIds[infraction.GuildId];
 
+        await Bot.SendMessageAsync(modLog, new LocalMessage()
+            .WithContent($"{Markdown.Timestamp(DateTimeOffset.UtcNow)}Infraction `{infraction.Id}` was rescinded by **{moderator.Tag}**(`{moderator.Id}`). Reason:```{reason}```"));
+    }
+
+    /// <inheritdoc />
+    public async Task LogInfractionUnRescinsionAsync(Infraction infraction, IUser moderator, string reason)
+    {
+        Snowflake modLog = default;
+        if (!GuildModLogIds.TryGetValue(infraction.GuildId, out _))
+        {
+            var guildConfig = await _guildService.FetchGuildConfigurationAsync(infraction.GuildId);
+            if (guildConfig.ModLogChannelId == default)
+            {
+                return;
+            }
+            GuildModLogIds.Add(infraction.GuildId, guildConfig.ModLogChannelId);
+            modLog = GuildModLogIds[infraction.GuildId];
+        }
+        modLog = GuildModLogIds[infraction.GuildId];
+
+        await Bot.SendMessageAsync(modLog, new LocalMessage()
+            .WithContent($"{Markdown.Timestamp(DateTimeOffset.UtcNow)}Infraction `{infraction.Id}` was un-rescinded by **{moderator.Tag}**(`{moderator.Id}`). Reason:```{reason}```"));
+    }
 }

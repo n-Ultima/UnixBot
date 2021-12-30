@@ -54,7 +54,7 @@ public class ReadyEventHandler : UnixService
                 await SetupUnixGlobalSlashCommandsAsync();
             }
 #if DEBUG
-            //await SetupUnixGlobalSlashCommandsAsync();
+            await SetupUnixGlobalSlashCommandsAsync();
 #endif
         }
     }
@@ -299,6 +299,39 @@ public class ReadyEventHandler : UnixService
                     .WithIsRequired()
             });
         cmds.Add(deleteInfractionCmd);
+        var rescindInfractionCmd = new LocalSlashCommand()
+            .WithName("infraction-rescind")
+            .WithDescription("Rescinds the infraction provided. This doesn't delete the infraction, but hides it.")
+            .WithOptions(new[]
+            {
+                new LocalSlashCommandOption()
+                    .WithName("id")
+                    .WithDescription("The ID of the infraction.")
+                    .WithType(SlashCommandOptionType.String)
+                    .WithIsRequired(),
+                new LocalSlashCommandOption()
+                    .WithName("reason")
+                    .WithDescription("The reason for rescinding this infraction.")
+                    .WithType(SlashCommandOptionType.String)
+                    .WithIsRequired()
+            });
+        cmds.Add(rescindInfractionCmd);
+        var unRescindcmd = new LocalSlashCommand()
+            .WithName("infraction-unrescind")
+            .WithDescription("Un-rescinds the infraction provided.")
+            .WithOptions(new[]
+            {
+                new LocalSlashCommandOption()
+                    .WithName("id")
+                    .WithDescription("The ID of the infraction.")
+                    .WithType(SlashCommandOptionType.String)
+                    .WithIsRequired(),
+                new LocalSlashCommandOption()
+                    .WithName("reason")
+                    .WithDescription("The reason for un-rescinding this infraction.")
+                    .WithType(SlashCommandOptionType.String)
+                    .WithIsRequired()
+            });
         var banCmd = new LocalSlashCommand()
             .WithName("ban")
             .WithDescription("Bans the user provided.")

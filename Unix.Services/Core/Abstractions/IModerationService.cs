@@ -52,6 +52,29 @@ public interface IModerationService
     Task RemoveInfractionAsync(Guid infractionId, Snowflake guildId, Snowflake removerId, bool manual, string removalMessage);
 
     /// <summary>
+    ///     Rescinds the infraction.
+    /// </summary>
+    /// <param name="infractionId">The ID of the infraction.</param>
+    /// <param name="guildId">The ID of the guild that the infraction originated from.</param>
+    /// <param name="removerId">The ID of the user who is rescinding the infraction.</param>
+    /// <param name="rescindMessage">The reason for rescinding the infraction.</param>
+    /// <returns></returns>
+    /// <remarks>Rescinding an infraction doesn't delete it, it's simply marked as hidden. An infraction can be un-rescinded at any time.</remarks>
+    /// <remarks>You can only rescind infractions that are marked as warns, notes, or kicks.</remarks>
+    Task RescindInfractionAsync(Guid infractionId, Snowflake guildId, Snowflake removerId, string rescindMessage);
+
+    /// <summary>
+    ///     Marks the infraction as un-rescinded.
+    /// </summary>
+    /// <param name="infractionId">The ID of the infraction.</param>
+    /// <param name="guildId">The ID of the guild that the infraction originated from.</param>
+    /// <param name="moderatorId">The ID of the user who is un-rescinding the infraction.</param>
+    /// <param name="reason">The reason for un-rescinding the infraction.</param>
+    /// <returns></returns>
+    /// <remarks>Un-rescinding an infraction will not re-apply the punishment. The only time this is an issue is when you rescind an infraction that is a kick. Rescinding this type of infraction won't re-kick the user.</remarks>
+    Task UnRescindInfractionAsync(Guid infractionId, Snowflake guildId, Snowflake moderatorId, string reason);
+
+    /// <summary>
     ///     Fetches the infraction provided.
     /// </summary>
     /// <param name="infractionId">The ID of the infraction.</param>
@@ -88,6 +111,24 @@ public interface IModerationService
     /// <param name="reason">The reason for deleting the infraction.</param>
     /// <returns></returns>
     Task LogInfractionDeletionAsync(Infraction infraction, IUser infractionRemover, IUser infractionSubject, bool manual, string reason);
-#nullable  enable
+
+    /// <summary>
+    ///     Logs an infraction rescinsion.
+    /// </summary>
+    /// <param name="infraction">The infraction being rescinded.</param>
+    /// <param name="moderator">The user rescinding the infraction.</param>
+    /// <param name="reason">The reason for rescinding the infraction.</param>
+    /// <returns></returns>
+    Task LogInfractionRescinsionAsync(Infraction infraction, IUser moderator, string reason);
+
+    /// <summary>
+    ///     Logs an infraction being un-rescinded.
+    /// </summary>
+    /// <param name="infraction">The infraction being un-rescinded.</param>
+    /// <param name="moderator">The user un-rescinding the infraction.</param>
+    /// <param name="reason">The reason for un-rescinding the infraction.</param>
+    /// <returns></returns>
+    Task LogInfractionUnRescinsionAsync(Infraction infraction, IUser moderator, string reason);
+#nullable disable
 
 }
