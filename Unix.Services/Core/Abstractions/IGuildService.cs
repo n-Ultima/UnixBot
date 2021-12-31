@@ -128,4 +128,20 @@ public interface IGuildService
     /// <param name="roleId">The ID of the role.</param>
     /// <returns></returns>
     Task RemoveSelfAssignableRoleAsync(Snowflake guildId, Snowflake roleId);
+
+    /// <summary>
+    ///     Adds the role ID to the guild's list of autoroles.
+    /// </summary>
+    /// <param name="guildId">The ID of the guild.</param>
+    /// <param name="roleId">The ID of the role.</param>
+    /// <returns></returns>
+    Task AddAutoRoleAsync(Snowflake guildId, Snowflake roleId);
+    
+    /// <summary>
+    ///     Removes the role ID from the guild's list of autoroles.
+    /// </summary>
+    /// <param name="guildId">The ID of the guild.</param>
+    /// <param name="roleId">The ID of the role.</param>
+    /// <returns></returns>
+    Task RemoveAutoRoleAsync(Snowflake guildId, Snowflake roleId);
 }

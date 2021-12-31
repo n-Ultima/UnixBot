@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Gateway;
@@ -30,6 +31,16 @@ public class MemberJoinedHandler : UnixService
             return;
         }
 
+        if (guildConfig.AutoRoles.Any())
+        {
+            foreach (var autoRole in guildConfig.AutoRoles)
+            {
+                await Bot.GrantRoleAsync(guildConfig.Id, eventArgs.MemberId, autoRole, new DefaultRestRequestOptions
+                {
+                    Reason = "Autorole."
+                });
+            }
+        }
         await Bot.SendMessageAsync(guildConfig.MiscellaneousLogChannelId, new LocalMessage()
             .WithEmbeds(new LocalEmbed()
                 .WithAuthor(eventArgs.Member)

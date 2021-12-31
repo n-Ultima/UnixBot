@@ -90,6 +90,66 @@ public class InteractionHandler : UnixService
                 await eventArgs.Interaction.Response().SendMessageAsync(new LocalInteractionResponse()
                     .WithContent(builder.ToString()));
                 break;
+            case "config":
+                string guildId = null;
+                guildId = slashCommandInteraction.Options.GetValueOrDefault("id")?.Value as string ?? guild.Id.ToString();
+                if (!Snowflake.TryParse(guildId, out _))
+                {
+                    await eventArgs.SendEphmeralErrorAsync("Invalid guild ID provided.");
+                }
+                if (guildId == guild.Id.ToString())
+                {
+                    if (!eventArgs.Member.IsAdmin())
+                    {
+                        await eventArgs.SendEphmeralErrorAsync(PermissionLevel.Administrator);
+                        break;
+                    }
+                    // Guildconfig is correct
+                    var configBuilder = new StringBuilder()
+                        .AppendLine($"Mod Log Channel ID - {guildConfig.ModLogChannelId}")
+                        .AppendLine($"Message Log Channel ID - {guildConfig.MessageLogChannelId}")
+                        .AppendLine($"Miscellaneous Log Channel ID - {guildConfig.MiscellaneousLogChannelId}")
+                        .AppendLine($"Role members must have for Unix to listen to commands - {guildConfig.RequiredRoleToUse}")
+                        .AppendLine($"Moderator Role ID - {guildConfig.ModeratorRoleId}")
+                        .AppendLine($"Administrator Role ID - {guildConfig.AdministratorRoleId}")
+                        .AppendLine($"Automoderation Enabled - {guildConfig.AutomodEnabled.ToString()}")
+                        .AppendLine($"Phisherman API Key - ||{guildConfig.PhishermanApiKey ?? "None"}||")
+                        .AppendLine($"Whitelisted Guilds(invites) - {guildConfig.WhitelistedInvites.Humanize()}")
+                        .AppendLine($"Self Assignable Roles - {guildConfig.SelfAssignableRoles.Humanize()}")
+                        .AppendLine($"AutoRoles - {guildConfig.AutoRoles.Humanize()}")
+                        .AppendLine($"Banned Terms - ||{guildConfig.BannedTerms.Humanize()}||");
+                    await eventArgs.Interaction.Response().SendMessageAsync(new LocalInteractionResponse()
+                        .WithContent(configBuilder.ToString()));
+                    break;
+                }
+                else
+                {
+                    if (!Bot.OwnerIds.Contains(eventArgs.Member.Id))
+                    {
+                        await eventArgs.SendEphmeralErrorAsync("You must be the bot owner to execute this command in this context. If your an admin trying to view your guilds config, do not pass in a guild ID.");
+                        break;
+                    }
+
+                    var nonOwnerGuildConfig = await _guildService.FetchGuildConfigurationAsync(new Snowflake(Convert.ToUInt64(guildId)));
+                    var configBuilder = new StringBuilder()
+                        .AppendLine($"Mod Log Channel ID - {nonOwnerGuildConfig.ModLogChannelId}")
+                        .AppendLine($"Message Log Channel ID - {nonOwnerGuildConfig.MessageLogChannelId}")
+                        .AppendLine($"Miscellaneous Log Channel ID - {nonOwnerGuildConfig.MiscellaneousLogChannelId}")
+                        .AppendLine($"Role members must have for Unix to listen to commands - {nonOwnerGuildConfig.RequiredRoleToUse}")
+                        .AppendLine($"Moderator Role ID - {nonOwnerGuildConfig.ModeratorRoleId}")
+                        .AppendLine($"Administrator Role ID - {nonOwnerGuildConfig.AdministratorRoleId}")
+                        .AppendLine($"Automoderation Enabled - {nonOwnerGuildConfig.AutomodEnabled.ToString()}")
+                        .AppendLine($"Phisherman API Key - ||{nonOwnerGuildConfig.PhishermanApiKey ?? "None"}||")
+                        .AppendLine($"Whitelisted Guilds(invites) - {nonOwnerGuildConfig.WhitelistedInvites.Humanize()}")
+                        .AppendLine($"Self Assignable Roles - {nonOwnerGuildConfig.SelfAssignableRoles.Humanize()}")
+                        .AppendLine($"AutoRoles - {nonOwnerGuildConfig.AutoRoles.Humanize()}")
+                        .AppendLine($"Banned Terms - ||{nonOwnerGuildConfig.BannedTerms.Humanize()}||");
+                    await eventArgs.Interaction.Response().SendMessageAsync(new LocalInteractionResponse()
+                        .WithContent(configBuilder.ToString()));
+                    break;
+                }
+                
+
             case "guild-count":
                 if (!Bot.OwnerIds.Contains(eventArgs.Member.Id))
                 {
@@ -280,6 +340,44 @@ public class InteractionHandler : UnixService
                 }
 
                 break;
+            case "add-autorole":
+                if (!eventArgs.Member.IsAdmin())
+                {
+                    await eventArgs.SendEphmeralErrorAsync(PermissionLevel.Administrator);
+                    break;
+                }
+
+                var newAutoRole = slashCommandInteraction.Entities.Roles.Values.First();
+                try
+                {
+                    await _guildService.AddAutoRoleAsync(guild.Id, newAutoRole.Id);
+                    await eventArgs.SendSuccessAsync($"Users will now be granted the **{newAutoRole.Name}** role upon joining.");
+                    break;
+                }
+                catch (Exception e)
+                {
+                    await eventArgs.SendEphmeralErrorAsync(e.Message);
+                    break;
+                }
+            case "remove-autorole":
+                if (!eventArgs.Member.IsAdmin())
+                {
+                    await eventArgs.SendEphmeralErrorAsync(PermissionLevel.Administrator);
+                    break;
+                }
+
+                var autoRole = slashCommandInteraction.Entities.Roles.Values.First();
+                try
+                {
+                    await _guildService.RemoveAutoRoleAsync(guild.Id, autoRole.Id);
+                    await eventArgs.SendSuccessAsync($"Users will no longer be granted the **{autoRole.Name}** role upon joining.");
+                    break;
+                }
+                catch (Exception e)
+                {
+                    await eventArgs.SendEphmeralErrorAsync(e.Message);
+                    break;
+                }
             case "add-whitelisted-guild":
                 if (!eventArgs.Member.IsAdmin())
                 {

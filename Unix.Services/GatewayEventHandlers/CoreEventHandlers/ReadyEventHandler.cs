@@ -61,6 +61,17 @@ public class ReadyEventHandler : UnixService
     public async Task SetupUnixGlobalSlashCommandsAsync()
     {
         List<LocalSlashCommand> cmds = new();
+        var configCmd = new LocalSlashCommand()
+            .WithName("config")
+            .WithDescription("Fetches a guild configuration. If no ID is provided, the current guild is used.")
+            .WithOptions(new[]
+            {
+                new LocalSlashCommandOption()
+                    .WithName("id")
+                    .WithDescription("The ID of the guild.")
+                    .WithType(SlashCommandOptionType.String)
+            });
+        cmds.Add(configCmd);
         var pingCmd = new LocalSlashCommand()
             .WithName("ping")
             .WithDescription("Pings the Discord API and returns the latency.");
@@ -155,6 +166,30 @@ public class ReadyEventHandler : UnixService
                     .WithType(SlashCommandOptionType.String)
                     .WithIsRequired()
             });
+        var addAutoRoleCmd = new LocalSlashCommand()
+            .WithName("add-autorole")
+            .WithDescription("Adds the provided role to the guild's list of autoroles.")
+            .WithOptions(new[]
+            {
+                new LocalSlashCommandOption()
+                    .WithName("role")
+                    .WithDescription("The role to add.")
+                    .WithType(SlashCommandOptionType.Role)
+                    .WithIsRequired()
+            });
+        cmds.Add(addAutoRoleCmd);
+        var removeAutoRoleCmd = new LocalSlashCommand()
+            .WithName("remove-autorole")
+            .WithDescription("Removes the provided role from the guild's list of autoroles.")
+            .WithOptions(new[]
+            {
+                new LocalSlashCommandOption()
+                    .WithName("role")
+                    .WithDescription("The role to remove.")
+                    .WithType(SlashCommandOptionType.Role)
+                    .WithIsRequired()
+            });
+        cmds.Add(removeAutoRoleCmd);
         cmds.Add(addBannedTermCmd);
         var removeBannedTermCmd = new LocalSlashCommand()
             .WithName("remove-banned-term")

@@ -23,6 +23,8 @@ public class GuildConfiguration
 
     public List<ulong> WhitelistedInvites { get; set; } = new();
 
+    public List<ulong> AutoRoles { get; set; } = new();
+
     public List<ulong> SelfAssignableRoles { get; set; } = new();
     public string PhishermanApiKey { get; set; }
 }

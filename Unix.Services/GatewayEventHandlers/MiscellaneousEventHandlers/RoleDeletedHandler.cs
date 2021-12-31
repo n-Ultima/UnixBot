@@ -5,6 +5,7 @@ using Disqord;
 using Disqord.AuditLogs;
 using Disqord.Gateway;
 using Disqord.Rest;
+using Serilog;
 using Unix.Services.Core.Abstractions;
 
 namespace Unix.Services.GatewayEventHandlers.MiscellaneousEventHandlers;
@@ -31,6 +32,19 @@ public class RoleDeletedHandler : UnixService
             return;
         }
 
+        if (guildConfig.SelfAssignableRoles.Contains(eventArgs.RoleId.RawValue))
+        {
+            Log.Logger.Information("Role {rName} was deleted, and also present in the guild's self assignable roles. Removing...", eventArgs.Role.Name);
+            await _guildService.RemoveSelfAssignableRoleAsync(guildConfig.Id, eventArgs.RoleId);
+            Log.Logger.Information("Role removed successfully!");
+        }
+
+        if (guildConfig.AutoRoles.Contains(eventArgs.RoleId.RawValue))
+        {
+            Log.Logger.Information("Role {rName} was deleted, and also present in the guild's autoroles. Removing...", eventArgs.Role.Name);
+            await _guildService.RemoveAutoRoleAsync(guildConfig.Id, eventArgs.RoleId);
+            Log.Logger.Information("Role removed successfully!");
+        }
         var auditLogs = await Bot.FetchAuditLogsAsync<IRoleDeletedAuditLog>(eventArgs.GuildId);
         var roleDeletedAuditLog = auditLogs.First();
         await Bot.SendMessageAsync(guildConfig.MiscellaneousLogChannelId, new LocalMessage()

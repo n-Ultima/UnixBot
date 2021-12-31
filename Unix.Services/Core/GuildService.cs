@@ -310,4 +310,51 @@ public class GuildService : UnixService, IGuildService
             await unixContext.SaveChangesAsync();
         }
     }
+
+    /// <inheritdoc />
+    public async Task AddAutoRoleAsync(Snowflake guildId, Snowflake roleId)
+    {
+        using (var scope = ServiceProvider.CreateScope())
+        {
+            var unixContext = scope.ServiceProvider.GetRequiredService<UnixContext>();
+            var guildConfig = await unixContext.GuildConfigurations
+                .FindAsync(guildId);
+            if (guildConfig == null)
+            {
+                throw new Exception("Guild should be configured with configure-guild first.");
+            }
+
+            if (guildConfig.AutoRoles.Contains(roleId.RawValue))
+            {
+                throw new Exception("That role is already marked as an autorole.");
+            }
+            guildConfig.AutoRoles.Add(roleId.RawValue);
+            unixContext.Update(guildConfig);
+            await unixContext.SaveChangesAsync();
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task RemoveAutoRoleAsync(Snowflake guildId, Snowflake roleId)
+    {
+        using (var scope = ServiceProvider.CreateScope())
+        {
+            var unixContext = scope.ServiceProvider.GetRequiredService<UnixContext>();
+            var guildConfig = await unixContext.GuildConfigurations
+                .FindAsync(guildId);
+            if (guildConfig == null)
+            {
+                throw new Exception("Guild should be configured with configure-guild first.");
+            }
+
+            if (!guildConfig.AutoRoles.Contains(roleId.RawValue))
+            {
+                throw new Exception("That role is not currently marked as an autorole.");
+            }
+
+            guildConfig.AutoRoles.Remove(roleId.RawValue);
+            unixContext.Update(guildConfig);
+            await unixContext.SaveChangesAsync(); 
+        }
+    }
 }
