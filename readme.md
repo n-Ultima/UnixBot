@@ -8,6 +8,18 @@ This is the main source code repository for Unix. It contains the source code fo
 - Building from the repository is not officially supported or recommended. If you want to use the Unix Discord bot for your server, Feel free to request access on our [Discord!](https://discord.gg/6yMXWUWANW)
 
 - This bot is still in development; if any issue arises feel free to create an issue on Github.
+
+### Feature List
+- Moderation~~~~
+- Automoderation
+- Guild-specific configurable options
+- Reminder system
+- Tag capabilities(create "tags" that hold content. Similar to [R.Danny's tag system](https://github.com/Rapptz/RoboDanny))
+- Spam protection.
+- Scam link detection(brought by the [Phisherman service](https://phisherman.gg/))
+- Self assignable roles
+- Easy, yet effective permission system.
+
 #### **Contributing**
 If you are interested in contributing, please check out the [guidelines](https://github.com/n-Ultima/UnixBot/blob/main/.github/CONTRIBUTING.md)
 
