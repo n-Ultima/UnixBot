@@ -354,7 +354,7 @@ public class GuildService : UnixService, IGuildService
 
             guildConfig.AutoRoles.Remove(roleId.RawValue);
             unixContext.Update(guildConfig);
-            await unixContext.SaveChangesAsync(); 
+            await unixContext.SaveChangesAsync();
         }
     }
 }

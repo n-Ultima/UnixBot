@@ -136,7 +136,7 @@ public interface IGuildService
     /// <param name="roleId">The ID of the role.</param>
     /// <returns></returns>
     Task AddAutoRoleAsync(Snowflake guildId, Snowflake roleId);
-    
+
     /// <summary>
     ///     Removes the role ID from the guild's list of autoroles.
     /// </summary>

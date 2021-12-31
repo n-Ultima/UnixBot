@@ -148,7 +148,7 @@ public class InteractionHandler : UnixService
                         .WithContent(configBuilder.ToString()));
                     break;
                 }
-                
+
 
             case "guild-count":
                 if (!Bot.OwnerIds.Contains(eventArgs.Member.Id))
