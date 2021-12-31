@@ -95,7 +95,7 @@ public class SpamHandler : UnixService
         var message1 = messages[0];
         var message2 = messages[1];
         var message3 = messages[2];
-        if ((message3.CreatedAt() - message2.CreatedAt() < TimeSpan.FromSeconds(1) && message2.CreatedAt() - message1.CreatedAt() < TimeSpan.FromSeconds(1)) || message1.Content == message2.Content && message1.Content == message3.Content && message2.Content == message3.Content)
+        if ((message3.CreatedAt() - message2.CreatedAt() < TimeSpan.FromSeconds(1) && message2.CreatedAt() - message1.CreatedAt() < TimeSpan.FromSeconds(1)) || (message1.Content == message2.Content && message1.Content == message3.Content && message2.Content == message3.Content))
         {
             await _moderationService.CreateInfractionAsync(member.GuildId, Bot.CurrentUser.Id, member.Id, InfractionType.Warn, "Spamming messages", false, null);
             SpamDictionary.TryRemove(member, out _);
