@@ -392,17 +392,10 @@ public class InteractionHandler : UnixService
                     break;
                 }
 
-                var whitelistGuild = await Bot.FetchGuildAsync(realWhitelistSnowflake);
-                if (whitelistGuild == null)
-                {
-                    await eventArgs.SendEphmeralErrorAsync("The ID provided is not valid.");
-                    break;
-                }
-
                 try
                 {
                     await _guildService.AddWhitelistedInviteAsync(eventArgs.GuildId.Value, realWhitelistSnowflake);
-                    await eventArgs.SendSuccessAsync($"Invites pointing towards **{whitelistGuild.Name}** will no longer be deleted.");
+                    await eventArgs.SendSuccessAsync($"Invites pointing towards that guild will no longer be deleted.");
                     break;
                 }
                 catch (Exception e)
@@ -424,17 +417,10 @@ public class InteractionHandler : UnixService
                     break;
                 }
 
-                var blacklistGuild = await Bot.FetchGuildAsync(realBlacklistSnowflake);
-                if (blacklistGuild == null)
-                {
-                    await eventArgs.SendEphmeralErrorAsync("The ID provided is not valid.");
-                    break;
-                }
-
                 try
                 {
                     await _guildService.RemoveWhitelistedInviteAsync(eventArgs.GuildId.Value, realBlacklistSnowflake);
-                    await eventArgs.SendSuccessAsync($"Invites pointing towards **{guild.Name}** will now be deleted.");
+                    await eventArgs.SendSuccessAsync($"Invites pointing towards that guild will now be deleted.");
                     break;
                 }
                 catch (Exception e)
