@@ -47,6 +47,6 @@ public class MemberJoinedHandler : UnixService
                 .WithTitle("Member Joined")
                 .WithThumbnailUrl(eventArgs.Member.GetAvatarUrl() ?? eventArgs.Member.GetDefaultAvatarUrl())
                 .AddField("Username and Discriminator", eventArgs.Member.Tag)
-                .AddField("Account Age", (DateTimeOffset.UtcNow - eventArgs.Member.CreatedAt()).Humanize())));
+                .AddField("Account Created On", $"{Markdown.Timestamp(eventArgs.Member.CreatedAt())}({(DateTimeOffset.UtcNow - eventArgs.Member.CreatedAt()).Humanize()}) ago")));
     }
 }

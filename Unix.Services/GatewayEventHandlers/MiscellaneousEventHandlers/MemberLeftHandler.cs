@@ -36,6 +36,6 @@ public class MemberLeftHandler : UnixService
                 .WithTitle("Member Left")
                 .WithThumbnailUrl(eventArgs.User.GetAvatarUrl() ?? eventArgs.User.GetDefaultAvatarUrl())
                 .AddField("Username and Discriminator", eventArgs.User.Tag)
-                .AddField("Account Age", (DateTimeOffset.UtcNow - eventArgs.User.CreatedAt()).Humanize())));
+                .AddField("Account Created On", $"{Markdown.Timestamp(eventArgs.User.CreatedAt())}({(DateTimeOffset.UtcNow - eventArgs.User.CreatedAt()).Humanize()}) ago")));
     }
 }
