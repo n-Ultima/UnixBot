@@ -1279,8 +1279,8 @@ public class InteractionHandler : UnixService
                         .WithAuthor(guildMember)
                         .WithThumbnailUrl(guildMember.GetAvatarUrl() ?? guildMember.GetDefaultAvatarUrl())
                         .AddField("ID", guildMember.Id)
-                        .AddField("Joined", Markdown.Timestamp(guildMember.JoinedAt.Value))
-                        .AddField("Created", Markdown.Timestamp(guildMember.CreatedAt()))
+                        .AddField("Joined", $"{Markdown.Timestamp(guildMember.JoinedAt.Value)}({(DateTimeOffset.UtcNow - guildMember.JoinedAt.Value).Humanize()} ago.)")
+                        .AddField("Created", $"{Markdown.Timestamp(guildMember.CreatedAt())}({(DateTimeOffset.UtcNow - guildMember.CreatedAt()).Humanize()} ago.)")
                         .AddField("Roles", guildMember.GetRoles().Select(x => x.Value.Name).Humanize())
                         .AddField("Hierarchy", guild.OwnerId == guildMember.Id ? "Guild Owner" : guildMember.GetHierarchy())
                         .WithColor(Color.Gold);
