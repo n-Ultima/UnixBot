@@ -25,6 +25,26 @@ public class GuildService : UnixService, IGuildService
     }
 
     /// <inheritdoc />
+    public async Task CreateGuildConfigurationAsync(Snowflake guildId)
+    {
+        using (var scope = ServiceProvider.CreateScope())
+        {
+            var unixContext = scope.ServiceProvider.GetRequiredService<UnixContext>();
+            var guildConfig = await unixContext.GuildConfigurations
+                .FindAsync(guildId);
+            if (guildConfig != null)
+            {
+                throw new Exception("Guild configuration for that ID already exists.");
+            }
+
+            unixContext.GuildConfigurations.Add(new GuildConfiguration
+            {
+                Id = guildId
+            });
+        }
+    }
+
+    /// <inheritdoc />
     public async Task<GuildConfiguration> FetchGuildConfigurationAsync(Snowflake guildId)
     {
         using (var scope = ServiceProvider.CreateScope())

@@ -14,14 +14,19 @@ using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Unix.Common;
 using Unix.Data;
+using Unix.Services.Core.Abstractions;
 
 namespace Unix.Services.GatewayEventHandlers.CoreEventHandlers;
 
 public class ReadyEventHandler : UnixService
 {
+    private readonly IGuildService _guildService;
     public UnixConfiguration UnixConfig = new();
-    public ReadyEventHandler(IServiceProvider serviceProvider) : base(serviceProvider)
-    { }
+
+    public ReadyEventHandler(IGuildService guildService, IServiceProvider serviceProvider) : base(serviceProvider)
+    {
+        _guildService = guildService;
+    }
 
     protected override async ValueTask OnReady(ReadyEventArgs e)
     {
@@ -47,6 +52,18 @@ public class ReadyEventHandler : UnixService
                 }
             }
 
+            if (!UnixConfig.PrivelegedMode)
+            {
+                foreach (var guild in e.GuildIds)
+                {
+                    if (!allowedGuildIds.Contains(guild))
+                    {
+                        Log.Logger.Information("Guild found that doesn't have a configuration created Creating. ID: {id}", guild);
+                        await _guildService.CreateGuildConfigurationAsync(guild);
+                        Log.Logger.Information("Created!");
+                    }
+                }
+            }
             var globalCmds = await Bot.FetchGlobalApplicationCommandsAsync(Bot.CurrentUser.Id);
             if (!globalCmds.Any())
             {
@@ -237,31 +254,6 @@ public class ReadyEventHandler : UnixService
                     .WithDescription("The ID of the guild.")
                     .WithIsRequired()
                     .WithType(SlashCommandOptionType.String),
-                new LocalSlashCommandOption()
-                    .WithName("modlog-channel-id")
-                    .WithDescription("The ID of the moderation log channel.")
-                    .WithIsRequired()
-                    .WithType(SlashCommandOptionType.String),
-                new LocalSlashCommandOption()
-                    .WithName("messagelog-channel-id")
-                    .WithDescription("The ID of the message log channel.")
-                    .WithIsRequired()
-                    .WithType(SlashCommandOptionType.String),
-                new LocalSlashCommandOption()
-                    .WithName("moderator-role-id")
-                    .WithDescription("The ID of the moderator role.")
-                    .WithIsRequired()
-                    .WithType(SlashCommandOptionType.String),
-                new LocalSlashCommandOption()
-                    .WithName("administrator-role-id")
-                    .WithDescription("The ID of the administrator role.")
-                    .WithIsRequired()
-                    .WithType(SlashCommandOptionType.String),
-                new LocalSlashCommandOption()
-                    .WithName("automod-enabled")
-                    .WithDescription("If automod should be enabled.")
-                    .WithIsRequired()
-                    .WithType(SlashCommandOptionType.Boolean)
             });
         cmds.Add(configureGuildCmd);
         var disallowGuildCmd = new LocalSlashCommand()

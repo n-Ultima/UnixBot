@@ -431,61 +431,23 @@ public class InteractionHandler : UnixService
                 break;
             // the big one
             case "configure-guild":
-                if (!Bot.OwnerIds.Contains(eventArgs.Member.Id))
+                // get the options.
+                if (!await Bot.IsOwnerAsync(eventArgs.Member.Id))
                 {
                     await eventArgs.SendEphmeralErrorAsync("You must be a bot owner to use this command.");
                     break;
                 }
-
-                // get the options.
                 var guildIdString = slashCommandInteraction.Options.GetValueOrDefault("id")?.Value as string;
-                var modLogString = slashCommandInteraction.Options.GetValueOrDefault("modlog-channel-id")?.Value as string;
-                var messageLogString = slashCommandInteraction.Options.GetValueOrDefault("messagelog-channel-id")?.Value as string;
-                var miscellaneousLogString = slashCommandInteraction.Options.GetValueOrDefault("miscellaneous-channel-id")?.Value as string;
-                var modRoleString = slashCommandInteraction.Options.GetValueOrDefault("moderator-role-id")?.Value as string;
-                var adminRoleString = slashCommandInteraction.Options.GetValueOrDefault("administrator-role-id")?.Value as string;
-                var isAutomodEnabled = slashCommandInteraction.Options.TryGetValue("automod-enabled", out var sCommandInteraction);
-                var autoModEnabled = (bool)sCommandInteraction.Value;
                 if (!Snowflake.TryParse(guildIdString, out var realGuildId))
                 {
                     await eventArgs.SendEphmeralErrorAsync($"Invalid snowflake provided for guild ID.");
                     break;
                 }
 
-                if (!Snowflake.TryParse(modLogString, out var realModLog))
-                {
-                    await eventArgs.SendEphmeralErrorAsync("Invalid snowflake provided for mod log ID.");
-                    break;
-                }
-
-                if (!Snowflake.TryParse(messageLogString, out var realMessageLog))
-                {
-                    await eventArgs.SendEphmeralErrorAsync("Invalid snowflake provided for message log ID.");
-                    break;
-                }
-
-                if (!Snowflake.TryParse(miscellaneousLogString, out var realMiscellaneousLog))
-                {
-                    await eventArgs.SendEphmeralErrorAsync("Invalid snowflake provided for miscellaneous log ID.");
-                    break;
-                }
-
-                if (!Snowflake.TryParse(modRoleString, out var realModRole))
-                {
-                    await eventArgs.SendEphmeralErrorAsync("Invalid snowflake provided for moderator role ID.");
-                    break;
-                }
-
-                if (!Snowflake.TryParse(adminRoleString, out var realAdminRole))
-                {
-                    await eventArgs.SendEphmeralErrorAsync("Invalid snowflake provided for administrator role ID.");
-                    break;
-                }
-
                 // configure the guild
                 try
                 {
-                    await _ownerService.ConfigureGuildAsync(realGuildId, realModLog, realMessageLog, realMiscellaneousLog, realModRole, realAdminRole, autoModEnabled);
+                    await _guildService.CreateGuildConfigurationAsync(realGuildId);
                     await eventArgs.SendSuccessAsync($"Successfully configured!");
                     break;
                 }

@@ -10,6 +10,13 @@ namespace Unix.Services.Core.Abstractions;
 public interface IGuildService
 {
     /// <summary>
+    ///     Creates a guild configuration.
+    /// </summary>
+    /// <param name="guildId">The ID of the guild.</param>
+    /// <returns></returns>
+    Task CreateGuildConfigurationAsync(Snowflake guildId);
+
+    /// <summary>
     ///     Fetches the guild configuration for the guild ID provided.
     /// </summary>
     /// <param name="guildId">The ID of the guild.</param>
