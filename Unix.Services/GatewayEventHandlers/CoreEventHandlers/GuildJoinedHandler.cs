@@ -21,6 +21,7 @@ public class GuildJoinedHandler : UnixService
 
     public GuildJoinedHandler(IGuildService guildService, IServiceProvider serviceProvider) : base(serviceProvider)
     {
+        _guildService = guildService;
     }
 
     protected override async ValueTask OnJoinedGuild(JoinedGuildEventArgs e)
