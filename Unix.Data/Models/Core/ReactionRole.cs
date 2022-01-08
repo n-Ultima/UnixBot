@@ -13,6 +13,5 @@ public class ReactionRole
     public Snowflake MessageId { get; set; }
     
     public Snowflake RoleId { get; set; }
-    
-    public string EmojiName { get; set; }
+    public Snowflake EmojiId { get; set; }
 }

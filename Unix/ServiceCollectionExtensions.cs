@@ -1,3 +1,4 @@
+using Disqord.Gateway;
 using Microsoft.Extensions.DependencyInjection;
 using Unix.Data.Migrations;
 using Unix.Services;
@@ -16,6 +17,7 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddSingleton<IPhishermanService>(x => x.GetRequiredService<PhishermanService>());
         serviceCollection.AddSingleton<IReminderService>(x => x.GetRequiredService<ReminderService>());
         serviceCollection.AddSingleton<ITagService>(x => x.GetRequiredService<TagService>());
+        serviceCollection.AddSingleton<IReactionRoleService>(x => x.GetRequiredService<ReactionRoleService>());
         return serviceCollection;
     }
 }

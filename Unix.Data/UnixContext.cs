@@ -38,4 +38,6 @@ public class UnixContext : DbContext
     public DbSet<Tag> Tags { get; set; }
     public DbSet<Reminder> Reminders { get; set; }
     public DbSet<Infraction> Infractions { get; set; }
+    
+    public DbSet<ReactionRole> ReactionRoles { get; set; }
 }
