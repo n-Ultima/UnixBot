@@ -45,8 +45,15 @@ public class GuildJoinedHandler : UnixService
             }
             catch (RestApiException)
             {
-                await Bot.SendMessageAsync(e.Guild.OwnerId, new LocalMessage()
-                    .WithContent("Thank you for adding Unix! A few things to note:\n1. Join the Unix Discord Server for support and bug issues(http://www.ultima.one/unix)\n2. If this guild is found to be in violation of Discord's TOS or any other applicable laws, the guild will be blacklisted from using Unix.\n3. Please run commands to setup your guild fully! All of these commands start with the `/configure` prefix, such as `/configure-modrole`."));
+                try
+                {
+                    await Bot.SendMessageAsync(e.Guild.OwnerId, new LocalMessage()
+                        .WithContent("Thank you for adding Unix! A few things to note:\n1. Join the Unix Discord Server for support and bug issues(http://www.ultima.one/unix)\n2. If this guild is found to be in violation of Discord's TOS or any other applicable laws, the guild will be blacklisted from using Unix.\n3. Please run commands to setup your guild fully! All of these commands start with the `/configure` prefix, such as `/configure-modrole`."));
+                }
+                catch (RestApiException)
+                {
+                    Log.Logger.Information("Unable to send welcome message for guild {gId}", e.GuildId);
+                }
             }
 
             Log.Logger.Information("Joined guild {guild} while in non-priveleged mode, creating guild configuration...", e.Guild.Name);
