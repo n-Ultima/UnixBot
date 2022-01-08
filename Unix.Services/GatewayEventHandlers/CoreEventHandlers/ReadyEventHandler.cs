@@ -707,6 +707,49 @@ public class ReadyEventHandler : UnixService
                     .WithType(SlashCommandOptionType.User)
             });
         cmds.Add(infoCmd);
+        var reactionRoleAddCmd = new LocalSlashCommand()
+            .WithName("reaction-role-create")
+            .WithDescription("Creates a reaction role.")
+            .WithOptions(new[]
+            {
+                new LocalSlashCommandOption()
+                    .WithName("role")
+                    .WithDescription("The role.")
+                    .WithType(SlashCommandOptionType.Role)
+                    .WithIsRequired(),
+                new LocalSlashCommandOption()
+                    .WithName("channel")
+                    .WithDescription("The channel that the message resides in.")
+                    .WithType(SlashCommandOptionType.Channel)
+                    .WithIsRequired(),
+                new LocalSlashCommandOption()
+                    .WithName("message")
+                    .WithDescription("The ID of the message.")
+                    .WithType(SlashCommandOptionType.String)
+                    .WithIsRequired(),
+                new LocalSlashCommandOption()
+                    .WithName("emoji")
+                    .WithDescription("The ID of the emoji.")
+                    .WithType(SlashCommandOptionType.String)
+                    .WithIsRequired()
+            });
+        cmds.Add(reactionRoleAddCmd);
+        var fetchReactionRolesCmd = new LocalSlashCommand()
+            .WithName("reaction-roles")
+            .WithDescription("Fetches all reaction roles in your guild.");
+        cmds.Add(fetchReactionRolesCmd);
+        var reactionRoleDeleteCmd = new LocalSlashCommand()
+            .WithName("reaction-role-delete")
+            .WithDescription("Removes a reaction role.")
+            .WithOptions(new[]
+            {
+                new LocalSlashCommandOption()
+                    .WithName("emoji")
+                    .WithDescription("The ID of the emoji.")
+                    .WithType(SlashCommandOptionType.String)
+                    .WithIsRequired()
+            });
+        cmds.Add(reactionRoleDeleteCmd);
         await Bot.SetGlobalApplicationCommandsAsync(Bot.CurrentUser.Id, cmds);
     }
 }
