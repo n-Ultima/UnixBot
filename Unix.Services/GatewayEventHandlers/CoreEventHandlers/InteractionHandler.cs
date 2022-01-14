@@ -861,7 +861,7 @@ public class InteractionHandler : UnixService
 
                     if (gUnmuteUser.TimedOutUntil > DateTimeOffset.UtcNow)
                     {
-                        await _moderationService.LogInfractionDeletionAsync(new Infraction() {GuildId = guild.Id, Type = InfractionType.Mute}, eventArgs.Member, gUnmuteUser, false, unmuteReason);
+                        await _moderationService.LogInfractionDeletionAsync(new Infraction() { GuildId = guild.Id, Type = InfractionType.Mute }, eventArgs.Member, gUnmuteUser, false, unmuteReason);
                         await eventArgs.SendSuccessAsync($"Removed the timeout for **{gUnmuteUser.Tag}** | `{unmuteReason}`");
                         break;
                     }
@@ -896,7 +896,7 @@ public class InteractionHandler : UnixService
                     var banNoInf = await guild.FetchBanAsync(unbanUser.Id);
                     if (banNoInf != null)
                     {
-                        await _moderationService.LogInfractionDeletionAsync(new Infraction {GuildId = guild.Id, Type = InfractionType.Ban}, eventArgs.Member, banNoInf.User, false, unbanReason);
+                        await _moderationService.LogInfractionDeletionAsync(new Infraction { GuildId = guild.Id, Type = InfractionType.Ban }, eventArgs.Member, banNoInf.User, false, unbanReason);
                         await eventArgs.SendSuccessAsync($"Unbanned **{banNoInf.User.Tag}** | `{unbanReason}`");
                         break;
                     }

@@ -37,6 +37,6 @@ public class ReactionRemovedHandler : UnixService
             return;
         }
 
-        await Bot.RevokeRoleAsync(guildConfig.Id, eventArgs.UserId, reactionRole.RoleId, new DefaultRestRequestOptions {Reason = "Reaction role"});
+        await Bot.RevokeRoleAsync(guildConfig.Id, eventArgs.UserId, reactionRole.RoleId, new DefaultRestRequestOptions { Reason = "Reaction role" });
     }
 }

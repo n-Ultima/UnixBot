@@ -35,11 +35,11 @@ public class ReactionRoleService : UnixService, IReactionRoleService
                 throw new Exception("Reaction role with the provided data already exists.");
             }
 
-            unixContext.ReactionRoles.Add(new ReactionRole {GuildId = guildId, MessageId = messageId, EmojiId = emojiId, RoleId = roleId});
+            unixContext.ReactionRoles.Add(new ReactionRole { GuildId = guildId, MessageId = messageId, EmojiId = emojiId, RoleId = roleId });
             await unixContext.SaveChangesAsync();
         }
     }
-    
+
     /// <inheritdoc />
     public async Task<ReactionRole> FetchReactionRoleAsync(Snowflake guildId, Snowflake messageId, Snowflake emojiId)
     {
@@ -75,7 +75,7 @@ public class ReactionRoleService : UnixService, IReactionRoleService
                 .Where(x => x.GuildId == guildId)
                 .ToListAsync();
             return roles;
-        }    
+        }
     }
 
     /// <inheritdoc />
@@ -97,6 +97,6 @@ public class ReactionRoleService : UnixService, IReactionRoleService
 
             unixContext.ReactionRoles.Remove(reactionRole);
             await unixContext.SaveChangesAsync();
-        }    
+        }
     }
 }

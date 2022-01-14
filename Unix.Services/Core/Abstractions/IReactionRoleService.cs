@@ -28,7 +28,7 @@ public interface IReactionRoleService
     /// <param name="emojiId">The ID of the emoji/</param>
     /// <returns>A <see cref="ReactionRole"/></returns>
     Task<ReactionRole> FetchReactionRoleAsync(Snowflake guildId, Snowflake messageId, Snowflake emojiId);
-    
+
     /// <summary>
     ///     Fetches a reaction role. 
     /// </summary>

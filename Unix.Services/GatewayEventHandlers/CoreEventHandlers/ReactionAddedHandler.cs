@@ -13,7 +13,7 @@ public class ReactionAddedHandler : UnixService
 {
     private readonly IGuildService _guildService;
     private readonly IReactionRoleService _reactionRoleService;
-    
+
     public ReactionAddedHandler(IServiceProvider serviceProvider, IGuildService guildService, IReactionRoleService reactionRoleService) : base(serviceProvider)
     {
         _guildService = guildService;
@@ -40,6 +40,6 @@ public class ReactionAddedHandler : UnixService
             return;
         }
 
-        await eventArgs.Member.GrantRoleAsync(reactionRole.RoleId, new DefaultRestRequestOptions {Reason = $"Reaction role"});
+        await eventArgs.Member.GrantRoleAsync(reactionRole.RoleId, new DefaultRestRequestOptions { Reason = $"Reaction role" });
     }
 }
