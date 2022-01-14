@@ -31,7 +31,7 @@ public class ReactionRemovedHandler : UnixService
             return;
         }
 
-        var reactionRole = await _reactionRoleService.FetchReactionRoleAsync(guildConfig.Id, eventArgs.MessageId, (eventArgs.Emoji as IGuildEmoji).Id);
+        var reactionRole = await _reactionRoleService.FetchReactionRoleAsync(guildConfig.Id, eventArgs.MessageId, (eventArgs.Emoji as ICustomEmoji).Id);
         if (reactionRole == null)
         {
             return;

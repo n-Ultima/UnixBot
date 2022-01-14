@@ -28,14 +28,16 @@ public class InteractionHandler : UnixService
     private readonly IModerationService _moderationService;
     private readonly IReminderService _reminderService;
     private readonly ITagService _tagService;
+    private readonly IReactionRoleService _reactionRoleService;
     private readonly UnixConfiguration UnixConfig = new();
-    public InteractionHandler(IServiceProvider serviceProvider, IOwnerService ownerService, IGuildService guildService, IModerationService moderationService, IReminderService reminderService, ITagService tagService) : base(serviceProvider)
+    public InteractionHandler(IServiceProvider serviceProvider, IOwnerService ownerService, IGuildService guildService, IModerationService moderationService, IReminderService reminderService, ITagService tagService, IReactionRoleService reactionRoleService) : base(serviceProvider)
     {
         _ownerService = ownerService;
         _guildService = guildService;
         _moderationService = moderationService;
         _reminderService = reminderService;
         _tagService = tagService;
+        _reactionRoleService = reactionRoleService;
     }
 
     protected override async ValueTask OnInteractionReceived(InteractionReceivedEventArgs eventArgs)
@@ -97,6 +99,7 @@ public class InteractionHandler : UnixService
                 {
                     await eventArgs.SendEphmeralErrorAsync("Invalid guild ID provided.");
                 }
+
                 if (guildId == guild.Id.ToString())
                 {
                     if (!eventArgs.Member.IsAdmin())
@@ -104,6 +107,7 @@ public class InteractionHandler : UnixService
                         await eventArgs.SendEphmeralErrorAsync(PermissionLevel.Administrator);
                         break;
                     }
+
                     // Guildconfig is correct
                     var configBuilder = new StringBuilder()
                         .AppendLine($"Mod Log Channel ID - {guildConfig.ModLogChannelId}")
@@ -437,6 +441,7 @@ public class InteractionHandler : UnixService
                     await eventArgs.SendEphmeralErrorAsync("You must be a bot owner to use this command.");
                     break;
                 }
+
                 var guildIdString = slashCommandInteraction.Options.GetValueOrDefault("id")?.Value as string;
                 if (!Snowflake.TryParse(guildIdString, out var realGuildId))
                 {
@@ -550,6 +555,7 @@ public class InteractionHandler : UnixService
                 {
                     embed.AddField($"{infraction.Type.ToString().ToUpper()} - ({infraction.Id}) - Created On {infraction.CreatedAt.ToString("M")} by {mod.Tag}", $"Reason: {infraction.Reason}");
                 }
+
                 await eventArgs.Interaction.Response().SendMessageAsync(new LocalInteractionResponse()
                     .WithEmbeds(embed));
                 break;
@@ -718,6 +724,7 @@ public class InteractionHandler : UnixService
                     await eventArgs.SendEphmeralErrorAsync("The duration of the mute can't be longer than 28 days.");
                     break;
                 }
+
                 mtS = muteTimeSpanDuration;
                 try
                 {
@@ -829,6 +836,7 @@ public class InteractionHandler : UnixService
                     await eventArgs.SendEphmeralErrorAsync(PermissionLevel.Moderator);
                     break;
                 }
+
                 var unmuteUser = slashCommandInteraction.Entities.Users.Values.First();
                 var unmuteReason = slashCommandInteraction.Options.GetValueOrDefault("reason")?.Value as string;
 
@@ -850,13 +858,10 @@ public class InteractionHandler : UnixService
                         await eventArgs.SendEphmeralErrorAsync("The user provided is not currently timed out.");
                         break;
                     }
+
                     if (gUnmuteUser.TimedOutUntil > DateTimeOffset.UtcNow)
                     {
-                        await _moderationService.LogInfractionDeletionAsync(new Infraction()
-                        {
-                            GuildId = guild.Id,
-                            Type = InfractionType.Mute
-                        }, eventArgs.Member, gUnmuteUser, false, unmuteReason);
+                        await _moderationService.LogInfractionDeletionAsync(new Infraction() {GuildId = guild.Id, Type = InfractionType.Mute}, eventArgs.Member, gUnmuteUser, false, unmuteReason);
                         await eventArgs.SendSuccessAsync($"Removed the timeout for **{gUnmuteUser.Tag}** | `{unmuteReason}`");
                         break;
                     }
@@ -891,11 +896,7 @@ public class InteractionHandler : UnixService
                     var banNoInf = await guild.FetchBanAsync(unbanUser.Id);
                     if (banNoInf != null)
                     {
-                        await _moderationService.LogInfractionDeletionAsync(new Infraction
-                        {
-                            GuildId = guild.Id,
-                            Type = InfractionType.Ban
-                        }, eventArgs.Member, banNoInf.User, false, unbanReason);
+                        await _moderationService.LogInfractionDeletionAsync(new Infraction {GuildId = guild.Id, Type = InfractionType.Ban}, eventArgs.Member, banNoInf.User, false, unbanReason);
                         await eventArgs.SendSuccessAsync($"Unbanned **{banNoInf.User.Tag}** | `{unbanReason}`");
                         break;
                     }
@@ -1268,6 +1269,7 @@ public class InteractionHandler : UnixService
                         .WithEmbeds(requestorEmbed));
                     break;
                 }
+
                 var userEmbed = new LocalEmbed()
                     .WithTitle(userOption.Tag)
                     .WithAuthor(userOption)
@@ -1277,6 +1279,106 @@ public class InteractionHandler : UnixService
                     .WithColor(Color.Gold);
                 await eventArgs.Interaction.Response().SendMessageAsync(new LocalInteractionResponse()
                     .WithEmbeds(userEmbed));
+                break;
+            case "reaction-role-create":
+                if (!eventArgs.Member.IsAdmin())
+                {
+                    await eventArgs.SendEphmeralErrorAsync(PermissionLevel.Administrator);
+                    break;
+                }
+
+                var reactionRole = slashCommandInteraction.Entities.Roles.Values.First();
+                var msgChannel = slashCommandInteraction.Entities.Channels.Values.First();
+                var messageIdString = slashCommandInteraction.Options.GetValueOrDefault("message")?.Value as string;
+                var emojiIdString = slashCommandInteraction.Options.GetValueOrDefault("emoji")?.Value as string;
+                if (!Snowflake.TryParse(messageIdString, out var messageId))
+                {
+                    await eventArgs.SendEphmeralErrorAsync("Invalid ID provided for message ID.");
+                    break;
+                }
+
+                if (!Snowflake.TryParse(emojiIdString, out var emojiId))
+                {
+                    await eventArgs.SendEphmeralErrorAsync("Invalid ID provided for emoji ID.");
+                    break;
+                }
+
+                var messageValid = (msgChannel as ITextChannel).FetchMessageAsync(messageId);
+                if (messageValid == null)
+                {
+                    await eventArgs.SendEphmeralErrorAsync("Message with that ID was not found in the channel provided.");
+                    break;
+                }
+
+                try
+                {
+                    await _reactionRoleService.CreateReactionRoleAsync(guild.Id, messageId, emojiId, reactionRole.Id);
+                    await eventArgs.SendSuccessAsync("Reaction role created.");
+                    break;
+                }
+                catch (Exception e)
+                {
+                    await eventArgs.SendEphmeralErrorAsync(e.Message);
+                    break;
+                }
+
+            case "reaction-role-delete":
+                if (!eventArgs.Member.IsAdmin())
+                {
+                    await eventArgs.SendEphmeralErrorAsync(PermissionLevel.Administrator);
+                    break;
+                }
+
+                var reactionRoleId = (long)slashCommandInteraction.Options.GetValueOrDefault("id")?.Value;
+                var currentReactionRoles = await _reactionRoleService.FetchReactionRolesAsync(guild.Id);
+                if (!currentReactionRoles.Any())
+                {
+                    await eventArgs.SendEphmeralErrorAsync("No reaction roles exist for your guild.");
+                    break;
+                }
+
+                var delReactionRole = currentReactionRoles
+                    .Where(x => x.Id == reactionRoleId)
+                    .FirstOrDefault();
+                if (delReactionRole == null)
+                {
+                    await eventArgs.SendEphmeralErrorAsync("No reaction role with that ID found.");
+                    break;
+                }
+
+                try
+                {
+                    await _reactionRoleService.DeleteReactionRoleAsync(delReactionRole.GuildId, delReactionRole.MessageId, delReactionRole.EmojiId, delReactionRole.RoleId);
+                    await eventArgs.SendSuccessAsync("Reaction role deleted.");
+                    break;
+                }
+                catch (Exception e)
+                {
+                    await eventArgs.SendEphmeralErrorAsync(e.Message);
+                    break;
+                }
+            case "reaction-roles":
+                var reactionRoleEmbed = new LocalEmbed()
+                    .WithTitle("Reaction Roles")
+                    .WithColor(Color.Purple)
+                    .WithAuthor(guild.Name, guild.GetIconUrl() ?? null);
+                var reactionRoles = await _reactionRoleService.FetchReactionRolesAsync(guild.Id);
+                if (!reactionRoles.Any())
+                {
+                    await eventArgs.SendEphmeralErrorAsync("No reaction roles exist for your guild.");
+                    break;
+                }
+
+                foreach (var role in reactionRoles)
+                {
+                    var guildRoles = guild.Roles;
+                    var roleName = guildRoles.Where(x => x.Value.Id == role.RoleId).FirstOrDefault().Value;
+                    reactionRoleEmbed.AddField($"({role.Id})Message ID: {role.MessageId}", $"Reacting with <:emoji:{role.EmojiId}> -> will grant **{roleName.Name}**");
+                }
+
+                await eventArgs.Interaction.Response().SendMessageAsync(new LocalInteractionResponse()
+                    .WithIsEphemeral()
+                    .WithEmbeds(reactionRoleEmbed));
                 break;
         }
         Log.Logger.Information("Slash command {sName}(executed by {userName}) was handled.", slashCommandInteraction.CommandName, eventArgs.Member.Tag);

@@ -744,9 +744,9 @@ public class ReadyEventHandler : UnixService
             .WithOptions(new[]
             {
                 new LocalSlashCommandOption()
-                    .WithName("emoji")
-                    .WithDescription("The ID of the emoji.")
-                    .WithType(SlashCommandOptionType.String)
+                    .WithName("id")
+                    .WithDescription("The ID of the reaction role(use /reaction-roles to view reaction roles with their ID's).")
+                    .WithType(SlashCommandOptionType.Integer)
                     .WithIsRequired()
             });
         cmds.Add(reactionRoleDeleteCmd);

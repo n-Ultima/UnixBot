@@ -39,7 +39,8 @@ public class ReactionRoleService : UnixService, IReactionRoleService
             await unixContext.SaveChangesAsync();
         }
     }
-
+    
+    /// <inheritdoc />
     public async Task<ReactionRole> FetchReactionRoleAsync(Snowflake guildId, Snowflake messageId, Snowflake emojiId)
     {
         using (var scope = ServiceProvider.CreateScope())
@@ -50,6 +51,17 @@ public class ReactionRoleService : UnixService, IReactionRoleService
                 .Where(x => x.MessageId == messageId)
                 .Where(x => x.EmojiId == emojiId)
                 .SingleOrDefaultAsync();
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<ReactionRole> FetchReactionRoleAsync(long id)
+    {
+        using (var scope = ServiceProvider.CreateScope())
+        {
+            var unixContext = scope.ServiceProvider.GetRequiredService<UnixContext>();
+            return await unixContext.ReactionRoles
+                .FindAsync(id);
         }
     }
 

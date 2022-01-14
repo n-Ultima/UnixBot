@@ -4,6 +4,7 @@ using Disqord;
 using Disqord.Gateway;
 using Disqord.Rest;
 using Disqord.Rest.Api;
+using Serilog;
 using Unix.Services.Core.Abstractions;
 
 namespace Unix.Services.GatewayEventHandlers.CoreEventHandlers;
@@ -33,7 +34,7 @@ public class ReactionAddedHandler : UnixService
             return;
         }
 
-        var reactionRole = await _reactionRoleService.FetchReactionRoleAsync(guildConfig.Id, eventArgs.MessageId, (eventArgs.Emoji as IGuildEmoji).Id);
+        var reactionRole = await _reactionRoleService.FetchReactionRoleAsync(guildConfig.Id, eventArgs.MessageId, (eventArgs.Emoji as ICustomEmoji).Id);
         if (reactionRole == null)
         {
             return;
