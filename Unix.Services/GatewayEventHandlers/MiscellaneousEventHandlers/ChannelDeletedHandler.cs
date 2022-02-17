@@ -5,17 +5,21 @@ using Disqord;
 using Disqord.AuditLogs;
 using Disqord.Gateway;
 using Disqord.Rest;
+using Microsoft.Extensions.Logging;
 using Serilog;
 using Unix.Services.Core.Abstractions;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Unix.Services.GatewayEventHandlers.MiscellaneousEventHandlers;
 
 public class ChannelDeletedHandler : UnixService
 {
     private readonly IGuildService _guildService;
-    public ChannelDeletedHandler(IGuildService guildService, IServiceProvider serviceProvider) : base(serviceProvider)
+    private readonly ILogger<ChannelDeletedHandler> _logger;
+    public ChannelDeletedHandler(IGuildService guildService, ILogger<ChannelDeletedHandler> logger, IServiceProvider serviceProvider) : base(serviceProvider)
     {
         _guildService = guildService;
+        _logger = logger;
     }
 
     protected override async ValueTask OnChannelDeleted(ChannelDeletedEventArgs eventArgs)
@@ -33,23 +37,23 @@ public class ChannelDeletedHandler : UnixService
 
         if (guildConfig.ModLogChannelId == eventArgs.ChannelId)
         {
-            Log.Logger.Information("Channel {cName} was deleted, and also present as the guild's modlog channel ID. Removing...", eventArgs.Channel.Name);
+            _logger.LogInformation("Channel {cName} was deleted, and also present as the guild's modlog channel ID. Removing...", eventArgs.Channel.Name);
             await _guildService.ModifyGuildModLogChannelIdAsync(eventArgs.GuildId, default);
-            Log.Logger.Information("Channel removed successfully!");
+            _logger.LogInformation("Channel removed successfully!");
         }
 
         if (guildConfig.MessageLogChannelId == eventArgs.ChannelId)
         {
-            Log.Logger.Information("Channel {cName} was deleted, and also present as the guild's message log channel ID. Removing...", eventArgs.Channel.Name);
+            _logger.LogInformation("Channel {cName} was deleted, and also present as the guild's message log channel ID. Removing...", eventArgs.Channel.Name);
             await _guildService.ModifyGuildMessageLogChannelIdAsync(eventArgs.GuildId, default);
-            Log.Logger.Information("Channel removed successfully!");
+            _logger.LogInformation("Channel removed successfully!");
         }
 
         if (guildConfig.MiscellaneousLogChannelId == eventArgs.ChannelId)
         {
-            Log.Logger.Information("Channel {cName} was deleted, and also present as the guild's miscellaneous log channel ID. Removing...(aborting the log)", eventArgs.Channel.Name);
+            _logger.LogInformation("Channel {cName} was deleted, and also present as the guild's miscellaneous log channel ID. Removing...(aborting the log)", eventArgs.Channel.Name);
             await _guildService.ModifyGuildMiscellaneousLogChannelIdAsync(eventArgs.GuildId, default);
-            Log.Logger.Information("Channel removed successfully!");
+            _logger.LogInformation("Channel removed successfully!");
             return;
         }
         var auditLogs = await Bot.FetchAuditLogsAsync<IChannelDeletedAuditLog>(eventArgs.GuildId);

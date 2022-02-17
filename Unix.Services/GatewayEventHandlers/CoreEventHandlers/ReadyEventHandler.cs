@@ -11,6 +11,7 @@ using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Serilog;
 using Unix.Common;
 using Unix.Data;
@@ -21,11 +22,13 @@ namespace Unix.Services.GatewayEventHandlers.CoreEventHandlers;
 public class ReadyEventHandler : UnixService
 {
     private readonly IGuildService _guildService;
+    private readonly ILogger<ReadyEventHandler> _logger;
     public UnixConfiguration UnixConfig = new();
 
-    public ReadyEventHandler(IGuildService guildService, IServiceProvider serviceProvider) : base(serviceProvider)
+    public ReadyEventHandler(IGuildService guildService, ILogger<ReadyEventHandler> logger, IServiceProvider serviceProvider) : base(serviceProvider)
     {
         _guildService = guildService;
+        _logger = logger;
     }
 
     protected override async ValueTask OnReady(ReadyEventArgs e)
@@ -38,7 +41,7 @@ public class ReadyEventHandler : UnixService
             var unauthorizedGuilds = e.GuildIds.Except(allowedGuildIds);
             if (unauthorizedGuilds.Any() && UnixConfig.PrivelegedMode)
             {
-                Log.Logger.Warning("Guilds were found that Unix isn't authorized to operate in. IDs: [{guildIds}]", unauthorizedGuilds.Humanize());
+                _logger.LogWarning("Guilds were found that Unix isn't authorized to operate in. IDs: [{guildIds}]", unauthorizedGuilds.Humanize());
                 // Now, we leave each of the guilds that Unix shouldn't be in.
                 foreach (var guild in unauthorizedGuilds)
                 {
@@ -48,7 +51,7 @@ public class ReadyEventHandler : UnixService
                         Reason = "Unauthorized. Join the Unix server(http://www.ultima.one/unix) to request access."
                     });
                     var gName = g.Name;
-                    Log.Logger.Information("Left guild {g} due to lack of authorizaiton.", gName);
+                    _logger.LogInformation("Left guild {g} due to lack of authorizaiton.", gName);
                 }
             }
 
@@ -58,16 +61,16 @@ public class ReadyEventHandler : UnixService
                 {
                     if (!allowedGuildIds.Contains(guild))
                     {
-                        Log.Logger.Information("Guild found that doesn't have a configuration created Creating. ID: {id}", guild);
+                        _logger.LogInformation("Guild found that doesn't have a configuration created Creating. ID: {id}", guild);
                         await _guildService.CreateGuildConfigurationAsync(guild);
-                        Log.Logger.Information("Created!");
+                        _logger.LogInformation("Created!");
                     }
                 }
             }
             var globalCmds = await Bot.FetchGlobalApplicationCommandsAsync(Bot.CurrentUser.Id);
             if (!globalCmds.Any())
             {
-                Log.Logger.Warning("Setting up global slash commands(takes 1 hour approximately)");
+                _logger.LogInformation("Setting up global slash commands(takes 1 hour approximately).");
                 await SetupUnixGlobalSlashCommandsAsync();
             }
 #if DEBUG

@@ -24,7 +24,6 @@ public class OwnerService : UnixService, IOwnerService
         _guildService = guildService;
     }
 
-    public static List<Snowflake> WhitelistedGuilds = new();
 
     /// <inheritdoc />
     public async Task ConfigureGuildAsync(Snowflake guildId, Snowflake modLogChannelId, Snowflake messageLogChannelId, Snowflake miscellaneousLogChannelId, Snowflake modRoleId, Snowflake adminRoleId, bool automodEnabled)
@@ -64,7 +63,6 @@ public class OwnerService : UnixService, IOwnerService
             if (guild == null)
                 throw new Exception("That guild isn't allowed to use Unix.");
             unixContext.GuildConfigurations.Remove(guild);
-            WhitelistedGuilds.Remove(guild.Id);
             await unixContext.SaveChangesAsync();
         }
     }

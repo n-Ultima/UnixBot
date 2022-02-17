@@ -10,6 +10,7 @@ using Disqord.Extensions.Interactivity.Menus.Paged;
 using Disqord.Gateway;
 using Disqord.Rest;
 using Humanizer;
+using Microsoft.Extensions.Logging;
 using Serilog;
 using Unix.Common;
 using Unix.Data.Models.Core;
@@ -29,8 +30,9 @@ public class InteractionHandler : UnixService
     private readonly IReminderService _reminderService;
     private readonly ITagService _tagService;
     private readonly IReactionRoleService _reactionRoleService;
+    private readonly ILogger<InteractionHandler> _logger;
     private readonly UnixConfiguration UnixConfig = new();
-    public InteractionHandler(IServiceProvider serviceProvider, IOwnerService ownerService, IGuildService guildService, IModerationService moderationService, IReminderService reminderService, ITagService tagService, IReactionRoleService reactionRoleService) : base(serviceProvider)
+    public InteractionHandler(IServiceProvider serviceProvider, IOwnerService ownerService, IGuildService guildService, IModerationService moderationService, IReminderService reminderService, ITagService tagService, IReactionRoleService reactionRoleService, ILogger<InteractionHandler> logger) : base(serviceProvider)
     {
         _ownerService = ownerService;
         _guildService = guildService;
@@ -38,6 +40,7 @@ public class InteractionHandler : UnixService
         _reminderService = reminderService;
         _tagService = tagService;
         _reactionRoleService = reactionRoleService;
+        _logger = logger;
     }
 
     protected override async ValueTask OnInteractionReceived(InteractionReceivedEventArgs eventArgs)
@@ -82,7 +85,7 @@ public class InteractionHandler : UnixService
                 var builder = new StringBuilder();
                 if (!heartbeatLatency.HasValue)
                 {
-                    builder.Append($"🏓 Pong!\nShard Latency: {Bot.GetShard(eventArgs.GuildId.Value).Heartbeater.Latency.Value.Milliseconds} ms\nMessage Latency: {dateTime.Milliseconds} ms");
+                    builder.Append($"🏓 Pong!\nMessage Latency: {dateTime.Milliseconds} ms");
                 }
                 else
                 {
@@ -1037,7 +1040,7 @@ public class InteractionHandler : UnixService
                     var name = guild.Roles.Where(x => x.Key == roleId).Select(x => x.Value).SingleOrDefault();
                     if (name == null)
                     {
-                        Log.Logger.Information("The role {id} was not found in the guild(manual deletion?). Removing it from the list of assignable roles.");
+                        _logger.LogInformation("The role {id} was not found in the guild(manual deletion?). Removing it from the list of assignable roles.", roleId);
                         await _guildService.RemoveSelfAssignableRoleAsync(guild.Id, name.Id);
                         continue;
                     }
@@ -1381,6 +1384,5 @@ public class InteractionHandler : UnixService
                     .WithEmbeds(reactionRoleEmbed));
                 break;
         }
-        Log.Logger.Information("Slash command {sName}(executed by {userName}) was handled.", slashCommandInteraction.CommandName, eventArgs.Member.Tag);
     }
 }

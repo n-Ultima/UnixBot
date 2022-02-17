@@ -48,10 +48,7 @@ public class MessageCreateHandler : UnixService
         {
             return;
         }
-        if (!OwnerService.WhitelistedGuilds.Contains(eventArgs.GuildId.Value))
-        {
-            return;
-        }
+
         var guildConfig = await _guildService.FetchGuildConfigurationAsync(eventArgs.GuildId.Value);
         if (!GuildProcessMessages.TryGetValue(eventArgs.GuildId.Value, out var value))
         {

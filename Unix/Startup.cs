@@ -70,7 +70,7 @@ class Startup
                     typeof(UnixBot).Assembly,
                     typeof(UnixContext).Assembly
                 }.ToList();
-                Log.Logger.Information("OwnerIds: {ownerIds}", bot.OwnerIds.Humanize());
+                Log.Logger.ForContext<Startup>().Information("OwnerIds: {ownerIds}", bot.OwnerIds.Humanize());
             })
             .UseSerilog()
             .UseConsoleLifetime();
@@ -79,9 +79,9 @@ class Startup
             using (var services = host.Services.CreateScope())
             {
                 var db = services.ServiceProvider.GetRequiredService<UnixContext>();
-                Log.Logger.Information("Applying migrations...");
+                Log.Logger.ForContext<Startup>().Information("Applying migrations...");
                 await db.Database.MigrateAsync();
-                Log.Logger.Information("Migrations applied successfully!");
+                Log.Logger.ForContext<Startup>().Information("Migrations applied successfully!");
             }
             await host.RunAsync();
         }

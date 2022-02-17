@@ -5,18 +5,21 @@ using Disqord;
 using Disqord.AuditLogs;
 using Disqord.Gateway;
 using Disqord.Rest;
+using Microsoft.Extensions.Logging;
 using Serilog;
 using Unix.Services.Core.Abstractions;
+using ILogger = Serilog.ILogger;
 
 namespace Unix.Services.GatewayEventHandlers.MiscellaneousEventHandlers;
 
 public class RoleDeletedHandler : UnixService
 {
     private readonly IGuildService _guildService;
-
-    public RoleDeletedHandler(IServiceProvider serviceProvider, IGuildService guildService) : base(serviceProvider)
+    private readonly ILogger<RoleDeletedHandler> _logger;
+    public RoleDeletedHandler(IServiceProvider serviceProvider, IGuildService guildService, ILogger<RoleDeletedHandler> logger) : base(serviceProvider)
     {
         _guildService = guildService;
+        _logger = logger;
     }
 
     protected override async ValueTask OnRoleDeleted(RoleDeletedEventArgs eventArgs)
@@ -34,16 +37,16 @@ public class RoleDeletedHandler : UnixService
 
         if (guildConfig.SelfAssignableRoles.Contains(eventArgs.RoleId.RawValue))
         {
-            Log.Logger.Information("Role {rName} was deleted, and also present in the guild's self assignable roles. Removing...", eventArgs.Role.Name);
+            _logger.LogInformation("Role {rName} was deleted, and also present in the guild's self assignable roles. Removing...", eventArgs.Role.Name);
             await _guildService.RemoveSelfAssignableRoleAsync(guildConfig.Id, eventArgs.RoleId);
-            Log.Logger.Information("Role removed successfully!");
+            _logger.LogInformation("Role removed successfully!");
         }
 
         if (guildConfig.AutoRoles.Contains(eventArgs.RoleId.RawValue))
         {
-            Log.Logger.Information("Role {rName} was deleted, and also present in the guild's autoroles. Removing...", eventArgs.Role.Name);
+            _logger.LogInformation("Role {rName} was deleted, and also present in the guild's autoroles. Removing...", eventArgs.Role.Name);
             await _guildService.RemoveAutoRoleAsync(guildConfig.Id, eventArgs.RoleId);
-            Log.Logger.Information("Role removed successfully!");
+            _logger.LogInformation("Role removed successfully!");
         }
         var auditLogs = await Bot.FetchAuditLogsAsync<IRoleDeletedAuditLog>(eventArgs.GuildId);
         var roleDeletedAuditLog = auditLogs.First();

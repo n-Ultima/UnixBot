@@ -6,6 +6,7 @@ using Disqord;
 using Disqord.Rest;
 using Humanizer;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Unix.Common;
 using Unix.Data;
 using Unix.Services.Core.Abstractions;
@@ -16,10 +17,11 @@ namespace Unix.Services.Core;
 public class ReminderExecutionHandler : UnixService
 {
     private readonly IReminderService _reminderService;
-
-    public ReminderExecutionHandler(IReminderService reminderService, IServiceProvider serviceProvider) : base(serviceProvider)
+    private readonly ILogger<ReminderExecutionHandler> _logger;
+    public ReminderExecutionHandler(IReminderService reminderService, ILogger<ReminderExecutionHandler> logger, IServiceProvider serviceProvider) : base(serviceProvider)
     {
         _reminderService = reminderService;
+        _logger = logger;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -44,6 +46,7 @@ public class ReminderExecutionHandler : UnixService
                     await Bot.SendMessageAsync(expiringReminder.ChannelId, new LocalMessage()
                         .WithContent($"{Mention.User(expiringReminder.UserId)} - reminder created on {Markdown.Timestamp(expiringReminder.CreatedAt)} | `{expiringReminder.Value}`"));
                     await _reminderService.DeleteReminderAsync(expiringReminder.Id);
+                    _logger.LogInformation("Executed and deleted reminder with ID: {id}", expiringReminder.Id);
                     await Task.Delay(30000);
                     continue;
                 }

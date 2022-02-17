@@ -2,17 +2,21 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Humanizer;
+using Microsoft.Extensions.Logging;
 using Unix.Data.Models.Moderation;
+using Unix.Services.Core.Abstractions;
 
 namespace Unix.Services.Core;
 
 public class InfractionRescindBehavior : UnixService
 {
-    private readonly ModerationService _moderationService;
-
-    public InfractionRescindBehavior(IServiceProvider serviceProvider, ModerationService moderationService) : base(serviceProvider)
+    private readonly IModerationService _moderationService;
+    private readonly ILogger<InfractionRescindBehavior> _logger;
+    public InfractionRescindBehavior(IServiceProvider serviceProvider, IModerationService moderationService, ILogger<InfractionRescindBehavior> logger) : base(serviceProvider)
     {
         _moderationService = moderationService;
+        _logger = logger;
     }
 
     private static readonly TimeSpan Interval = TimeSpan.FromSeconds(30);
@@ -52,6 +56,7 @@ public class InfractionRescindBehavior : UnixService
                     }
 
                     await _moderationService.RemoveInfractionAsync(expiringInfraction.Id, expiringInfraction.GuildId, Bot.CurrentUser.Id, false, reason);
+                    _logger.LogInformation("Removed infraction {id} after a schedule duration of {duration}", expiringInfraction.Id, expiringInfraction.Duration.Value.Humanize());
                 }
 
                 await Task.Delay(Interval);

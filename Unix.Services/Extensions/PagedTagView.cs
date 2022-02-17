@@ -15,10 +15,6 @@ public class PagedTagView : PagedView
 
     protected override async ValueTask OnStopButtonAsync(ButtonEventArgs e)
     {
-        if (e.Interaction.Message == null)
-        {
-            Log.Logger.Error("message is null");
-        }
         await e.Interaction.Message.DeleteAsync();
     }
 }

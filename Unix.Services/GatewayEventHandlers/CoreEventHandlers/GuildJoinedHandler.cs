@@ -5,6 +5,7 @@ using Disqord;
 using Disqord.Gateway;
 using Disqord.Rest;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Serilog;
 using Unix.Common;
 using Unix.Data;
@@ -16,12 +17,13 @@ namespace Unix.Services.GatewayEventHandlers.CoreEventHandlers;
 public class GuildJoinedHandler : UnixService
 {
     private readonly IGuildService _guildService;
-
+    private readonly ILogger<GuildJoinedHandler> _logger;
     private readonly UnixConfiguration UnixConfig = new();
 
-    public GuildJoinedHandler(IGuildService guildService, IServiceProvider serviceProvider) : base(serviceProvider)
+    public GuildJoinedHandler(IGuildService guildService, ILogger<GuildJoinedHandler> logger, IServiceProvider serviceProvider) : base(serviceProvider)
     {
         _guildService = guildService;
+        _logger = logger;
     }
 
     protected override async ValueTask OnJoinedGuild(JoinedGuildEventArgs e)
@@ -52,13 +54,13 @@ public class GuildJoinedHandler : UnixService
                 }
                 catch (RestApiException)
                 {
-                    Log.Logger.Information("Unable to send welcome message for guild {gId}", e.GuildId);
+                    _logger.LogInformation("Unable to send welcome message for guild {gId}", e.GuildId);
                 }
             }
 
-            Log.Logger.Information("Joined guild {guild} while in non-priveleged mode, creating guild configuration...", e.Guild.Name);
+            _logger.LogInformation("Joined guild {guild} while in non-priveleged mode, creating guild configuration...", e.Guild.Name);
             await _guildService.CreateGuildConfigurationAsync(e.GuildId);
-            Log.Logger.Information("Config created!");
+            _logger.LogInformation("Config created!");
         }
     }
 }
