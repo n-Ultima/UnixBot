@@ -95,7 +95,8 @@ public class ReadyEventHandler : UnixService
         var pingCmd = new LocalSlashCommand()
             .WithName("ping")
             .WithDescription("Pings the Discord API and returns the latency.");
-        cmds.Add(pingCmd);
+        cmds.Add(pingCmd);       
+
         var guildCountCmd = new LocalSlashCommand()
             .WithName("guild-count")
             .WithDescription("Returns the number of guilds that this instance of Unix is in.");
@@ -174,6 +175,8 @@ public class ReadyEventHandler : UnixService
                     .WithIsRequired()
 
             });
+        
+        cmds.Add(configModLogCmd);        
         cmds.Add(configAutomodCmd);
         var addBannedTermCmd = new LocalSlashCommand()
             .WithName("add-banned-term")

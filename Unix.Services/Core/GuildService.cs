@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -19,6 +20,7 @@ namespace Unix.Services.Core;
 
 public class GuildService : UnixService, IGuildService
 {
+    private ConcurrentDictionary<ulong, GuildConfiguration> _guildConfigCache = new();
     public GuildService(IServiceProvider serviceProvider)
         : base(serviceProvider)
     {
@@ -41,12 +43,18 @@ public class GuildService : UnixService, IGuildService
             {
                 Id = guildId
             });
+            await unixContext.SaveChangesAsync();
+            _guildConfigCache.TryAdd(guildId, new GuildConfiguration {Id = guildId});
         }
     }
 
     /// <inheritdoc />
     public async Task<GuildConfiguration> FetchGuildConfigurationAsync(Snowflake guildId)
     {
+        if(_guildConfigCache.TryGetValue(guildId, out var config))
+        {
+            return config;
+        }
         using (var scope = ServiceProvider.CreateScope())
         {
             var unixContext = scope.ServiceProvider.GetRequiredService<UnixContext>();
@@ -375,6 +383,20 @@ public class GuildService : UnixService, IGuildService
             guildConfig.AutoRoles.Remove(roleId.RawValue);
             unixContext.Update(guildConfig);
             await unixContext.SaveChangesAsync();
+        }
+    }
+
+    private async Task AddOrUpdateGuildCacheAsync(ulong guildId)
+    {
+        if (_guildConfigCache.TryGetValue(guildId, out var config))
+        {
+            using (var scope = ServiceProvider.CreateScope())
+            {
+                var unixContext = scope.ServiceProvider.GetRequiredService<UnixContext>();
+                var guildConfig = await unixContext.GuildConfigurations
+                    .FindAsync(guildId);
+                _guildConfigCache.TryUpdate(guildId, guildConfig, config);
+            }
         }
     }
 }

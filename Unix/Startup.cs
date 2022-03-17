@@ -1,89 +1,69 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
+using System;
+using System.Collections.Concurrent;
+using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
-using Disqord;
-using Disqord.Bot;
-using Disqord.Bot.Hosting;
-using Disqord.Gateway;
-using Disqord.Gateway.Default;
-using Humanizer;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+using Discord;
+using Discord.Addons.Hosting;
+using Discord.Interactions;
+using Discord.WebSocket;
+using Microsoft.Extensions.Logging;
 using Serilog;
-using Serilog.Events;
-using Serilog.Sinks.SystemConsole.Themes;
-using Unix.Common;
-using Unix.Data;
-using Unix.Services.Core;
+using Unix.Services.Core.Abstractions;
 
 namespace Unix;
 
-class Startup
+public class Startup : DiscordShardedClientService
 {
-    private static readonly UnixConfiguration UnixConfig = new();
-    static async Task Main(string[] args)
+    private readonly IGuildService _guildService;
+    private readonly InteractionService _interactionService;
+    private readonly IServiceProvider _serviceProvider;
+    private readonly DiscordSocketClient _client;
+    public Startup(DiscordShardedClient sclient, ILogger<DiscordShardedClientService> logger, IGuildService guildService, InteractionService interactionService, IServiceProvider serviceProvider, DiscordSocketClient client) : base(sclient, logger)
     {
-        Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Verbose()
-            .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-            .Enrich.FromLogContext()
-            .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] [{SourceContext}] {Message:lj}{NewLine}{Exception}", theme: AnsiConsoleTheme.Code)
-            .CreateLogger();
-        var hostBuilder = new HostBuilder()
-            .ConfigureAppConfiguration(x =>
-            {
-                var config = new ConfigurationBuilder()
-                    .AddJsonFile("appsettings.json")
-                    .Build();
-                x.AddConfiguration(config);
-            })
-            .ConfigureServices((_, services) =>
-            {
-                services
-                    .AddSingleton<HttpClient>()
-                    .AddDbContext<UnixContext>()
-                    .Configure<DefaultGatewayCacheProviderConfiguration>(x => x.MessagesPerChannel = 200)
-                    .AddUnixServices()
-                    .AddCommands();
-            })
-            .ConfigureDiscordBotSharder((_, bot) =>
-            {
-                bot.Intents = GatewayIntent.Bans |
-                              GatewayIntent.Guilds |
-                              GatewayIntent.Members |
-                              GatewayIntent.EmojisAndStickers |
-                              GatewayIntent.DirectMessages |
-                              GatewayIntent.DirectReactions |
-                              GatewayIntent.GuildReactions |
-                              GatewayIntent.Webhooks |
-                              GatewayIntent.GuildMessages;
-                bot.OwnerIds = UnixConfig.OwnerIds.ToSnowflakeArray();
-                bot.Token = UnixConfig.Token;
-                bot.ServiceAssemblies = new[]
-                {
-                    typeof(GuildService).Assembly,
-                    typeof(UnixConfiguration).Assembly,
-                    typeof(UnixBot).Assembly,
-                    typeof(UnixContext).Assembly
-                }.ToList();
-                Log.Logger.ForContext<Startup>().Information("OwnerIds: {ownerIds}", bot.OwnerIds.Humanize());
-            })
-            .UseSerilog()
-            .UseConsoleLifetime();
-        using (var host = hostBuilder.Build())
+        _guildService = guildService;
+        _interactionService = interactionService;
+        _serviceProvider = serviceProvider;
+        _client = client;
+    }
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+#if  DEBUG
+        await _interactionService.AddModulesAsync(Assembly.GetExecutingAssembly(), _serviceProvider);
+#endif
+        Logger.LogInformation("Starting up");
+        Client.ShardReady += OnShardReady;
+        Client.InteractionCreated += OnInteractionReceived; 
+        _interactionService.SlashCommandExecuted += OnSlashCommandExecuted;
+    }
+
+    private async Task OnSlashCommandExecuted(SlashCommandInfo command, IInteractionContext context, IResult result)
+    {
+        if (!result.IsSuccess)
         {
-            using (var services = host.Services.CreateScope())
+            await context.Interaction.RespondAsync($"⚠ {result.ErrorReason}");
+        }
+    }
+
+
+    private async Task OnInteractionReceived(SocketInteraction interaction)
+    {
+        var context = new SocketInteractionContext(_client, interaction);
+        await _interactionService.ExecuteCommandAsync(context, _serviceProvider);
+    }
+
+    private async Task OnShardReady(DiscordSocketClient arg)
+    {
+        foreach (var guild in arg.Guilds)
+        {
+            var config = await _guildService.FetchGuildConfigurationAsync(guild.Id);
+            if (config == null)
             {
-                var db = services.ServiceProvider.GetRequiredService<UnixContext>();
-                Log.Logger.ForContext<Startup>().Information("Applying migrations...");
-                await db.Database.MigrateAsync();
-                Log.Logger.ForContext<Startup>().Information("Migrations applied successfully!");
+                Logger.LogInformation("Found guild with no existing configuration({id}. Creating...", guild.Id);
+                await _guildService.CreateGuildConfigurationAsync(guild.Id);
+                Logger.LogInformation("Configuration created successfully.");
             }
-            await host.RunAsync();
         }
     }
 }

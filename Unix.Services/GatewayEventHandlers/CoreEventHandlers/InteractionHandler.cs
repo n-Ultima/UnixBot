@@ -1143,7 +1143,8 @@ public class InteractionHandler : UnixService
                 var pgView = new PagedTagView(arrPageProvider);
                 await pgView.UpdateAsync();
                 var interactionPgView = pgView.ToLocalMessage().ToLocalInteractionResponse();
-                await eventArgs.Interaction.Response().SendMessageAsync(interactionPgView);
+                
+                //await eventArgs.Interaction.Response().SendMessageAsync()
                 var message = await eventArgs.Interaction.Followup().FetchResponseAsync();
                 var menu = new DefaultMenu(pgView, message.Id);
                 await Bot.StartMenuAsync(eventArgs.ChannelId, menu);
