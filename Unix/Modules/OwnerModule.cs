@@ -20,38 +20,39 @@ public class OwnerModule : UnixOwnerModuleBase
     }
 
     [SlashCommand("guild-count")]
+    [Description("Returns the amount of guilds that this instance of Unix is currently in.")]
     public IResult FetchGuildCountAsync()
     {
         return Response($"This instance of Unix is currently in {Bot.GetGuilds().Count.ToString()} guilds.");
     }
 
     [SlashCommand("configure-guild")]
+    [Description("Creates an empty guild configuration for the guild.")]
     public async Task<IResult> ConfigureGuildAsync(Snowflake guildId)
     {
         try
         {
             await _guildConfigurationService.CreateGuildConfigurationAsync(guildId);
-            return Response("cGuild configuration successfully created.");
+            return Success("Guild configuration created successfully.");
         }
         catch (Exception e)
         {
-            await Context.SendEphmeralErrorAsync(e.Message);
-            return null;
+            return EphmeralFailure(e.Message);
         }
     }
 
-    [SlashCommand("blackiist-guild")]
+    [SlashCommand("blacklist-guild")]
+    [Description("Disallows a guild from using Unix.")]
     public async Task<IResult> BlacklistGuildAsync(Snowflake guildId)
     {
         try
         {
             await _ownerService.BlacklistGuildAsync(guildId);
-            return Response("Guild blacklisted.");
+            return Success("Guild blacklisted.");
         }
         catch (Exception e)
         {
-            await Context.SendEphmeralErrorAsync(e.Message);
-            return null;
+            return EphmeralFailure(e.Message);
         }
     }
 }

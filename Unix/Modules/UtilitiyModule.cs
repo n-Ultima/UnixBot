@@ -12,6 +12,7 @@ public class UtilitiyModule : UnixModuleBase
     }
 
     [SlashCommand("ping")]
+    [Description("Find out.")]
     public IResult Ping()
     {
         return Response("Pong!");

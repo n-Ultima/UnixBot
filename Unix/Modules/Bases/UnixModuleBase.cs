@@ -4,6 +4,7 @@ using Disqord;
 using Disqord.Bot.Commands.Application;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Qmmands;
 using Serilog;
 using Unix.Common;
 using Unix.Data.Models.Core;
@@ -38,5 +39,34 @@ public abstract class UnixModuleBase : DiscordApplicationGuildModuleBase
 
         CurrentGuildConfiguration = guildConfig;
 
+    }
+
+    public IResult Success(string message)
+    {
+        return Response($"<:unixok:884524202458222662> {message}");
+    }
+
+    public IResult EphmeralFailure(string errorMessage)
+    {
+        return Response(new LocalInteractionMessageResponse().WithIsEphemeral().WithContent($"⚠ ️{errorMessage}"));
+    }
+
+    public IResult EphmeralFailure(PermissionLevel permissionLevel)
+    {
+        if (permissionLevel == PermissionLevel.Administrator)
+        {
+            return Response(new LocalInteractionMessageResponse()
+                .WithIsEphemeral()
+                .WithContent($"⚠️ User lacks the required `Administrator` permission to use this command."));
+        }
+        else if (permissionLevel == PermissionLevel.Moderator)
+        {
+            return Response(new LocalInteractionMessageResponse()
+                .WithIsEphemeral()
+                .WithContent($"⚠️ User lacks the required `Moderator` permission to use this command."));
+        }
+
+        // This should never hit this, but C# wants to cover all, never-gonna-happen cases to we'll return null here.
+        return null;
     }
 }
