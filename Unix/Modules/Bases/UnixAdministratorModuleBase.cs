@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Disqord.Gateway;
@@ -19,7 +20,7 @@ public abstract class UnixAdministratorModuleBase : UnixModuleBase
             (Context.Author.RoleIds.Count is 0))
         {
             await Context.SendEphmeralErrorAsync(PermissionLevel.Administrator);
-            return;
+            throw new Exception("Missing permissions.");
         }
     }
     

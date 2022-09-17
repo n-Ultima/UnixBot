@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Unix.Common;
 using Unix.Services.Core.Abstractions;
 
@@ -15,7 +16,7 @@ public class UnixOwnerModuleBase : UnixModuleBase
         if (!await Bot.IsOwnerAsync(Context.AuthorId))
         {
             await Context.SendEphmeralErrorAsync("⚠ You must be a bot owner to execute this command.");
-            return;
+            throw new Exception("Missing permissions.");
         }
     }
 }

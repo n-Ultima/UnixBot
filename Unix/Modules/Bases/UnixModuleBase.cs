@@ -1,9 +1,11 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Disqord;
 using Disqord.Bot.Commands.Application;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Serilog;
+using Unix.Common;
 using Unix.Data.Models.Core;
 using Unix.Services.Core.Abstractions;
 
@@ -22,7 +24,7 @@ public abstract class UnixModuleBase : DiscordApplicationGuildModuleBase
     {
         if (Context.Interaction is not ISlashCommandInteraction)
         {
-            return;
+            throw new Exception("We shouldn't receive this.");
             //TODO: In the event that I implement modals, or anything besides slash commands, this must be changed.
         }
 
@@ -30,6 +32,7 @@ public abstract class UnixModuleBase : DiscordApplicationGuildModuleBase
         if (guildConfig is null)
         {
             Log.Logger.ForContext<UnixModuleBase>().Error("Interaction was attempted in a guild without a proper guild configuration setup.");
+            await Context.SendEphmeralErrorAsync("You must have a proper guild configuration setup. Use /config");
             return;
         }
 

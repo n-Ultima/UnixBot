@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Unix.Modules.Attributes;
+namespace Unix.Common.Attributes;
 
 public class DoNotDefer : Attribute
 {

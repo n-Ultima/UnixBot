@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Disqord.Gateway;
 using Unix.Common;
@@ -17,7 +18,7 @@ public abstract class UnixModeratorModuleBase : UnixModuleBase
         if ((Context.Author.GetGuild()?.OwnerId != Context.AuthorId) || !Context.Author.RoleIds.Contains(CurrentGuildConfiguration.ModeratorRoleId.RawValue) || !Context.Author.RoleIds.Contains(CurrentGuildConfiguration.AdministratorRoleId.RawValue) || (Context.Author.RoleIds.Count is 0))
         {
             await Context.SendEphmeralErrorAsync(PermissionLevel.Moderator);
-            return;
+            throw new Exception("Missing permissions.");
         }
     }
 }
