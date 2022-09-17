@@ -11,7 +11,7 @@ namespace Unix.Modules.Bases;
 
 public abstract class UnixModuleBase : DiscordApplicationGuildModuleBase
 {
-    private readonly IGuildService _guildConfigurationService;
+    public readonly IGuildService _guildConfigurationService;
     public GuildConfiguration CurrentGuildConfiguration { get; set; }
 
     public UnixModuleBase(IGuildService guildConfigurationService)
