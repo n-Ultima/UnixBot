@@ -5,7 +5,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Disqord.Bot" Version="1.0.0-12092021-161" />
+      <PackageReference Include="Disqord.Bot" Version="1.0.0-alpha2.20" />
       <PackageReference Include="EFCore.NamingConventions" Version="6.0.0" />
       <PackageReference Include="Humanizer" Version="2.13.14" />
       <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.1" />

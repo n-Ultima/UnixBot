@@ -50,17 +50,18 @@ class Startup
                     .AddUnixServices()
                     .AddCommands();
             })
-            .ConfigureDiscordBotSharder((_, bot) =>
+            .ConfigureDiscordBot((_, bot) =>
             {
-                bot.Intents = GatewayIntent.Bans |
-                              GatewayIntent.Guilds |
-                              GatewayIntent.Members |
-                              GatewayIntent.EmojisAndStickers |
-                              GatewayIntent.DirectMessages |
-                              GatewayIntent.DirectReactions |
-                              GatewayIntent.GuildReactions |
-                              GatewayIntent.Webhooks |
-                              GatewayIntent.GuildMessages;
+                bot.Intents = GatewayIntents.Bans |
+                              GatewayIntents.Guilds |
+                              GatewayIntents.Members |
+                              GatewayIntents.EmojisAndStickers |
+                              GatewayIntents.DirectMessages |
+                              GatewayIntents.DirectReactions |
+                              GatewayIntents.GuildReactions |
+                              GatewayIntents.Webhooks |
+                              GatewayIntents.GuildMessages |
+                              GatewayIntents.MessageContent;
                 bot.OwnerIds = UnixConfig.OwnerIds.ToSnowflakeArray();
                 bot.Token = UnixConfig.Token;
                 bot.ServiceAssemblies = new[]
