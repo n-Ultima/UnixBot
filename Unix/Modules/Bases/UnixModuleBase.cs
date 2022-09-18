@@ -9,6 +9,7 @@ using Serilog;
 using Unix.Common;
 using Unix.Data.Models.Core;
 using Unix.Services.Core.Abstractions;
+using Unix.Services.Extensions;
 
 namespace Unix.Modules.Bases;
 
@@ -34,11 +35,14 @@ public abstract class UnixModuleBase : DiscordApplicationGuildModuleBase
         {
             Log.Logger.ForContext<UnixModuleBase>().Error("Interaction was attempted in a guild without a proper guild configuration setup.");
             await Context.SendEphmeralErrorAsync("You must have a proper guild configuration setup. Use /config");
-            return;
+            throw new Exception($"No configuration for guild {Context.GuildId}.");
         }
-
+        
         CurrentGuildConfiguration = guildConfig;
-
+        if (!Context.Author.CanUseCommands())
+        {
+            EphmeralFailure("Missing permissions");
+        }
     }
 
     public IResult Success(string message)
@@ -69,4 +73,5 @@ public abstract class UnixModuleBase : DiscordApplicationGuildModuleBase
         // This should never hit this, but C# wants to cover all, never-gonna-happen cases to we'll return null here.
         return null;
     }
+
 }

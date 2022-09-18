@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Text;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Bot.Commands;
 using Disqord.Bot.Commands.Application;
 using Disqord.Gateway;
+using Humanizer;
 using Qmmands;
 using Unix.Common;
 using Unix.Modules.Bases;
@@ -14,6 +16,7 @@ namespace Unix.Modules;
 public class OwnerModule : UnixOwnerModuleBase
 {
     private readonly IOwnerService _ownerService;
+
     public OwnerModule(IGuildService guildConfigurationService, IOwnerService ownerService) : base(guildConfigurationService)
     {
         _ownerService = ownerService;

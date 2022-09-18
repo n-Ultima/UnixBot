@@ -15,7 +15,7 @@ public class InteractionReceivedHandler : UnixService
 
     protected override async ValueTask OnInteractionReceived(InteractionReceivedEventArgs e)
     {
-        if (e.GetType().Assembly.CustomAttributes.OfType<DoNotDefer>().FirstOrDefault() is not null)
+        if (e.GetType().Assembly.CustomAttributes.OfType<DoNotDefer>().FirstOrDefault() is null)
         {
             await e.Interaction.Response().DeferAsync();
         }
