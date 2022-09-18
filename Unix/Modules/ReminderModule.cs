@@ -8,6 +8,7 @@ using Qmmands;
 using Unix.Common;
 using Unix.Modules.Bases;
 using Unix.Services.Core.Abstractions;
+using Unix.Services.Extensions;
 using Unix.Services.Parsers;
 
 namespace Unix.Modules;
@@ -58,6 +59,34 @@ public class ReminderModule : UnixModuleBase
         catch (Exception e)
         {
             return EphmeralFailure(e.Message);
+        }
+    }
+
+    [SlashCommand("reminder-delete")]
+    [Description("Deletes a reminder.")]
+    public async Task<IResult> DeleteReminderAsync(long id)
+    {
+        var reminder = await _reminderService.FetchReminderAsync(id);
+        if (reminder is null)
+        {
+            return EphmeralFailure("The ID provided is invalid.");
+        }
+
+        if (reminder.UserId == Context.AuthorId || (Context.Author.IsModerator() || Context.Author.IsAdmin()))
+        {
+            try
+            {
+                await _reminderService.DeleteReminderAsync(id);
+                return Success("Reminder deleted successfully.");
+            }
+            catch (Exception e)
+            {
+                return EphmeralFailure(e.Message);
+            }
+        }
+        else
+        {
+            return EphmeralFailure("You must either be the owner of this reminder, a moderator, or administrator to delete reminders.");
         }
     }
 }
