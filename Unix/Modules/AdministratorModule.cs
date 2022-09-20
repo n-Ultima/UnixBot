@@ -2,7 +2,9 @@
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Bot.Commands.Application;
+using Disqord.Rest;
 using Qmmands;
+using Unix.Data.Migrations;
 using Unix.Modules.Bases;
 using Unix.Services.Core.Abstractions;
 
@@ -109,6 +111,138 @@ public class AdministratorModule : UnixAdministratorModuleBase
         {
             await _guildConfigurationService.ModifyGuildMiscellaneousLogChannelIdAsync(Context.GuildId, channel.Id);
             return Success($"Set <#{channel.Id}>(#{channel.Name}, `{channel.Id}`) to receive miscellaneous logs.");
+        }
+        catch (Exception e)
+        {
+            return EphmeralFailure(e.Message);
+        }
+    }
+
+    [SlashCommand("add-banned-term")]
+    [Description("Adds a term to the list of banned terms")]
+    public async Task<IResult> AddBannedTermAsync(string term)
+    {
+        if (CurrentGuildConfiguration.BannedTerms.Count != 0 && CurrentGuildConfiguration.BannedTerms.Contains(term))
+        {
+            return EphmeralFailure("That term is already banned.");
+        }
+
+        try
+        {
+            await _guildConfigurationService.AddBannedTermAsync(Context.GuildId, term);
+            return Success("Users who send messages with that term will now be warned automatically.");
+        }
+        catch (Exception e)
+        {
+            return EphmeralFailure(e.Message);
+        }
+    }
+
+    [SlashCommand("remove-banned-term")]
+    [Description("Removes a term from the list of banned terms.")]
+    public async Task<IResult> RemoveBannedTermAsync(string term)
+    {
+        if (CurrentGuildConfiguration.BannedTerms.Count != 0 && !CurrentGuildConfiguration.BannedTerms.Contains(term))
+        {
+            return EphmeralFailure("That term is not currently banned.");
+        }
+
+        try
+        {
+            await _guildConfigurationService.RemoveBannedTermAsync(Context.GuildId, term);
+            return Success("User who send messages with that term will no longer be warned automatically.");
+        }
+        catch (Exception e)
+        {
+            return EphmeralFailure(e.Message);
+        }
+    }
+
+    [SlashCommand("add-autorole")]
+    [Description("Adds an autorole configuration.")]
+    public async Task<IResult> CreateAutoRoleAsync(IRole role)
+    {
+        if (CurrentGuildConfiguration.AutoRoles.Count != 0 && CurrentGuildConfiguration.AutoRoles.Contains(role.Id.RawValue))
+        {
+            return EphmeralFailure("That role is already an auto role.");
+        }
+
+        try
+        {
+            await _guildConfigurationService.AddAutoRoleAsync(Context.GuildId, role.Id);
+            return Success($"Upon joining, users will now be granted the **{role.Name}** role.");
+        }
+        catch (Exception e)
+        {
+            return EphmeralFailure(e.Message);
+        }
+    }
+
+    [SlashCommand("remove-autorole")]
+    [Description("Removes an autorole configuration.")]
+    public async Task<IResult> DeleteAutoRoleAsync(IRole role)
+    {
+        if (CurrentGuildConfiguration.AutoRoles.Count != 0 && !CurrentGuildConfiguration.AutoRoles.Contains(role.Id.RawValue))
+        {
+            return EphmeralFailure("That role is not currently an auto role.");
+        }
+
+        try
+        {
+            await _guildConfigurationService.RemoveAutoRoleAsync(Context.GuildId, role.Id);
+            return Success($"Upon joining, users will no longer be granted the **{role.Name}** role.");
+        }
+        catch (Exception e)
+        {
+            return EphmeralFailure(e.Message);
+        }
+    }
+
+    [SlashCommand("add-whitelisted-guild")]
+    [Description("Adds a guild to the list of invites that won't be deleted.")]
+    public async Task<IResult> AddWhitelistedGuildAsync(string guildId)
+    {
+        if (!Snowflake.TryParse(guildId, out var snowflake))
+        {
+            return EphmeralFailure("That ID is not a valid ID.");
+        }
+
+        var guild = await Bot.FetchGuildAsync(snowflake);
+        if (guild is null)
+        {
+            return EphmeralFailure("That guild does not exist.");
+        }
+
+        try
+        {
+            await _guildConfigurationService.AddWhitelistedInviteAsync(Context.GuildId, guild.Id);
+            return Success($"Invites pointing towards **{guild.Name}** will no longer be deleted.");
+        }
+        catch (Exception e)
+        {
+            return EphmeralFailure(e.Message);
+        }
+    }
+
+    [SlashCommand("remove-whitelisted-guild")]
+    [Description("Removes a guild from the list of invites that won't be deleted.")]
+    public async Task<IResult> DeleteWhitelistedGuildAsync(string guildId)
+    {
+        if (!Snowflake.TryParse(guildId, out var snowflake))
+        {
+            return EphmeralFailure("That ID is not a valid ID.");
+        }
+
+        var guild = await Bot.FetchGuildAsync(snowflake);
+        if (guild is null)
+        {
+            return EphmeralFailure("That guild does not exist.");
+        }
+
+        try
+        {
+            await _guildConfigurationService.RemoveWhitelistedInviteAsync(Context.GuildId, guild.Id);
+            return Success($"Invites pointing towards **{guild.Name}** will now be deleted.");
         }
         catch (Exception e)
         {
