@@ -158,46 +158,6 @@ public class AdministratorModule : UnixAdministratorModuleBase
         }
     }
 
-    [SlashCommand("add-autorole")]
-    [Description("Adds an autorole configuration.")]
-    public async Task<IResult> CreateAutoRoleAsync(IRole role)
-    {
-        if (CurrentGuildConfiguration.AutoRoles.Count != 0 && CurrentGuildConfiguration.AutoRoles.Contains(role.Id.RawValue))
-        {
-            return EphmeralFailure("That role is already an auto role.");
-        }
-
-        try
-        {
-            await _guildConfigurationService.AddAutoRoleAsync(Context.GuildId, role.Id);
-            return Success($"Upon joining, users will now be granted the **{role.Name}** role.");
-        }
-        catch (Exception e)
-        {
-            return EphmeralFailure(e.Message);
-        }
-    }
-
-    [SlashCommand("remove-autorole")]
-    [Description("Removes an autorole configuration.")]
-    public async Task<IResult> DeleteAutoRoleAsync(IRole role)
-    {
-        if (CurrentGuildConfiguration.AutoRoles.Count != 0 && !CurrentGuildConfiguration.AutoRoles.Contains(role.Id.RawValue))
-        {
-            return EphmeralFailure("That role is not currently an auto role.");
-        }
-
-        try
-        {
-            await _guildConfigurationService.RemoveAutoRoleAsync(Context.GuildId, role.Id);
-            return Success($"Upon joining, users will no longer be granted the **{role.Name}** role.");
-        }
-        catch (Exception e)
-        {
-            return EphmeralFailure(e.Message);
-        }
-    }
-
     [SlashCommand("add-whitelisted-guild")]
     [Description("Adds a guild to the list of invites that won't be deleted.")]
     public async Task<IResult> AddWhitelistedGuildAsync(string guildId)

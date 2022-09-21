@@ -32,9 +32,10 @@ public interface IReactionRoleService
     /// <summary>
     ///     Fetches a reaction role. 
     /// </summary>
+    /// <param name="guildId">The ID of the guild that the reaction role resides in.</param>
     /// <param name="id">The ID of the reaction role.</param>
     /// <returns>A <see cref="ReactionRole"/></returns>
-    Task<ReactionRole> FetchReactionRoleAsync(long id);
+    Task<ReactionRole> FetchReactionRoleAsync(Snowflake guildId, long id);
     /// <summary>
     ///     Fetches a list of <see cref="ReactionRole"/> for the guild.
     /// </summary>

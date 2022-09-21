@@ -55,13 +55,15 @@ public class ReactionRoleService : UnixService, IReactionRoleService
     }
 
     /// <inheritdoc />
-    public async Task<ReactionRole> FetchReactionRoleAsync(long id)
+    public async Task<ReactionRole> FetchReactionRoleAsync(Snowflake guildId, long id)
     {
         using (var scope = ServiceProvider.CreateScope())
         {
             var unixContext = scope.ServiceProvider.GetRequiredService<UnixContext>();
             return await unixContext.ReactionRoles
-                .FindAsync(id);
+                .Where(x => x.GuildId == guildId)
+                .Where(x => x.Id == id)
+                .SingleOrDefaultAsync();
         }
     }
 
