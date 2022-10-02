@@ -97,6 +97,10 @@ public class InfractionModule : UnixModeratorModuleBase
             await _moderationService.UpdateInfractionAsync(infractionId, Context.GuildId, reason);
             return Success($"Infraction `{id}` successfully updated.");
         }
+        catch (Exception e)
+        {
+            return EphmeralFailure(e.Message);
+        }
     }
 
     [SlashCommand("rescind")]
