@@ -2,6 +2,8 @@
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Bot.Commands.Application;
+using Disqord.Gateway;
+using Disqord.Rest;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Qmmands;
@@ -72,6 +74,17 @@ public abstract class UnixModuleBase : DiscordApplicationGuildModuleBase
 
         // This should never hit this, but C# wants to cover all, never-gonna-happen cases to we'll return null here.
         return null;
+    }
+
+    public async Task<IUser> SafeFetchUserAsync(Snowflake userId)
+    {
+        var member = Bot.GetGuild(CurrentGuildConfiguration.Id).GetMember(userId);
+        if (member is null)
+        {
+            return await Bot.FetchUserAsync(userId);
+        }
+
+        return member;
     }
 
 }
