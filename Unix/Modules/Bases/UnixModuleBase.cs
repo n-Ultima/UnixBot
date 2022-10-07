@@ -47,9 +47,11 @@ public abstract class UnixModuleBase : DiscordApplicationGuildModuleBase
         }
     }
 
-    public IResult Success(string message)
+    public IResult Success(string message, bool isEphmeral = false)
     {
-        return Response($"<:unixok:884524202458222662> {message}");
+        return Response(new LocalInteractionMessageResponse()
+            .WithIsEphemeral(isEphmeral)
+            .WithContent($"<:unixok:884524202458222662> {message}"));
     }
 
     public IResult EphmeralFailure(string errorMessage)
