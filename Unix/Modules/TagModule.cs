@@ -122,7 +122,7 @@ public class TagModalModule : DiscordComponentGuildModuleBase
                 .WithContent($"⚠ That tag does not exist."));
         }
 
-        if (Context.AuthorId != tag.OwnerId || Context.Author.IsModerator())
+        if (Context.AuthorId != tag.OwnerId || !Context.Author.IsModerator())
         {
             return Response(new LocalInteractionMessageResponse()
                 .WithIsEphemeral()
