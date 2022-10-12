@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Bot.Commands.Application;
 using Disqord.Bot.Commands.Components;
 using Disqord.Extensions.Interactivity.Menus;
+using Disqord.Extensions.Interactivity.Menus.Paged;
 using Disqord.Extensions.Interactivity.Menus.Prompt;
 using Disqord.Rest;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
@@ -25,6 +27,31 @@ public class TagModule : UnixModuleBase
         _tagService = tagService;
     }
 
+    [SlashCommand("list")]
+    [Description("Lists all tags in this server.")]
+    public async Task ListTagsAsync()
+    {
+        var tags = await _tagService.FetchTagsAsync(Context.GuildId);
+        if (!tags.Any())
+        {
+            EphmeralFailure("There are no tags in this server.");
+            return;
+        }
+
+        var tagNames = tags.Select(x => x.Name).ToArray();
+        var tagPageProvider = new ArrayPageProvider<string>(tagNames, itemsPerPage: tagNames.Length > 10
+            ? 10
+            : tagNames.Length);
+        var tagView = new PagedTagView(tagPageProvider);
+        await tagView.UpdateAsync();
+        // make this bad boy an interaction
+        var message = new LocalInteractionMessageResponse();
+        tagView.FormatLocalMessage(message);
+        await Context.Interaction.Response().SendMessageAsync(message);
+        var fetchMessage = await Context.Interaction.Followup().FetchResponseAsync();
+        var menu = new DefaultTextMenu(tagView, fetchMessage.Id);
+        await Bot.StartMenuAsync(Context.ChannelId, menu);
+    }
     [SlashCommand("create")]
     [Description("Calls a modal for creating a tag.")]
     public async Task CreateTagAsync()
@@ -81,6 +108,62 @@ public class TagModule : UnixModuleBase
                 }
             })
         );
+    }
+
+    [SlashCommand("transfer")]
+    [Description("Transfer a tag to another user.")]
+    public async Task<IResult> TransferTagAsync(IMember newOwner, string tagName)
+    {
+        var tag = await _tagService.FetchTagAsync(Context.GuildId, tagName);
+        if (tag is null)
+        {
+            return EphmeralFailure("That tag does not exist.");
+        }
+
+        if (tag.OwnerId == newOwner.Id)
+        {
+            return EphmeralFailure("You can't transfer a tag that you already own to yourself.");
+        }
+
+        if (Context.AuthorId != tag.OwnerId || !Context.Author.IsModerator())
+        {
+            return EphmeralFailure("You must either be a moderator or own this tag to perform that action.");
+        }
+
+        try
+        {
+            await _tagService.EditTagOwnershipAsync(Context.GuildId, Context.AuthorId, tagName, newOwner.Id);
+            return Success($"The tag **{tag.Name}** is now owned by **{newOwner.Tag}**");
+        }
+        catch (Exception e)
+        {
+            return EphmeralFailure(e.Message);
+        }
+    }
+    [SlashCommand("delete")]
+    [Description("Deletes a tag.")]
+    public async Task<IResult> DeleteTagAsync(string tagName)
+    {
+        var tag = await _tagService.FetchTagAsync(Context.GuildId, tagName);
+        if (tag is null)
+        {
+            return EphmeralFailure("The tag provided does not exist.");
+        }
+
+        if (Context.AuthorId != tag.OwnerId || !Context.Author.IsModerator())
+        {
+            return EphmeralFailure("You must either be a moderator or own this tag to perform that action.");
+        }
+
+        try
+        {
+            await _tagService.DeleteTagAsync(Context.GuildId, Context.AuthorId, tag.Name);
+            return Success($"Tag **{tag.Name}** deleted.");
+        }
+        catch (Exception e)
+        {
+            return EphmeralFailure(e.Message);
+        }
     }
 }
 
