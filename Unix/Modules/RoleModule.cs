@@ -61,6 +61,34 @@ public class RoleModule : UnixModuleBase
     [Description("Give yourself a role.")]
     public async Task<IResult> AddRoleAsync(IRole role)
     {
-        
+        if (!CurrentGuildConfiguration.SelfAssignableRoles.Contains(role.Id.RawValue))
+        {
+            return EphmeralFailure("Unknown role.");
+        }
+
+        if (Context.Author.RoleIds.Contains(role.Id))
+        {
+            return EphmeralFailure("You already have that role.");
+        }
+
+        await Context.Author.GrantRoleAsync(role.Id);
+        return Success($"Granted you **{role.Name}**.");
+    }
+
+    [SlashCommand("remove")]
+    [Description("Take away a role.")]
+    public async Task<IResult> RemoveRoleAsync(IRole role)
+    {
+        if (!CurrentGuildConfiguration.SelfAssignableRoles.Contains(role.Id.RawValue))
+        {
+            return EphmeralFailure("Unknown role.");
+        }
+
+        if (!Context.Author.RoleIds.Contains(role.Id))
+        {
+            return EphmeralFailure("You don't have that role.");
+        }
+        await Context.Author.RevokeRoleAsync(role.Id);
+        return Success($"Removed **{role.Name}** from you.");
     }
 }
