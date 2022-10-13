@@ -55,34 +55,5 @@ public class RoleModule : UnixModuleBase
             .WithIsEphemeral()
             .WithEmbeds(roleHelpEmbed));
     }
-
-
-
-    [SlashCommand("reaction-roles")]
-    [RequireGuildAdministrator]
-    [Description("Lists reaction roles.")]
-    public async Task<IResult> ListReactionRoleAsync()
-    {
-        var guild = Context.Author.GetGuild();
-        var reactionRoleEmbed = new LocalEmbed()
-            .WithTitle("Reaction Roles")
-            .WithColor(Color.Purple)
-            .WithAuthor(guild.Name, guild.GetIconUrl() ?? null);
-        var reactionRoles = await _reactionRoleService.FetchReactionRolesAsync(guild.Id);
-        if (!reactionRoles.Any())
-        {
-            return EphmeralFailure("No reaction roles exist for your guild.");
-        }
-
-        foreach (var role in reactionRoles)
-        {
-            var guildRoles = guild.Roles;
-            var roleName = guildRoles.Where(x => x.Value.Id == role.RoleId).FirstOrDefault().Value;
-            reactionRoleEmbed.AddField($"({role.Id})Message ID: {role.MessageId}", $"Reacting with <:emoji:{role.EmojiId}> -> will grant **{roleName.Name}**");
-        }
-
-        return Response(new LocalInteractionMessageResponse()
-            .WithIsEphemeral()
-            .WithEmbeds(reactionRoleEmbed));
-    }
+    
 }
