@@ -30,10 +30,8 @@ public class AdministratorModule : UnixAdministratorModuleBase
             {
                 case true:
                     return Success("AutoMod is successfully enabled.");
-                    break;
                 case false:
                     return Success("AutoMod is successfully disabled.");
-                    break;
             }
         }
         catch (Exception e)

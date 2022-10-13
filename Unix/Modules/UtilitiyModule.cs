@@ -28,7 +28,7 @@ public class UtilitiyModule : UnixModuleBase
 
     [SlashCommand("info")]
     [Description("Fetches info about a user.")]
-    public async Task<IResult> FetchUserInfoAsync(IMember member = null)
+    public IResult FetchUserInfoAsync(IMember member = null)
     {
         if (member is null)
         {
@@ -49,7 +49,7 @@ public class UtilitiyModule : UnixModuleBase
 
     [SlashCommand("botinfo")]
     [Description("Fetches info about Unix.")]
-    public async Task<IResult> BotInfoAsync()
+    public IResult BotInfoAsync()
     {
         var botInfoEmbed = new LocalEmbed()
             .WithTitle("Unix Info")
