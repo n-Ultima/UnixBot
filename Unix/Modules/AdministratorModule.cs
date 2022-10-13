@@ -10,12 +10,13 @@ using Unix.Services.Core.Abstractions;
 
 namespace Unix.Modules;
 
+[SlashGroup("configure")]
 public class AdministratorModule : UnixAdministratorModuleBase
 {
     public AdministratorModule(IGuildService guildConfigurationService) : base(guildConfigurationService)
     {
     }
-    [SlashCommand("configure-automod")]
+    [SlashCommand("auto-mod")]
     [Description("Sets whether automod is enabled or disabled")]
     public async Task<IResult> SetAutoModAsync(bool isEnabled)
     {
@@ -38,7 +39,7 @@ public class AdministratorModule : UnixAdministratorModuleBase
         }
     }
 
-    [SlashCommand("configure-modlog")]
+    [SlashCommand("mod-log")]
     [Description("Sets where moderation actions are logged.")]
     public async Task<IResult> SetModLogAsync(ITextChannel channel)
     {
@@ -54,7 +55,7 @@ public class AdministratorModule : UnixAdministratorModuleBase
     }
 
     // This configures the message log, where all message edits, and deletions, are logged to the respective channel.
-    [SlashCommand("configure-messagelog")]
+    [SlashCommand("message-log")]
     [Description("Sets where message edits and deletions are logged.")]
     public async Task<IResult> SetMessageLogAsync(ITextChannel channel)
     {
@@ -69,7 +70,7 @@ public class AdministratorModule : UnixAdministratorModuleBase
         }
     }
 
-    [SlashCommand("configure-phisherman")]
+    [SlashCommand("phisherman")]
     [Description("Sets the API key for your server.")]
     public async Task<IResult> SetPhishermanKeyAsync(string apiKey)
     {
@@ -84,7 +85,7 @@ public class AdministratorModule : UnixAdministratorModuleBase
         }
     }
 
-    [SlashCommand("configure-requiredrole")]
+    [SlashCommand("required-role")]
     [Description("Sets the role users must have to use commands. Set to the @everyone role for everyone to.")]
     public async Task<IResult> SetRequiredRoleAsync(IRole role)
     {
@@ -103,7 +104,7 @@ public class AdministratorModule : UnixAdministratorModuleBase
         }
     }
 
-    [SlashCommand("configure-miscellaneouslog")]
+    [SlashCommand("miscellaneous-log")]
     [Description("Sets the channel where events such as user joins will be logged.")]
     public async Task<IResult> SetMiscLogAsync(ITextChannel channel)
     {
