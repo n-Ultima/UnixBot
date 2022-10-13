@@ -15,6 +15,7 @@ using Unix.Services.Core.Abstractions;
 
 namespace Unix.Modules;
 
+[SlashGroup("role")]
 public class RoleModule : UnixModuleBase
 {
     private readonly IReactionRoleService _reactionRoleService;
@@ -23,7 +24,7 @@ public class RoleModule : UnixModuleBase
         _reactionRoleService = reactionRoleService;
     }
     
-    [SlashCommand("role")]
+    [SlashCommand("list")]
     [Description("Returns a list of all self assignable roles.")]
     public async Task<IResult> ListSelfAssignableRolesAsync(IRole role)
     {
@@ -55,5 +56,11 @@ public class RoleModule : UnixModuleBase
             .WithIsEphemeral()
             .WithEmbeds(roleHelpEmbed));
     }
-    
+
+    [SlashCommand("add")]
+    [Description("Give yourself a role.")]
+    public async Task<IResult> AddRoleAsync(IRole role)
+    {
+        
+    }
 }

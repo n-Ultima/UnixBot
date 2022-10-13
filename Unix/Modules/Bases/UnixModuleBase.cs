@@ -17,6 +17,7 @@ namespace Unix.Modules.Bases;
 
 public abstract class UnixModuleBase : DiscordApplicationGuildModuleBase
 {
+    private readonly UnixConfiguration UnixConfig = new();
     public readonly IGuildService _guildConfigurationService;
     public GuildConfiguration CurrentGuildConfiguration { get; set; }
 
@@ -26,18 +27,26 @@ public abstract class UnixModuleBase : DiscordApplicationGuildModuleBase
     }
     public override async ValueTask OnBeforeExecuted()
     {
-        if (Context.Interaction is not ISlashCommandInteraction)
+        if (UnixConfig.PrivelegedMode)
         {
-            throw new Exception("We shouldn't receive this.");
-            //TODO: In the event that I implement modals, or anything besides slash commands, this must be changed.
+            var config = await _guildConfigurationService.FetchGuildConfigurationAsync(Context.GuildId);
+            if (config is null)
+            {
+                Log.Logger.ForContext<UnixModuleBase>().Information("Privileged Mode Enabled: Leaving guild,{id}", Context.GuildId);
+                // Since the bot is marked as "Privelleged"(the bot cannot be added without proper whitelist)
+                // We need to leave the server, instead of making a new config and running the interaction.
+                await Context.Interaction.Response().SendMessageAsync(new LocalInteractionMessageResponse()
+                    .WithContent("Hello! This instance of Unix is currently in privileged mode. You must receive authorization from this instance's Owner to have access. Thank you!"));
+                await Context.Author.GetGuild().LeaveAsync();
+                return;
+            }
         }
-
         var guildConfig = await _guildConfigurationService.FetchGuildConfigurationAsync(Context.GuildId);
         if (guildConfig is null)
         {
-            Log.Logger.ForContext<UnixModuleBase>().Error("Interaction was attempted in a guild without a proper guild configuration setup.");
-            await Context.SendEphmeralErrorAsync("You must have a proper guild configuration setup. Use /config");
-            throw new Exception($"No configuration for guild {Context.GuildId}.");
+            Log.Logger.ForContext<UnixModuleBase>().Error("Interaction was attempted in a guild without a proper guild configuration setup. Creating.");
+            await _guildConfigurationService.CreateGuildConfigurationAsync(Context.GuildId);
+            Log.Logger.ForContext<UnixModuleBase>().Information("Created guild configuration with ID: {id}", Context.GuildId);
         }
         
         CurrentGuildConfiguration = guildConfig;
