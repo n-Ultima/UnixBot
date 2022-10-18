@@ -41,6 +41,7 @@ public class GuildService : UnixService, IGuildService
             {
                 Id = guildId
             });
+            await unixContext.SaveChangesAsync();
         }
     }
 

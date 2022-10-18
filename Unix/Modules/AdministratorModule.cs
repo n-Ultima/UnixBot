@@ -42,8 +42,12 @@ public class AdministratorModule : UnixAdministratorModuleBase
 
     [SlashCommand("mod-log")]
     [Description("Sets where moderation actions are logged.")]
-    public async Task<IResult> SetModLogAsync(ITextChannel channel)
+    public async Task<IResult> SetModLogAsync(IChannel channel)
     {
+        if (channel is not ITextChannel)
+        {
+            return EphmeralFailure("You must provide a text channel within a guild.");
+        }
         try
         {
             await _guildConfigurationService.ModifyGuildModLogChannelIdAsync(Context.GuildId, channel.Id);
@@ -58,8 +62,12 @@ public class AdministratorModule : UnixAdministratorModuleBase
     // This configures the message log, where all message edits, and deletions, are logged to the respective channel.
     [SlashCommand("message-log")]
     [Description("Sets where message edits and deletions are logged.")]
-    public async Task<IResult> SetMessageLogAsync(ITextChannel channel)
+    public async Task<IResult> SetMessageLogAsync(IChannel channel)
     {
+        if (channel is not ITextChannel)
+        {
+            return EphmeralFailure("You must provide a text channel within a guild.");
+        }
         try
         {
             await _guildConfigurationService.ModifyGuildMessageLogChannelIdAsync(Context.GuildId, channel.Id);
@@ -107,8 +115,12 @@ public class AdministratorModule : UnixAdministratorModuleBase
 
     [SlashCommand("miscellaneous-log")]
     [Description("Sets the channel where events such as user joins will be logged.")]
-    public async Task<IResult> SetMiscLogAsync(ITextChannel channel)
+    public async Task<IResult> SetMiscLogAsync(IChannel channel)
     {
+        if (channel is not ITextChannel)
+        {
+            return EphmeralFailure("You must provide a text channel within a guild.");
+        }
         try
         {
             await _guildConfigurationService.ModifyGuildMiscellaneousLogChannelIdAsync(Context.GuildId, channel.Id);
@@ -289,8 +301,12 @@ public class AdministratorModule : UnixAdministratorModuleBase
     
     [SlashCommand("reaction-role-create")]
     [Description("Creates a reaction role.")]
-    public async Task<IResult> CreateReactionRoleAsync(IRole role, ITextChannel channel, string messageId, string emojiId)
+    public async Task<IResult> CreateReactionRoleAsync(IRole role, IChannel messageChannel, string messageId, string emojiId)
     {
+        if (messageChannel is not ITextChannel channel)
+        {
+            return EphmeralFailure("You must provide a text channel within a guild.");
+        }
         if (!Snowflake.TryParse(messageId, out var snowflakeMessageId))
         {
             return EphmeralFailure("The message ID provided is not a valid ID");

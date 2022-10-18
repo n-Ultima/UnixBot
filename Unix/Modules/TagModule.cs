@@ -61,21 +61,33 @@ public class TagModule : UnixModuleBase
             .WithCustomId("tag_create")
             .WithComponents(new []
             {
-                new LocalTextInputComponent()
+                new LocalRowComponent()
                 {
-                    CustomId = "tag_create_name",
-                    IsRequired = true,
-                    Label = "Name",
-                    MinimumInputLength = 1,
-                    Style = TextInputComponentStyle.Short
+                    Components = new List<LocalComponent>()
+                    {
+                        new LocalTextInputComponent()
+                        {
+                            CustomId = "tag_create_name",
+                            IsRequired = true,
+                            Label = "Name",
+                            MinimumInputLength = 1,
+                            Style = TextInputComponentStyle.Short
+                        }
+                    }
                 },
-                new LocalTextInputComponent()
+                new LocalRowComponent()
                 {
-                    CustomId = "tag_create_content",
-                    IsRequired = true,
-                    Label = "Content",
-                    MinimumInputLength = 1,
-                    Style = TextInputComponentStyle.Paragraph
+                    Components = new List<LocalComponent>()
+                    {
+                        new LocalTextInputComponent()
+                        {
+                            CustomId = "tag_create_content",
+                            IsRequired = true,
+                            Label = "Content",
+                            MinimumInputLength = 1,
+                            Style = TextInputComponentStyle.Paragraph
+                        }
+                    }
                 }
             })
         );
@@ -90,21 +102,33 @@ public class TagModule : UnixModuleBase
             .WithCustomId("tag_edit")
             .WithComponents(new []
             {
-                new LocalTextInputComponent()
+                new LocalRowComponent()
                 {
-                    CustomId = "edit_tag_name",
-                    IsRequired = true,
-                    Label = "Name",
-                    MinimumInputLength = 1,
-                    Style = TextInputComponentStyle.Short
+                    Components = new List<LocalComponent>()
+                    {
+                        new LocalTextInputComponent()
+                        {
+                            CustomId = "edit_tag_name",
+                            IsRequired = true,
+                            Label = "Name",
+                            MinimumInputLength = 1,
+                            Style = TextInputComponentStyle.Short
+                        }
+                    }
                 },
-                new LocalTextInputComponent()
+                new LocalRowComponent()
                 {
-                    CustomId = "edit_tag_content",
-                    IsRequired = true,
-                    Label = "New Content",
-                    MinimumInputLength = 1,
-                    Style = TextInputComponentStyle.Paragraph
+                    Components = new List<LocalComponent>()
+                    {
+                        new LocalTextInputComponent()
+                        {
+                            CustomId = "edit_tag_content",
+                            IsRequired = true,
+                            Label = "New Content",
+                            MinimumInputLength = 1,
+                            Style = TextInputComponentStyle.Paragraph
+                        }
+                    }
                 }
             })
         );
@@ -184,7 +208,7 @@ public class TagModalModule : DiscordComponentGuildModuleBase
         try
         {
             await _tagService.CreateTagAsync(Context.GuildId, Context.AuthorId, tag_create_name, tag_create_content);
-            return Response($"<:unixok:884524202458222662> Tag **{tag_create_content}** created.");
+            return Response($"<:unixok:884524202458222662> Tag **{tag_create_name}** created.");
         }
         catch (Exception e)
         {

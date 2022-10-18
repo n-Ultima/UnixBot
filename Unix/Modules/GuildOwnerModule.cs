@@ -9,13 +9,14 @@ using Unix.Services.Core.Abstractions;
 
 namespace Unix.Modules;
 
+[SlashGroup("configure")]
 public class GuildOwnerModule : UnixModuleBase
 {
     public GuildOwnerModule(IGuildService guildConfigurationService) : base(guildConfigurationService)
     {
     }
 
-    [SlashCommand("configure-modrole")]
+    [SlashCommand("modrole")]
     [RequireGuildOwner]
     [Description("Sets the moderator role of the guild.")]
     public async Task<IResult> SetModRoleAsync(IRole role)
@@ -31,7 +32,7 @@ public class GuildOwnerModule : UnixModuleBase
         }
     }
 
-    [SlashCommand("configure-adminrole")]
+    [SlashCommand("adminrole")]
     [RequireGuildOwner]
     [Description("Sets the administrator role of the guild.")]
     public async Task<IResult> SetAdminRoleAsync(IRole role)

@@ -58,37 +58,6 @@ public class InfractionModule : UnixModeratorModuleBase
         _infractionCache.Add(Context.GuildId, infraction);
         return Response(infractionEmbed);
     }
-    [UserCommand("Infractions")]
-    [Description("Lookup this users infractions.") ]
-    public async Task<IResult> LookupAsync(IMember subject)
-    {
-        var infractions = await _moderationService.FetchInfractionsAsync(Context.GuildId, subject.Id);
-        if(!infractions.Any())
-        {
-            return Response(new LocalInteractionMessageResponse()
-                .WithIsEphemeral()
-                .WithContent("This user has no infractions."));
-        }
-        var infractionEmbed = new LocalEmbed()
-            .WithTitle($"Infractions for {subject.Tag}")
-            .WithColor(Color.Gold);
-        foreach (var infraction in infractions)
-        {
-            var moderator = await SafeFetchUserAsync(infraction.ModeratorId);
-            if (infraction.IsRescinded)
-            {
-                infractionEmbed.AddField($"(RESCINDED) {infraction.Type.ToString().ToUpper()} - ({infraction.Id}) - Created On {infraction.CreatedAt.ToString("M")} by {moderator.Tag}", $"Reason: {infraction.Reason}");
-            }
-            else
-            {
-                infractionEmbed.AddField($"{infraction.Type.ToString().ToUpper()} - ({infraction.Id}) - Created On {infraction.CreatedAt.ToString("M")} by {moderator.Tag}", $"Reason: {infraction.Reason}");
-            }
-        }
-
-        return Response(new LocalInteractionMessageResponse()
-            .WithIsEphemeral()
-            .WithIsEphemeral());
-    }
     [SlashCommand("list")]
     [Description("Lists the infractions for the user ID provided.")]
     public async Task<IResult> ListInfractionsAsync(string userId, bool showHidden)
@@ -261,5 +230,46 @@ public class InfractionModule : UnixModeratorModuleBase
             }
 
         }
+    }
+}
+
+// We cant nest things because Diqord hates me.
+public class InfractionContextMenuCommandModule : UnixModeratorModuleBase
+{
+    private readonly IModerationService _moderationService;
+    public InfractionContextMenuCommandModule(IGuildService guildConfigurationService, IModerationService moderationService) : base(guildConfigurationService)
+    {
+        _moderationService = moderationService;
+    }
+    [UserCommand("Infractions")]
+    [Description("Lookup this users infractions.") ]
+    public async Task<IResult> LookupAsync(IMember subject)
+    {
+        var infractions = await _moderationService.FetchInfractionsAsync(Context.GuildId, subject.Id);
+        if(!infractions.Any())
+        {
+            return Response(new LocalInteractionMessageResponse()
+                .WithIsEphemeral()
+                .WithContent("This user has no infractions."));
+        }
+        var infractionEmbed = new LocalEmbed()
+            .WithTitle($"Infractions for {subject.Tag}")
+            .WithColor(Color.Gold);
+        foreach (var infraction in infractions)
+        {
+            var moderator = await SafeFetchUserAsync(infraction.ModeratorId);
+            if (infraction.IsRescinded)
+            {
+                infractionEmbed.AddField($"(RESCINDED) {infraction.Type.ToString().ToUpper()} - ({infraction.Id}) - Created On {infraction.CreatedAt.ToString("M")} by {moderator.Tag}", $"Reason: {infraction.Reason}");
+            }
+            else
+            {
+                infractionEmbed.AddField($"{infraction.Type.ToString().ToUpper()} - ({infraction.Id}) - Created On {infraction.CreatedAt.ToString("M")} by {moderator.Tag}", $"Reason: {infraction.Reason}");
+            }
+        }
+
+        return Response(new LocalInteractionMessageResponse()
+            .WithIsEphemeral()
+            .WithIsEphemeral());
     }
 }

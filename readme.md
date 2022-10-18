@@ -10,8 +10,8 @@ This is the main source code repository for Unix. It contains the source code fo
 - This bot is still in development; if any issue arises feel free to create an issue on Github.
 
 ### Feature List
-- Moderation~~~~
-- Automoderation
+- Moderation
+- AutoModeration
 - Guild-specific configurable options
 - Reminder system
 - Tag capabilities(create "tags" that hold content. Similar to [R.Danny's tag system](https://github.com/Rapptz/RoboDanny))
@@ -27,7 +27,7 @@ If you are interested in contributing, please check out the [guidelines](https:/
 
 #### **License**
 
-Copyright 2021 Ultima.
+Copyright 2022 Ultima.
 
 This Software is distributed under the MIT license.
 See [MIT](https://github.com/n-Ultima/UnixBot/blob/main/LICENSE) for details.
