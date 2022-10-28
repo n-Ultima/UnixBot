@@ -83,9 +83,11 @@ public class ModerationService : UnixService, IModerationService
                 goto Log;
 
             }
-            unixContext.Infractions.Add(new Infraction
+
+            var infId = Guid.NewGuid();
+            var newInfraction = new Infraction
             {
-                Id = Guid.NewGuid(),
+                Id = infId,
                 GuildId = guildId,
                 CreatedAt = now,
                 ExpiresAt = duration.HasValue
@@ -98,7 +100,8 @@ public class ModerationService : UnixService, IModerationService
                 ModeratorId = moderatorId,
                 Type = type,
                 SubjectId = subjectId
-            });
+            };
+            unixContext.Infractions.Add(newInfraction);
             await unixContext.SaveChangesAsync();
             var guildConfig = await _guildService.FetchGuildConfigurationAsync(guild.Id);
             switch (type)
@@ -171,7 +174,6 @@ public class ModerationService : UnixService, IModerationService
                     ? duration.Value.Humanize(10)
                     : null,
                 reason);
-
         }
     }
 
@@ -187,6 +189,20 @@ public class ModerationService : UnixService, IModerationService
         }
     }
 
+    /// <inheritdoc />
+    public async Task<IEnumerable<Infraction>> FetchInfractionsByModeratorAsync(Snowflake guildId, Snowflake userId)
+    {
+        using (var scope = ServiceProvider.CreateScope())
+        {
+            var unixContext = scope.ServiceProvider.GetRequiredService<UnixContext>();
+            var infractions = await unixContext.Infractions
+                .Where(x => x.GuildId == guildId)
+                .Where(x => x.ModeratorId == userId)
+                .OrderBy(x => x.CreatedAt)
+                .ToListAsync();
+            return infractions;
+        }
+    }
     /// <inheritdoc /> 
     public async Task UpdateInfractionAsync(Guid infractionId, Snowflake guildId, string newReason)
     {

@@ -18,9 +18,6 @@ namespace Unix.Modules;
 public class InfractionModule : UnixModeratorModuleBase
 {
     private readonly IModerationService _moderationService;
-    public static Snowflake _autoCompleteGuildId { get; set; }
-    public static IMember _autoCompleteMember { get; set; }
-    private Dictionary<Snowflake, Infraction> _infractionCache { get; set; } = new();
     public InfractionModule(IGuildService guildConfigurationService, IModerationService moderationService) : base(guildConfigurationService)
     {
         _moderationService = moderationService;
@@ -55,7 +52,6 @@ public class InfractionModule : UnixModeratorModuleBase
             infractionEmbed.AddField($"{infraction.Type.ToString().ToUpper()} - ({infraction.Id}) - Created On {infraction.CreatedAt.ToString("M")} by {moderator.Tag}", $"Reason: {infraction.Reason}");
         }
 
-        _infractionCache.Add(Context.GuildId, infraction);
         return Response(infractionEmbed);
     }
     [SlashCommand("list")]
@@ -92,24 +88,35 @@ public class InfractionModule : UnixModeratorModuleBase
 
     [SlashCommand("update")]
     [Description("Updates the infraction provided with a new reason.")]
-    public async Task<IResult> UpdateInfractionAsync(string id, string reason)
+    public async Task<IResult> UpdateInfractionAsync(string reason, [Description("If no value is provided, then the last infraction that you created will be used.")]string id = null)
     {
         if (!Guid.TryParse(id, out var infractionId))
         {
-            return EphmeralFailure("The ID provided is not a valid infraction ID.");
+            if (id == null)
+            {
+                var infractionLookup = await _moderationService.FetchInfractionsByModeratorAsync(Context.GuildId, Context.AuthorId);
+                var mostRecentInfraction = infractionLookup.First();
+                infractionId = mostRecentInfraction.Id;
+            }
+            else
+            {
+                return EphmeralFailure("The ID provided is not a valid infraction ID.");
+            }
         }
-
         var infraction = await _moderationService.FetchInfractionAsync(infractionId, Context.GuildId);
         if (infraction is null)
         {
             return EphmeralFailure("The ID provided is not a valid infraction ID.");
         }
-        
+
+        if (infraction.ModeratorId != Context.AuthorId && !Context.Author.IsModerator())
+        {
+            return EphmeralFailure("You must either be the user who created the infraction or be an administrator to update the case.");
+        }
         try
         {
             await _moderationService.UpdateInfractionAsync(infractionId, Context.GuildId, reason);
-            _infractionCache.Add(Context.GuildId, infraction);
-            return Success($"Infraction `{id}` successfully updated.");
+            return Success($"Infraction `{infraction.Id}` successfully updated.");
         }
         catch (Exception e)
         {
@@ -134,7 +141,6 @@ public class InfractionModule : UnixModeratorModuleBase
         try
         {
             await _moderationService.RescindInfractionAsync(infractionId, Context.GuildId, Context.AuthorId, reason);
-            _infractionCache.Add(Context.GuildId, infraction);
             return Success($"Infraction `{id}` rescinded.");
         }
         catch (Exception e)
@@ -159,7 +165,6 @@ public class InfractionModule : UnixModeratorModuleBase
         try
         {
             await _moderationService.UnRescindInfractionAsync(infractionId, Context.GuildId, Context.AuthorId, reason);
-            _infractionCache.Add(Context.GuildId, infraction);
             return Success($"Infraction `{id}` has been successfully re-instated.");
         }
         catch (Exception e)
@@ -185,50 +190,11 @@ public class InfractionModule : UnixModeratorModuleBase
         try
         {
             await _moderationService.RemoveInfractionAsync(infractionId, Context.GuildId, Context.AuthorId, false, reason);
-            _infractionCache.Add(Context.GuildId, infraction);
             return Success($"Infraction `{id}` successfully deleted.");
         }
         catch (Exception e)
         {
             return EphmeralFailure(e.Message);
-        }
-    }
-
-    [AutoComplete("lookup")]
-    [AutoComplete("update")]
-    [AutoComplete("rescind")]
-    [AutoComplete("reinstate")]
-    [AutoComplete("delete")]
-    public void HandleInfractionAutoComplete(AutoComplete<string> id)
-    {
-        if (id.IsFocused)
-        {
-            if (!_autoCompleteMember.IsModerator())
-            {
-                return;
-            }
-
-            var infractions = _infractionCache
-                .Where(x => x.Key == _autoCompleteGuildId)
-                .Select(x => x.Value)
-                .ToList();
-            if (id.RawArgument != null)
-            {
-                // These are the infractions that are relevant to this guild.
-                var sortedInfractions = infractions.OrderBy(x => x.CreatedAt);
-                foreach (var infraction in sortedInfractions)
-                {
-                    if (id.RawArgument.StartsWith(infraction.Id.ToString()[0].ToString(), StringComparison.OrdinalIgnoreCase))
-                    {
-                        id.Choices.Add(infraction.Id.ToString());
-                    }
-                }                
-            }
-            else
-            {
-                id.Choices.AddRange(infractions.Select(x => x.Id.ToString()));
-            }
-
         }
     }
 }
@@ -270,6 +236,6 @@ public class InfractionContextMenuCommandModule : UnixModeratorModuleBase
 
         return Response(new LocalInteractionMessageResponse()
             .WithIsEphemeral()
-            .WithIsEphemeral());
+            .WithEmbeds(infractionEmbed));
     }
 }

@@ -44,6 +44,7 @@ public class AdministratorModule : UnixAdministratorModuleBase
     [Description("Sets where moderation actions are logged.")]
     public async Task<IResult> SetModLogAsync(IChannel channel)
     {
+        channel = Context.Author.GetGuild()?.GetChannel(channel.Id);
         if (channel is not ITextChannel)
         {
             return EphmeralFailure("You must provide a text channel within a guild.");
@@ -64,6 +65,7 @@ public class AdministratorModule : UnixAdministratorModuleBase
     [Description("Sets where message edits and deletions are logged.")]
     public async Task<IResult> SetMessageLogAsync(IChannel channel)
     {
+        channel = Context.Author.GetGuild()?.GetChannel(channel.Id);
         if (channel is not ITextChannel)
         {
             return EphmeralFailure("You must provide a text channel within a guild.");
@@ -117,6 +119,7 @@ public class AdministratorModule : UnixAdministratorModuleBase
     [Description("Sets the channel where events such as user joins will be logged.")]
     public async Task<IResult> SetMiscLogAsync(IChannel channel)
     {
+        channel = Context.Author.GetGuild()?.GetChannel(channel.Id);
         if (channel is not ITextChannel)
         {
             return EphmeralFailure("You must provide a text channel within a guild.");

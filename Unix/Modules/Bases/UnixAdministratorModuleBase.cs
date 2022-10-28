@@ -16,7 +16,11 @@ public abstract class UnixAdministratorModuleBase : UnixModuleBase
 
     public override async ValueTask OnBeforeExecuted()
     {
-        if ((Context.Author.GetGuild()?.OwnerId != Context.AuthorId) || (!Context.Author.RoleIds.Contains(CurrentGuildConfiguration.AdministratorRoleId.RawValue)) ||
+        // fuck
+        await base.OnBeforeExecuted();
+        if(CurrentGuildConfiguration is null) Console.WriteLine("Fuck its null");
+        if(CurrentGuildConfiguration.AdministratorRoleId.RawValue == default) Console.WriteLine("Fuck its default");
+        if ((CurrentGuildConfiguration.AdministratorRoleId.RawValue == default) || (Context.Author.GetGuild()?.OwnerId != Context.AuthorId) || (!Context.Author.RoleIds.Contains(CurrentGuildConfiguration.AdministratorRoleId.RawValue)) ||
             (Context.Author.RoleIds.Count is 0))
         {
             await Context.SendEphmeralErrorAsync(PermissionLevel.Administrator);

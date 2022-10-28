@@ -91,6 +91,14 @@ public interface IModerationService
     Task<IEnumerable<Infraction>> FetchInfractionsAsync(Snowflake guildId, Snowflake userId);
 
     /// <summary>
+    ///     Fetches a list of infractions created by the user provided.
+    /// </summary>
+    /// <param name="guildId">The originating guild.</param>
+    /// <param name="userId">The user who created the infractions.</param>
+    /// <returns>A <see cref="IEnumerable{Infraction}"/></returns>
+    Task<IEnumerable<Infraction>> FetchInfractionsByModeratorAsync(Snowflake guildId, Snowflake userId);
+
+    /// <summary>
     ///     Logs an infraction creation.
     /// </summary>
     /// <param name="guild">The infraction's guild.</param>
